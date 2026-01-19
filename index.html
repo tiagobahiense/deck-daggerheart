@@ -12,8 +12,11 @@
     <div id="start-screen">
         <div class="start-content">
             <h1>Grimório Daggerheart</h1>
-            <p>Clique para entrar na taverna</p>
-            <button onclick="iniciarExperiencia()">Abrir Grimório</button>
+            <p>Identifique-se, aventureiro</p>
+            <input type="text" id="nome-personagem" placeholder="Nome do Personagem" autocomplete="off"
+                   style="padding: 10px; font-size: 1.2rem; border-radius: 5px; border: none; text-align: center; margin-bottom: 15px; width: 80%;">
+            <br>
+            <button onclick="iniciarExperiencia()">Entrar na Mesa</button>
         </div>
     </div>
 
@@ -32,7 +35,6 @@
         <div id="area-jogo">
             
             <section id="mesa-area">
-                
                 <div class="grupo-fixo">
                     <div class="titulo-grupo">Identidade</div>
                     <div class="slots-row">
@@ -51,22 +53,17 @@
                     <div class="titulo-grupo">Evolução de Subclasse</div>
                     <div class="slots-row">
                         <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Fundamental')" id="slot-Fundamental">
-                            <span class="label-slot">Fundamental</span>
-                            <span class="nivel-req">Nível 1</span>
+                            <span class="label-slot">Fundamental</span> <span class="nivel-req">Nível 1</span>
                             <button class="btn-limpar" onclick="limparSlot('Fundamental', event)">×</button>
                         </div>
                         <div class="seta-evolucao">➜</div>
-                        
                         <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Especializacao')" id="slot-Especializacao">
-                            <span class="label-slot">Especialização</span>
-                            <span class="nivel-req">Avanço</span>
+                            <span class="label-slot">Especialização</span> <span class="nivel-req">Avanço</span>
                             <button class="btn-limpar" onclick="limparSlot('Especializacao', event)">×</button>
                         </div>
                         <div class="seta-evolucao">➜</div>
-
                         <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Maestria')" id="slot-Maestria">
-                            <span class="label-slot">Maestria</span>
-                            <span class="nivel-req">Avanço</span>
+                            <span class="label-slot">Maestria</span> <span class="nivel-req">Avanço</span>
                             <button class="btn-limpar" onclick="limparSlot('Maestria', event)">×</button>
                         </div>
                     </div>
@@ -86,7 +83,9 @@
                 <div id="cartas-reserva"></div>
             </section>
 
-        </div> <footer id="mao-area">
+        </div> 
+
+        <footer id="mao-area">
             <div id="cartas-mao"></div>
         </footer>
 
@@ -114,6 +113,6 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>

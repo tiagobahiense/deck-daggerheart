@@ -1,15 +1,38 @@
+// --- IMPORTAÇÕES DO FIREBASE VIA CDN (Funciona no Vercel) ---
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+// --- CONFIGURAÇÃO DO FIREBASE (SUAS CHAVES REAIS) ---
+const firebaseConfig = {
+    apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
+    authDomain: "deck-daggerheart.firebaseapp.com",
+    databaseURL: "https://deck-daggerheart-default-rtdb.firebaseio.com",
+    projectId: "deck-daggerheart",
+    storageBucket: "deck-daggerheart.firebasestorage.app",
+    messagingSenderId: "825358776791",
+    appId: "1:825358776791:web:ce0ab844f58c60573c7392",
+    measurementId: "G-20TB05E9N2"
+};
+
+// Inicializa o Firebase
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// --- ESTADO GLOBAL ---
+let nomeJogador = "";
 let catalogoCartas = [];
 let maoDoJogador = [];
-let reservaDoJogador = []; 
+let reservaDoJogador = [];
+// Estrutura dos slots fixos da mesa
 let slotsFixos = { 
     'Ancestralidade': null, 
     'Comunidade': null, 
-    'Fundamental': null,
-    'Especializacao': null,
-    'Maestria': null
+    'Fundamental': null, 
+    'Especializacao': null, 
+    'Maestria': null 
 };
 
-// Controles de estado
+// Variáveis de controle de transição (Drag/Drop/Click logic)
 let cartaEmTransitoIndex = null; 
 let origemTransito = null; 
 let slotDestinoAtual = null;
@@ -17,212 +40,272 @@ let slotDestinoAtual = null;
 const LIMITE_MAO = 5;
 const audio = document.getElementById('bg-music');
 
-/* --- INICIALIZAÇÃO --- */
-function iniciarExperiencia() {
+// --- FUNÇÃO DE SALVAMENTO NA NUVEM ---
+// Essa função envia o estado atual do jogador para o Firebase sempre que algo muda
+function salvarNaNuvem() {
+    if (!nomeJogador) return;
+
+    // Salva no caminho: mesa_rpg / jogadores / NOME_DO_PERSONAGEM
+    set(ref(db, 'mesa_rpg/jogadores/' + nomeJogador), {
+        mao: maoDoJogador,
+        reserva: reservaDoJogador,
+        slots: slotsFixos,
+        ultimoAcesso: Date.now()
+    }).catch((error) => {
+        console.error("Erro ao salvar no Firebase:", error);
+    });
+}
+
+// --- FUNÇÕES EXPOSTAS AO WINDOW ---
+// Como usamos type="module", precisamos atrelar as funções ao 'window' 
+// para que os botões do HTML (onclick="") consigam acessá-las.
+
+// 1. Início e Login
+window.iniciarExperiencia = function() {
+    const input = document.getElementById('nome-personagem');
+    if (!input.value.trim()) { 
+        alert("Por favor, identifique seu personagem!"); 
+        return; 
+    }
+    
+    // Salva o nome em maiúsculo para evitar duplicidade tipo "grog" e "Grog"
+    nomeJogador = input.value.trim().toUpperCase();
+    
+    // Troca de telas
     document.getElementById('start-screen').style.display = 'none';
-    document.getElementById('app-container').style.display = 'flex'; // Mudou para flex para layout vertical
+    document.getElementById('app-container').style.display = 'flex';
+    
+    // Fade in suave
     setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
     
-    // Configura volume inicial baixo (conforme definido no HTML value="0.05")
-    setVolume(); 
-    audio.play().catch(e => console.log("Permissão de áudio necessária"));
+    // Configurações iniciais
+    window.setVolume();
+    // Tenta dar play no audio (navegadores podem bloquear se não houver clique antes)
+    audio.play().catch(() => console.log("O áudio iniciará na primeira interação."));
     
     carregarDados();
 }
 
-async function carregarDados() {
-    try {
-        const resp = await fetch('./lista_cartas.json');
-        catalogoCartas = await resp.json();
-    } catch (e) { console.error("Erro ao carregar JSON", e); }
+// 2. Controles de Áudio
+window.toggleMusic = function() {
+    const btn = document.getElementById('btn-music');
+    if (audio.paused) { 
+        audio.play(); 
+        btn.innerText = "🔊"; 
+    } else { 
+        audio.pause(); 
+        btn.innerText = "🔇"; 
+    }
 }
 
-/* --- GRIMÓRIO E SELEÇÃO --- */
-function abrirGrimorio(tipoFiltro, slotDestino = null) {
+window.setVolume = function() {
+    audio.volume = document.getElementById('volume').value;
+}
+
+// 3. Carregamento do JSON das cartas
+async function carregarDados() {
+    try {
+        const r = await fetch('./lista_cartas.json');
+        catalogoCartas = await r.json();
+    } catch (e) { 
+        console.error("Erro ao carregar lista_cartas.json. Verifique se o arquivo existe.", e); 
+    }
+}
+
+// --- GRIMÓRIO (CATÁLOGO) ---
+
+window.abrirGrimorio = function(tipo, slotDestino = null) {
     const modal = document.getElementById('grimorio-modal');
     const grid = document.getElementById('grid-cartas');
     const titulo = document.getElementById('modal-titulo');
     
-    slotDestinoAtual = slotDestino;
-
+    slotDestinoAtual = slotDestino; // Memoriza se clicou numa caixa de classe ou no deck
     grid.innerHTML = '';
-    modal.style.display = 'flex';
     
-    let cartasFiltradas = [];
+    let lista = [];
 
-    if (tipoFiltro === 'Geral') {
-        titulo.innerText = "Grimório (Deck Principal)";
-        cartasFiltradas = catalogoCartas.filter(c => 
-            c.categoria !== 'Classes' && c.categoria !== 'Ancestralidade' && c.categoria !== 'Comunidade'
-        );
+    // Se for Geral, mostra tudo menos as cartas de identidade/classe
+    if (tipo === 'Geral') {
+        titulo.innerText = "Grimório Principal";
+        lista = catalogoCartas.filter(c => !['Classes','Ancestralidade','Comunidade'].includes(c.categoria));
     } else {
-        titulo.innerText = `Selecionar: ${tipoFiltro}`;
-        cartasFiltradas = catalogoCartas.filter(c => c.categoria === tipoFiltro);
+        // Se for específico (ex: Classes), filtra pela categoria
+        titulo.innerText = `Selecionar: ${tipo}`;
+        lista = catalogoCartas.filter(c => c.categoria === tipo);
     }
-
-    cartasFiltradas.forEach(carta => {
+    
+    // Renderiza as cartas no modal
+    lista.forEach(carta => {
         const div = document.createElement('div');
         div.className = 'carta-modal';
         div.style.backgroundImage = `url('${carta.caminho}')`;
-        div.onclick = () => selecionarCartaDoGrimorio(carta, tipoFiltro);
+        div.onclick = () => selecionarCarta(carta);
         grid.appendChild(div);
     });
+    
+    modal.style.display = 'flex';
 }
 
-function fecharGrimorio() {
+window.fecharGrimorio = function() {
     document.getElementById('grimorio-modal').style.display = 'none';
 }
 
-function selecionarCartaDoGrimorio(carta, tipoFiltro) {
-    const destinoParaSalvar = slotDestinoAtual; 
-    fecharGrimorio();
-    slotDestinoAtual = null; 
-
-    if (destinoParaSalvar) {
-        preencherSlotFixo(carta, destinoParaSalvar);
+function selecionarCarta(carta) {
+    const destino = slotDestinoAtual;
+    window.fecharGrimorio();
+    slotDestinoAtual = null;
+    
+    if (destino) {
+        // Se veio de um clique num slot fixo (Ancestralidade, Classe...)
+        window.preencherSlotFixo(carta, destino);
     } else {
+        // Se veio do Deck Principal
         adicionarNaMao(carta);
     }
 }
 
-/* --- SLOTS FIXOS E LIMPEZA --- */
-function preencherSlotFixo(carta, idSlot) {
-    slotsFixos[idSlot] = carta;
-    
-    const slotDiv = document.getElementById(`slot-${idSlot}`);
-    
-    const imgExistente = slotDiv.querySelector('img');
-    if (imgExistente) imgExistente.remove();
+// --- SLOTS FIXOS (MESA) ---
 
+window.preencherSlotFixo = function(carta, idSlot) {
+    // 1. Atualiza dados
+    slotsFixos[idSlot] = carta;
+    salvarNaNuvem(); 
+    
+    // 2. Atualiza visual
+    const div = document.getElementById(`slot-${idSlot}`);
+    
+    // Limpa imagem anterior
+    const imgOld = div.querySelector('img');
+    if(imgOld) imgOld.remove();
+    
+    // Adiciona nova imagem
     const img = document.createElement('img');
     img.src = carta.caminho;
-    slotDiv.appendChild(img);
-
-    // Mostra botão de limpar
-    const btn = slotDiv.querySelector('.btn-limpar');
-    if (btn) btn.style.display = 'flex';
-}
-
-function limparSlot(idSlot, event) {
-    if (event) event.stopPropagation(); 
-
-    slotsFixos[idSlot] = null;
-    const slotDiv = document.getElementById(`slot-${idSlot}`);
+    div.appendChild(img);
     
-    const img = slotDiv.querySelector('img');
-    if (img) img.remove();
-
-    const btn = slotDiv.querySelector('.btn-limpar');
-    if (btn) btn.style.display = 'none';
+    // Mostra botão de limpar
+    const btn = div.querySelector('.btn-limpar');
+    if(btn) btn.style.display = 'flex';
 }
 
-/* --- LÓGICA MÃO & RESERVA --- */
+window.limparSlot = function(idSlot, evt) {
+    if(evt) evt.stopPropagation(); // Impede que abra o grimório ao clicar no X
+    
+    // 1. Atualiza dados
+    slotsFixos[idSlot] = null;
+    salvarNaNuvem(); 
+    
+    // 2. Atualiza visual
+    const div = document.getElementById(`slot-${idSlot}`);
+    const img = div.querySelector('img');
+    if(img) img.remove();
+    
+    const btn = div.querySelector('.btn-limpar');
+    if(btn) btn.style.display = 'none';
+}
+
+// --- MÃO E RESERVA ---
+
 function adicionarNaMao(carta) {
     if (maoDoJogador.length < LIMITE_MAO) {
         maoDoJogador.push(carta);
-        renderizarTudo();
+        renderizar();
+        salvarNaNuvem(); 
     } else {
-        if(confirm("Sua mão está cheia (5 cartas). Deseja enviar esta carta para a Reserva?")) {
+        // Regra Daggerheart: Se a mão estiver cheia, pode ir pra reserva
+        if(confirm("Sua mão está cheia (5 cartas). Deseja enviar esta carta para a Reserva (Mochila)?")) {
             reservaDoJogador.push(carta);
-            renderizarTudo();
-            mostrarMensagem("Carta enviada para a Reserva.");
+            renderizar();
+            salvarNaNuvem(); 
         }
     }
 }
 
-function clicarNaMao(index) {
-    cartaEmTransitoIndex = index;
+// Abre o modal de decisão ao clicar na carta da mão
+window.abrirDecisao = function(idx) {
+    cartaEmTransitoIndex = idx;
     origemTransito = 'mao';
-    const carta = maoDoJogador[index];
+    const c = maoDoJogador[idx];
     
-    document.getElementById('preview-decisao').style.backgroundImage = `url('${carta.caminho}')`;
+    document.getElementById('preview-decisao').style.backgroundImage = `url('${c.caminho}')`;
     document.getElementById('decisao-modal').style.display = 'flex';
 }
 
-function clicarNaReserva(index) {
+// Traz carta da reserva para a mão
+window.resgatarReserva = function(idx) {
     if (maoDoJogador.length < LIMITE_MAO) {
-        const carta = reservaDoJogador[index];
-        reservaDoJogador.splice(index, 1);
-        maoDoJogador.push(carta);
-        renderizarTudo();
+        const c = reservaDoJogador[idx];
+        reservaDoJogador.splice(idx, 1); // Remove da reserva
+        maoDoJogador.push(c); // Põe na mão
+        renderizar();
+        salvarNaNuvem(); 
     } else {
-        mostrarMensagem("Mão cheia! Libere espaço primeiro.");
+        alert("Sua mão está cheia! Libere espaço antes de pegar da reserva.");
     }
 }
 
-/* --- AÇÕES DE DECISÃO --- */
-function moverParaReserva() {
-    if (origemTransito === 'mao' && cartaEmTransitoIndex !== null) {
-        const carta = maoDoJogador[cartaEmTransitoIndex];
+// Ação do Modal: Mover para Reserva
+window.moverParaReserva = function() {
+    if(origemTransito === 'mao') {
+        const c = maoDoJogador[cartaEmTransitoIndex];
         maoDoJogador.splice(cartaEmTransitoIndex, 1);
-        reservaDoJogador.push(carta);
-        fecharDecisao();
-        renderizarTudo();
+        reservaDoJogador.push(c);
+        
+        window.fecharDecisao();
+        renderizar();
+        salvarNaNuvem(); 
     }
 }
 
-function devolverAoDeck() {
-    if (origemTransito === 'mao' && cartaEmTransitoIndex !== null) {
+// Ação do Modal: Devolver ao Deck (Excluir)
+window.devolverAoDeck = function() {
+    if(origemTransito === 'mao') {
         maoDoJogador.splice(cartaEmTransitoIndex, 1);
-        fecharDecisao();
-        renderizarTudo();
+        
+        window.fecharDecisao();
+        renderizar();
+        salvarNaNuvem(); 
     }
 }
 
-function fecharDecisao() {
+window.fecharDecisao = function() {
     document.getElementById('decisao-modal').style.display = 'none';
     cartaEmTransitoIndex = null;
-    origemTransito = null;
 }
 
-/* --- RENDERIZAÇÃO --- */
-function renderizarTudo() {
-    renderizarMao();
-    renderizarReserva();
-}
-
-function renderizarMao() {
-    const container = document.getElementById('cartas-mao');
-    container.innerHTML = '';
-    maoDoJogador.forEach((carta, index) => {
+// --- RENDERIZAÇÃO ---
+// Atualiza o HTML da Mão e da Reserva baseado nos Arrays
+function renderizar() {
+    // 1. Renderiza Mão
+    const divMao = document.getElementById('cartas-mao');
+    divMao.innerHTML = '';
+    
+    maoDoJogador.forEach((c, i) => {
         const el = document.createElement('div');
         el.className = 'carta';
-        el.style.backgroundImage = `url('${carta.caminho}')`;
+        el.style.backgroundImage = `url('${c.caminho}')`;
+        
+        // Cálculo para efeito de leque
         const centro = (maoDoJogador.length - 1) / 2;
-        const rotacao = (index - centro) * 4; 
+        const rotacao = (i - centro) * 4; 
         el.style.transform = `rotate(${rotacao}deg)`;
-        el.onclick = () => clicarNaMao(index);
-        container.appendChild(el);
+        
+        el.onclick = () => window.abrirDecisao(i);
+        divMao.appendChild(el);
     });
-}
 
-function renderizarReserva() {
-    const container = document.getElementById('cartas-reserva');
-    container.innerHTML = '';
-    container.style.opacity = reservaDoJogador.length === 0 ? '0' : '1';
-    reservaDoJogador.forEach((carta, index) => {
+    // 2. Renderiza Reserva
+    const divRes = document.getElementById('cartas-reserva');
+    divRes.innerHTML = '';
+    
+    // Esconde a caixa da reserva se estiver vazia para limpar o visual
+    divRes.style.opacity = reservaDoJogador.length ? '1' : '0';
+    
+    reservaDoJogador.forEach((c, i) => {
         const el = document.createElement('div');
         el.className = 'carta-reserva';
-        el.style.backgroundImage = `url('${carta.caminho}')`;
-        el.onclick = () => clicarNaReserva(index);
-        container.appendChild(el);
+        el.style.backgroundImage = `url('${c.caminho}')`;
+        el.onclick = () => window.resgatarReserva(i);
+        divRes.appendChild(el);
     });
-}
-
-/* --- EXTRAS --- */
-function mostrarMensagem(texto) {
-    const msgDiv = document.getElementById('system-message');
-    msgDiv.innerText = texto;
-    msgDiv.style.opacity = '1';
-    setTimeout(() => msgDiv.style.opacity = '0', 3000);
-}
-
-function toggleMusic() {
-    const btn = document.getElementById('btn-music');
-    if (audio.paused) { audio.play(); btn.innerText = "🔊"; } 
-    else { audio.pause(); btn.innerText = "🔇"; }
-}
-
-function setVolume() { 
-    audio.volume = document.getElementById('volume').value; 
 }

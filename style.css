@@ -3,260 +3,567 @@
     --modal-bg: rgba(20, 15, 10, 0.95);
 }
 
-* { box-sizing: border-box; user-select: none; }
+* {
+    box-sizing: border-box;
+    user-select: none;
+}
 
 body {
-    margin: 0; padding: 0;
+    margin: 0;
+    padding: 0;
     font-family: 'MedievalSharp', cursive;
-    background: #000; color: #fff;
-    height: 100vh; overflow: hidden; /* Impede rolagem na página inteira */
+    background: #000;
+    color: #fff;
+    height: 100vh;
+    overflow: hidden; /* Impede rolagem na página inteira, apenas dentro do app */
 }
 
-/* TELA DE START */
+/* --- TELA DE START --- */
 #start-screen {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
     background: url('img/background_epico.png') no-repeat center center/cover;
     z-index: 9999;
-    display: flex; justify-content: center; align-items: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
-.start-content {
-    background: rgba(0,0,0,0.8); padding: 40px;
-    border: 2px solid var(--gold); border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8);
-}
-.start-content button {
-    background: var(--gold); border: none; padding: 10px 30px;
-    font-family: inherit; font-size: 1.2rem; cursor: pointer;
-    border-radius: 5px; margin-top: 20px; font-weight: bold; transition: 0.2s;
-}
-.start-content button:hover { transform: scale(1.05); color: #000; background: #fff; }
 
-/* APP PRINCIPAL */
+.start-content {
+    background: rgba(0, 0, 0, 0.85);
+    padding: 40px;
+    border: 2px solid var(--gold);
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+    max-width: 90%;
+}
+
+.start-content button {
+    background: var(--gold);
+    border: none;
+    padding: 10px 30px;
+    font-family: inherit;
+    font-size: 1.2rem;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 20px;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.start-content button:hover {
+    transform: scale(1.05);
+    color: #000;
+    background: #fff;
+}
+
+/* --- APP PRINCIPAL --- */
 #app-container {
-    height: 100vh; width: 100vw;
+    height: 100vh;
+    width: 100vw;
     background: url('img/background_epico.png') no-repeat center center/cover;
     position: relative;
     transition: opacity 1s;
-    display: flex; flex-direction: column; /* Organiza layout verticalmente */
+    display: flex;
+    flex-direction: column;
 }
 
-/* CONTROLE DE AUDIO (Fixo no topo) */
+/* --- CONTROLE DE AUDIO --- */
 #audio-control {
-    position: absolute; top: 10px; right: 10px;
-    background: rgba(0,0,0,0.7); padding: 8px 15px;
-    border-radius: 20px; border: 1px solid rgba(255,255,255,0.2);
-    display: flex; gap: 10px; align-items: center;
-    z-index: 500; /* Bem acima de tudo na mesa */
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px 15px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    z-index: 500; /* Garante que fique acima das cartas */
 }
-#btn-music { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #fff; }
-#volume { cursor: pointer; accent-color: var(--gold); }
+
+#btn-music {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #fff;
+    padding: 0;
+}
+
+#volume {
+    cursor: pointer;
+    accent-color: var(--gold);
+    width: 80px;
+}
 
 #system-message {
-    position: absolute; top: 50%; left: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.9); color: var(--gold);
-    padding: 20px 40px; border-radius: 10px; border: 2px solid var(--gold);
-    font-size: 1.5rem; pointer-events: none; opacity: 0;
-    transition: opacity 0.3s; z-index: 2000; text-align: center; box-shadow: 0 0 30px #000;
+    background: rgba(0, 0, 0, 0.9);
+    color: var(--gold);
+    padding: 20px 40px;
+    border-radius: 10px;
+    border: 2px solid var(--gold);
+    font-size: 1.5rem;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 2000;
+    text-align: center;
+    box-shadow: 0 0 30px #000;
 }
 
-/* ÁREA DE JOGO (Conteúdo que não é a mão) */
+/* --- ÁREA DE JOGO (Mesa + Deck + Reserva) --- */
+/* Esta área ocupa o espaço entre o topo e a mão, permitindo scroll se necessário */
 #area-jogo {
-    flex-grow: 1; /* Ocupa o espaço disponível acima da mão */
+    flex-grow: 1;
     position: relative;
     width: 100%;
 }
 
-/* MESA */
+/* --- MESA (Slots Fixos) --- */
 #mesa-area {
-    padding-top: 30px; /* Espaço pro topo */
-    display: flex; justify-content: center; gap: 40px; 
+    padding-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 40px;
     align-items: flex-start;
 }
 
 .grupo-fixo {
-    display: flex; flex-direction: column; align-items: center;
-    background: rgba(0,0,0,0.4); padding: 10px 20px;
-    border-radius: 15px; border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px 20px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
-.titulo-grupo { color: #aaa; font-size: 0.9rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
-.slots-row { display: flex; gap: 15px; align-items: center; }
 
-/* Destaque Classe */
+.titulo-grupo {
+    color: #aaa;
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.slots-row {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
 .destaque-classe {
     border: 1px solid var(--gold);
     box-shadow: 0 0 15px rgba(212, 175, 55, 0.2);
     background: rgba(20, 10, 0, 0.6);
 }
-.destaque-classe .titulo-grupo { color: var(--gold); font-weight: bold; }
 
-/* SLOTS */
+.destaque-classe .titulo-grupo {
+    color: var(--gold);
+    font-weight: bold;
+}
+
+/* Slots Individuais */
 .slot-fixo, .slot-classe {
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
-    background: rgba(0,0,0,0.3); cursor: pointer; transition: 0.3s; position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    transition: 0.3s;
+    position: relative;
 }
+
 .slot-fixo {
-    width: 100px; height: 140px;
-    border: 2px dashed rgba(255,255,255,0.3); border-radius: 10px;
+    width: 100px;
+    height: 140px;
+    border: 2px dashed rgba(255, 255, 255, 0.3);
+    border-radius: 10px;
 }
+
 .slot-classe {
-    width: 110px; height: 155px;
-    border: 2px dashed var(--gold); border-radius: 10px; background: rgba(0,0,0,0.5);
+    width: 110px;
+    height: 155px;
+    border: 2px dashed var(--gold);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.5);
 }
-.slot-fixo:hover, .slot-classe:hover { transform: scale(1.05); box-shadow: 0 0 15px var(--gold); }
-.slot-fixo img, .slot-classe img { width: 100%; height: 100%; border-radius: 10px; object-fit: contain; }
 
-.label-slot { position: absolute; width: 100%; text-align: center; top: 40%; text-shadow: 0 2px 4px #000; pointer-events: none; font-size: 0.8rem; }
-.nivel-req { position: absolute; bottom: 5px; width: 100%; text-align: center; font-size: 0.6rem; color: var(--gold); text-transform: uppercase; background: rgba(0,0,0,0.7); }
-.seta-evolucao { color: var(--gold); font-size: 1.5rem; opacity: 0.5; }
+.slot-fixo:hover, .slot-classe:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 15px var(--gold);
+}
 
-/* BOTÃO LIMPAR */
+.slot-fixo img, .slot-classe img {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    object-fit: contain;
+}
+
+.label-slot {
+    position: absolute;
+    width: 100%;
+    text-align: center;
+    top: 40%;
+    text-shadow: 0 2px 4px #000;
+    pointer-events: none;
+    font-size: 0.8rem;
+}
+
+.nivel-req {
+    position: absolute;
+    bottom: 5px;
+    width: 100%;
+    text-align: center;
+    font-size: 0.6rem;
+    color: var(--gold);
+    text-transform: uppercase;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 2px 0;
+}
+
+.seta-evolucao {
+    color: var(--gold);
+    font-size: 1.5rem;
+    opacity: 0.5;
+}
+
+/* Botão Limpar (X) */
 .btn-limpar {
-    position: absolute; top: -10px; right: -10px;
-    width: 26px; height: 26px; background: #8b0000; color: #fff;
-    border: 2px solid #fff; border-radius: 50%;
-    font-weight: bold; font-size: 1.2rem; cursor: pointer; z-index: 200;
-    display: none; align-items: center; justify-content: center; padding-bottom: 2px;
+    position: absolute;
+    top: -10px;
+    right: -10px;
+    width: 26px;
+    height: 26px;
+    background: #8b0000;
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 200;
+    display: none; /* JS controla isso */
+    align-items: center;
+    justify-content: center;
+    padding-bottom: 3px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
 }
-.btn-limpar:hover { background: #ff0000; transform: scale(1.1); }
 
-/* DECK (Configuração Desktop Padrão) */
+.btn-limpar:hover {
+    background: #ff0000;
+    transform: scale(1.1);
+}
+
+/* --- DECK (Pote) --- */
 #deck-area {
-    position: absolute; right: 3%; top: 40%;
-    width: 120px; cursor: pointer; text-align: center;
-    transition: transform 0.2s; z-index: 60;
+    position: absolute;
+    right: 3%;
+    top: 40%;
+    width: 120px;
+    cursor: pointer;
+    text-align: center;
+    transition: transform 0.2s;
+    z-index: 60;
 }
-#deck-area:hover { transform: scale(1.05); }
-.pote-img { width: 100%; drop-shadow: 0 10px 20px rgba(0,0,0,0.8); }
-.label-deck { margin-top: -20px; text-shadow: 0 2px 4px black; }
 
-/* RESERVA */
+#deck-area:hover {
+    transform: scale(1.05);
+}
+
+.pote-img {
+    width: 100%;
+    drop-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
+}
+
+.label-deck {
+    margin-top: -20px;
+    text-shadow: 0 2px 4px black;
+}
+
+/* --- RESERVA --- */
 #reserva-area {
-    position: absolute; bottom: 10px; width: 100%; /* Ajustado para ficar logo acima da mão */
-    display: flex; flex-direction: column; align-items: center;
-    pointer-events: none; z-index: 50;
+    position: absolute;
+    bottom: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    z-index: 50;
 }
-.titulo-reserva { font-size: 0.8rem; color: rgba(255,255,255,0.4); margin-bottom: 5px; text-shadow: 0 1px 2px #000;}
-#cartas-reserva {
-    display: flex; gap: 5px; min-height: 100px; padding: 10px;
-    background: rgba(0,0,0,0.2); border-radius: 10px;
-    pointer-events: auto; transition: 0.3s;
-}
-.carta-reserva {
-    width: 70px; height: 100px;
-    background-size: contain; background-repeat: no-repeat; background-position: center;
-    border-radius: 5px; opacity: 0.7; cursor: pointer; transition: 0.3s; filter: grayscale(0.8);
-}
-.carta-reserva:hover { transform: scale(2.5) translateY(-20px); z-index: 200; opacity: 1; filter: grayscale(0); }
 
-/* MÃO JOGADOR */
+.titulo-reserva {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 5px;
+    text-shadow: 0 1px 2px #000;
+}
+
+#cartas-reserva {
+    display: flex;
+    gap: 5px;
+    min-height: 100px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    pointer-events: auto;
+    transition: 0.3s;
+}
+
+.carta-reserva {
+    width: 70px;
+    height: 100px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 5px;
+    opacity: 0.7;
+    cursor: pointer;
+    transition: 0.3s;
+    filter: grayscale(0.8);
+}
+
+.carta-reserva:hover {
+    transform: scale(2.5) translateY(-20px);
+    z-index: 200;
+    opacity: 1;
+    filter: grayscale(0);
+}
+
+/* --- MÃO DO JOGADOR --- */
 #mao-area {
-    height: 35vh; width: 100%;
+    height: 35vh;
+    width: 100%;
     background: url('img/mao_background.png') no-repeat bottom center;
     background-size: contain;
-    display: flex; justify-content: center; align-items: center;
-    padding-bottom: 5vh; z-index: 100; pointer-events: none;
-    flex-shrink: 0; /* Impede que a mão encolha */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-bottom: 5vh;
+    z-index: 100;
+    pointer-events: none;
+    flex-shrink: 0;
 }
-#cartas-mao { display: flex; justify-content: center; align-items: center; width: 100%; pointer-events: auto; }
+
+#cartas-mao {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    pointer-events: auto;
+}
 
 .carta {
-    width: 140px; height: 210px;
-    background-size: contain; background-repeat: no-repeat; background-position: center;
-    border-radius: 10px; filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8));
-    margin: 0 -30px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    transform-origin: bottom center; cursor: pointer;
+    width: 140px;
+    height: 210px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 10px;
+    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.8));
+    margin: 0 -30px;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transform-origin: bottom center;
+    cursor: pointer;
 }
+
 .carta:hover {
     transform: translateY(-60px) scale(1.6) !important;
-    z-index: 9999; margin: 0 50px; filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
+    z-index: 9999;
+    margin: 0 50px;
+    filter: drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
 }
 
-/* MODAIS (Grimório e Decisão) */
+/* --- MODAIS --- */
 .modal {
-    display: none; position: fixed; top: 0; left: 0;
-    width: 100%; height: 100%; background: rgba(0,0,0,0.85);
-    z-index: 5000; justify-content: center; align-items: center;
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 5000;
+    justify-content: center;
+    align-items: center;
 }
+
 .modal-content {
-    width: 90%; height: 90%; background: var(--modal-bg);
-    border: 2px solid var(--gold); border-radius: 10px;
-    display: flex; flex-direction: column; padding: 0; 
-    box-shadow: 0 0 50px var(--gold); overflow: hidden;
+    width: 90%;
+    height: 90%;
+    background: var(--modal-bg);
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    box-shadow: 0 0 50px var(--gold);
+    overflow: hidden;
 }
+
 .modal-header {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 15px 20px; background: rgba(0,0,0,0.5); border-bottom: 1px solid #555; flex-shrink: 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.5);
+    border-bottom: 1px solid #555;
+    flex-shrink: 0;
 }
-.close-btn { background: none; border: 1px solid #fff; color: #fff; padding: 5px 15px; cursor: pointer; font-size: 1.2rem; }
+
+.close-btn {
+    background: none;
+    border: 1px solid #fff;
+    color: #fff;
+    padding: 5px 15px;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
 
 #grid-cartas {
-    display: flex; flex-wrap: wrap; gap: 15px;
-    overflow-y: auto; justify-content: center; padding: 100px 40px; 
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    overflow-y: auto;
+    justify-content: center;
+    padding: 100px 40px; /* Padding extra para zoom */
 }
+
 .carta-modal {
-    width: 105px; height: 150px;
-    background-size: contain; background-repeat: no-repeat; background-position: center;
-    border-radius: 8px; cursor: pointer; transition: transform 0.2s ease-out; position: relative;
+    width: 105px;
+    height: 150px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.2s ease-out;
+    position: relative;
 }
-.carta-modal:hover { transform: scale(2.2); z-index: 6000; filter: drop-shadow(0 0 20px var(--gold)); }
 
+.carta-modal:hover {
+    transform: scale(2.2);
+    z-index: 6000;
+    filter: drop-shadow(0 0 20px var(--gold));
+}
+
+/* Modal Decisão */
 .modal-decisao-content {
-    background: #1a1510; border: 2px solid var(--gold); border-radius: 10px;
-    padding: 30px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 20px;
+    background: #1a1510;
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    padding: 30px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
 }
-.carta-preview-decisao { width: 140px; height: 200px; background-size: contain; background-repeat: no-repeat; background-position: center; }
-.botoes-decisao { display: flex; gap: 15px; }
-.botoes-decisao button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; color: #fff; font-weight: bold; }
-.btn-reserva { background: #2e8b57; } .btn-deck { background: #8b0000; } .btn-cancelar { background: #444; }
+
+.carta-preview-decisao {
+    width: 140px;
+    height: 200px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.botoes-decisao {
+    display: flex;
+    gap: 15px;
+}
+
+.botoes-decisao button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: #fff;
+    font-weight: bold;
+}
+
+.btn-reserva { background: #2e8b57; }
+.btn-deck { background: #8b0000; }
+.btn-cancelar { background: #444; }
 
 
-/* --- AJUSTES MOBILE (AQUI ESTÁ A CORREÇÃO DE SOBREPOSIÇÃO) --- */
+/* --- AJUSTES MOBILE / RESPONSIVIDADE --- */
 @media (max-width: 768px) {
-    /* Permitir rolagem vertical no mobile se os elementos não couberem */
+    
+    /* Permite que a área de jogo role se ficar muito comprida */
     #area-jogo {
-        overflow-y: auto; 
-        display: flex; 
+        overflow-y: auto;
+        display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 20px; /* Espaço entre mesa, deck e reserva */
+        gap: 20px;
         padding-bottom: 20px;
     }
 
     /* Mais espaço no topo para o volume não cobrir a Ancestralidade */
-    #mesa-area { 
+    #mesa-area {
         padding-top: 60px; 
-        flex-direction: column; align-items: center; gap: 15px; 
+        flex-direction: column;
+        align-items: center;
+        gap: 15px;
         width: 100%;
     }
 
-    .grupo-fixo { width: 95%; max-width: 350px; }
+    .grupo-fixo {
+        width: 95%;
+        max-width: 350px;
+    }
     
-    /* Reduzir um pouco os slots para caber melhor */
     .slot-fixo { width: 80px; height: 110px; }
     .slot-classe { width: 90px; height: 125px; }
     .seta-evolucao { font-size: 1rem; }
 
-    /* DECK: Muda de Absoluto para Relativo no fluxo da página */
-    #deck-area { 
-        position: relative; /* Não flutua mais por cima */
-        top: auto; right: auto; 
-        margin: 10px auto; /* Centraliza */
+    /* DECK: Crucial - muda para position relative para não flutuar em cima de nada */
+    #deck-area {
+        position: relative; 
+        top: auto;
+        right: auto;
+        margin: 10px auto;
         width: 100px;
     }
 
-    /* Reserva logo abaixo do deck */
+    /* RESERVA: Entra no fluxo normal da página */
     #reserva-area {
-        position: relative; /* Entra no fluxo */
+        position: relative;
         bottom: auto;
         margin-bottom: 10px;
     }
+    
     #cartas-reserva { min-height: 80px; }
     .carta-reserva { width: 50px; height: 75px; }
 
-    /* Mão */
-    #mao-area { height: 30vh; background-size: cover; background-position: center bottom; }
-    .carta { width: 90px; height: 135px; margin: 0 -20px; }
-    .carta:hover { transform: translateY(-40px) scale(1.4) !important; margin: 0 10px; }
+    /* MÃO */
+    #mao-area {
+        height: 30vh;
+        background-position: center bottom;
+    }
+    
+    .carta {
+        width: 90px;
+        height: 135px;
+        margin: 0 -20px;
+    }
+    
+    .carta:hover {
+        transform: translateY(-40px) scale(1.4) !important;
+        margin: 0 10px;
+    }
 }
