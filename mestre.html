@@ -35,6 +35,7 @@
             flex-direction: column; 
             gap: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            position: relative;
         }
         
         .nome { 
@@ -91,6 +92,25 @@
             font-style: italic;
             padding: 10px;
         }
+
+        /* Botão de Excluir Jogador */
+        .btn-banir {
+            margin-top: 15px;
+            background-color: #3e0000;
+            color: #ff6666;
+            border: 1px solid #500;
+            padding: 8px;
+            cursor: pointer;
+            font-family: inherit;
+            border-radius: 4px;
+            transition: 0.2s;
+            font-size: 0.8rem;
+        }
+        .btn-banir:hover {
+            background-color: #800;
+            color: white;
+            border-color: red;
+        }
     </style>
 </head>
 <body>
@@ -98,9 +118,10 @@
     <div id="painel">Conectando ao Grimório...</div>
 
     <script type="module">
-        // Importações diretas via CDN (Funciona no Vercel sem build)
+        // Importações diretas via CDN
+        // Adicionamos 'remove' na importação
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // SUA CONFIGURAÇÃO REAL
         const firebaseConfig = {
@@ -117,6 +138,16 @@
         // Inicializa Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // --- FUNÇÃO DE BANIR (EXPOSTA AO WINDOW) ---
+        window.removerJogador = function(nome) {
+            if(confirm(`Tem certeza que deseja remover ${nome} da mesa? Isso apagará as cartas dele.`)) {
+                // Remove do Firebase
+                remove(ref(db, `mesa_rpg/jogadores/${nome}`))
+                    .then(() => console.log(`${nome} removido.`))
+                    .catch((error) => console.error("Erro ao remover:", error));
+            }
+        }
 
         // Conecta na lista de jogadores
         const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
@@ -149,12 +180,10 @@
                     htmlMao = "<span class='status-vazio'>Mão vazia</span>";
                 }
 
-                // 2. Monta os Slots Ativos (Ancestralidade, Classe, etc)
+                // 2. Monta os Slots Ativos
                 let htmlSlots = "";
                 if(p.slots) {
-                    // Ordem de exibição desejada
                     const ordem = ['Ancestralidade', 'Comunidade', 'Fundamental', 'Especializacao', 'Maestria'];
-                    
                     ordem.forEach(key => {
                         if(p.slots[key]) {
                             htmlSlots += `<div class="mini-carta slot-ativo" style="background-image: url('${p.slots[key].caminho}')" title="${key}: ${p.slots[key].nome}"></div>`;
@@ -163,15 +192,14 @@
                 }
                 if(htmlSlots === "") htmlSlots = "<span class='status-vazio'>Nenhum ativo</span>";
 
-                // 3. Monta a Reserva (Mochila) - Opcional, se quiser ver
+                // 3. Monta a Reserva
                 let htmlReserva = "";
                 if(p.reserva && p.reserva.length > 0) {
                      htmlReserva = `<div class="label">Reserva (${p.reserva.length})</div>`;
-                     // Apenas um contador ou ícones menores se quiser
                      htmlReserva += `<div class="status-vazio" style="padding:0">Possui ${p.reserva.length} cartas guardadas</div>`;
                 }
 
-                // Renderiza o Card do Jogador
+                // Renderiza o Card + BOTÃO DE REMOVER
                 card.innerHTML = `
                     <div class="nome">${nome}</div>
                     
@@ -182,6 +210,8 @@
                     <div class="grid-mini">${htmlSlots}</div>
                     
                     ${htmlReserva}
+
+                    <button class="btn-banir" onclick="removerJogador('${nome}')">💀 Remover da Mesa</button>
                 `;
                 
                 painel.appendChild(card);
