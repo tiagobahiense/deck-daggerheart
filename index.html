@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grimório Daggerheart</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <div id="start-screen">
+        <div class="start-content">
+            <h1>Grimório Daggerheart</h1>
+            <p>Clique para entrar na taverna</p>
+            <button onclick="iniciarExperiencia()">Abrir Grimório</button>
+        </div>
+    </div>
+
+    <div id="app-container" style="display: none; opacity: 0;">
+        
+        <div id="audio-control">
+            <button onclick="toggleMusic()" id="btn-music">🔊</button>
+            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()">
+        </div>
+        <audio id="bg-music" loop>
+            <source src="audio/jornada.mp3" type="audio/mpeg">
+        </audio>
+
+        <div id="system-message"></div>
+
+        <div id="area-jogo">
+            
+            <section id="mesa-area">
+                
+                <div class="grupo-fixo">
+                    <div class="titulo-grupo">Identidade</div>
+                    <div class="slots-row">
+                        <div class="slot-fixo" onclick="abrirGrimorio('Ancestralidade', 'Ancestralidade')" id="slot-Ancestralidade">
+                            <span class="label-slot">Ancestralidade</span>
+                            <button class="btn-limpar" onclick="limparSlot('Ancestralidade', event)">×</button>
+                        </div>
+                        <div class="slot-fixo" onclick="abrirGrimorio('Comunidade', 'Comunidade')" id="slot-Comunidade">
+                            <span class="label-slot">Comunidade</span>
+                            <button class="btn-limpar" onclick="limparSlot('Comunidade', event)">×</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grupo-fixo destaque-classe">
+                    <div class="titulo-grupo">Evolução de Subclasse</div>
+                    <div class="slots-row">
+                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Fundamental')" id="slot-Fundamental">
+                            <span class="label-slot">Fundamental</span>
+                            <span class="nivel-req">Nível 1</span>
+                            <button class="btn-limpar" onclick="limparSlot('Fundamental', event)">×</button>
+                        </div>
+                        <div class="seta-evolucao">➜</div>
+                        
+                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Especializacao')" id="slot-Especializacao">
+                            <span class="label-slot">Especialização</span>
+                            <span class="nivel-req">Avanço</span>
+                            <button class="btn-limpar" onclick="limparSlot('Especializacao', event)">×</button>
+                        </div>
+                        <div class="seta-evolucao">➜</div>
+
+                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Maestria')" id="slot-Maestria">
+                            <span class="label-slot">Maestria</span>
+                            <span class="nivel-req">Avanço</span>
+                            <button class="btn-limpar" onclick="limparSlot('Maestria', event)">×</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div id="deck-container-wrapper">
+                <div id="deck-area" onclick="abrirGrimorio('Geral')">
+                    <div class="pote-glow"></div>
+                    <img src="img/pote_deck.png" alt="Deck" class="pote-img">
+                    <div class="label-deck">Grimório</div>
+                </div>
+            </div>
+
+            <section id="reserva-area">
+                <div class="titulo-reserva">Reserva (Inativas)</div>
+                <div id="cartas-reserva"></div>
+            </section>
+
+        </div> <footer id="mao-area">
+            <div id="cartas-mao"></div>
+        </footer>
+
+    </div>
+
+    <div id="grimorio-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-titulo">Escolha uma Carta</h2>
+                <button class="close-btn" onclick="fecharGrimorio()">X</button>
+            </div>
+            <div id="grid-cartas"></div>
+        </div>
+    </div>
+
+    <div id="decisao-modal" class="modal" style="z-index: 6000;">
+        <div class="modal-decisao-content">
+            <h3>Gerenciar Carta</h3>
+            <div class="carta-preview-decisao" id="preview-decisao"></div>
+            <div class="botoes-decisao">
+                <button class="btn-reserva" onclick="moverParaReserva()">Guardar na Reserva</button>
+                <button class="btn-deck" onclick="devolverAoDeck()">Devolver ao Deck</button>
+                <button class="btn-cancelar" onclick="fecharDecisao()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
