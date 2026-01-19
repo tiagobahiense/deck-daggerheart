@@ -81,6 +81,16 @@
             box-shadow: 0 0 20px #000; 
         }
         
+        /* Estilo específico para reserva para diferenciar levemente (opcional) */
+        .carta-reserva-visual {
+            opacity: 0.7; /* Um pouco mais transparente para indicar que está guardada */
+            filter: grayscale(0.6);
+        }
+        .carta-reserva-visual:hover {
+            opacity: 1;
+            filter: grayscale(0);
+        }
+        
         .slot-ativo { 
             border-color: #d4af37; 
             box-shadow: 0 0 5px rgba(212, 175, 55, 0.3);
@@ -93,7 +103,6 @@
             padding: 10px;
         }
 
-        /* Botão de Excluir Jogador */
         .btn-banir {
             margin-top: 15px;
             background-color: #3e0000;
@@ -118,12 +127,10 @@
     <div id="painel">Conectando ao Grimório...</div>
 
     <script type="module">
-        // Importações diretas via CDN
-        // Adicionamos 'remove' na importação
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // SUA CONFIGURAÇÃO REAL
+        // SUA CONFIGURAÇÃO REAIS
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
             authDomain: "deck-daggerheart.firebaseapp.com",
@@ -139,10 +146,9 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // --- FUNÇÃO DE BANIR (EXPOSTA AO WINDOW) ---
+        // Função de Banir
         window.removerJogador = function(nome) {
             if(confirm(`Tem certeza que deseja remover ${nome} da mesa? Isso apagará as cartas dele.`)) {
-                // Remove do Firebase
                 remove(ref(db, `mesa_rpg/jogadores/${nome}`))
                     .then(() => console.log(`${nome} removido.`))
                     .catch((error) => console.error("Erro ao remover:", error));
@@ -156,15 +162,13 @@
             const painel = document.getElementById('painel');
             const dados = snapshot.val();
             
-            // Se não tiver ninguém conectado
             if(!dados) { 
                 painel.innerHTML = "<p class='status-vazio'>Nenhum jogador conectado no momento.</p>"; 
                 return; 
             }
             
-            painel.innerHTML = ""; // Limpa tela para atualizar
+            painel.innerHTML = ""; 
             
-            // Para cada jogador encontrado...
             Object.keys(dados).forEach(nome => {
                 const p = dados[nome];
                 const card = document.createElement('div');
@@ -192,14 +196,23 @@
                 }
                 if(htmlSlots === "") htmlSlots = "<span class='status-vazio'>Nenhum ativo</span>";
 
-                // 3. Monta a Reserva
+                // 3. Monta a Reserva (AGORA COM CARTAS VISÍVEIS)
                 let htmlReserva = "";
                 if(p.reserva && p.reserva.length > 0) {
+                     // Adicionamos um cabeçalho
                      htmlReserva = `<div class="label">Reserva (${p.reserva.length})</div>`;
-                     htmlReserva += `<div class="status-vazio" style="padding:0">Possui ${p.reserva.length} cartas guardadas</div>`;
+                     
+                     // Criamos um grid para as cartas da reserva
+                     let cartasReservaHTML = "";
+                     p.reserva.forEach(c => {
+                         // Adicionei uma classe extra 'carta-reserva-visual' se quiser estilizar diferente (ex: mais escuro)
+                         cartasReservaHTML += `<div class="mini-carta carta-reserva-visual" style="background-image: url('${c.caminho}')" title="Reserva: ${c.nome}"></div>`;
+                     });
+                     
+                     htmlReserva += `<div class="grid-mini">${cartasReservaHTML}</div>`;
                 }
 
-                // Renderiza o Card + BOTÃO DE REMOVER
+                // Renderiza o Card
                 card.innerHTML = `
                     <div class="nome">${nome}</div>
                     
