@@ -552,9 +552,17 @@ body {
 .btn-reserva { background: #2e8b57; }
 .btn-deck { background: #8b0000; }
 .btn-cancelar { background: #444; }
-.btn-confirmar { background: #d4af37; color: #000; }
 .btn-token { background: #1976d2; }
 .btn-estado { background: #616161; }
+.btn-confirmar { 
+    background: var(--gold); 
+    color: #000 !important; 
+    font-size: 1.1rem;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    width: 100%;
+    margin-bottom: 10px;
+}
+.btn-confirmar:hover { background: #fff; }
 
 @media (max-width: 768px) {
     #area-jogo {
@@ -578,35 +586,11 @@ body {
     }
     .slot-fixo { width: 80px; height: 110px; }
     .slot-classe { width: 90px; height: 125px; }
-    .seta-evolucao { font-size: 1rem; }
-    
-    #deck-area {
-        position: relative; 
-        top: auto;
-        right: auto;
-        margin: 10px auto;
-        width: 100px;
-    }
-    
-    #reserva-area {
-        position: relative;
-        bottom: auto;
-        margin-bottom: 10px;
-    }
+    #deck-area { position: relative; top: auto; right: auto; margin: 10px auto; width: 100px; }
+    #reserva-area { position: relative; bottom: auto; margin-bottom: 10px; }
     #cartas-reserva { min-height: 80px; }
     .carta-reserva { width: 50px; height: 75px; }
-
-    #mao-area {
-        height: 30vh;
-        background-position: center bottom;
-    }
-    .carta {
-        width: 90px;
-        height: 135px;
-        margin: 0 -20px;
-    }
-    .carta:hover {
-        transform: translateY(-40px) scale(1.4) !important;
-        margin: 0 10px;
-    }
+    #mao-area { height: 30vh; background-position: center bottom; }
+    .carta { width: 90px; height: 135px; margin: 0 -20px; }
+    .carta:hover { transform: translateY(-40px) scale(1.4) !important; margin: 0 10px; }
 }

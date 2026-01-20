@@ -215,7 +215,6 @@ window.abrirDecisao = function(idx) {
     
     document.getElementById('preview-decisao').style.backgroundImage = `url('${c.caminho}')`;
     document.getElementById('label-token-qtd').innerText = c.tokens || 0;
-    
     document.getElementById('decisao-modal').style.display = 'flex';
 }
 
