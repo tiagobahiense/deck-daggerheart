@@ -17,6 +17,8 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
+const EMAIL_MESTRE = "mestre@rpg.com"; // Substitua pelo e-mail que você criou no Firebase
+
 let currentUser = null;
 let nomeJogador = "";
 let catalogoCartas = [];
@@ -48,35 +50,57 @@ document.addEventListener('dragstart', event => event.preventDefault());
 
 window.irParaLoginJogador = function() {
     document.getElementById('fase-selecao').style.display = 'none';
-    document.getElementById('fase-jogador').style.display = 'block';
+    document.getElementById('fase-login-jogador').style.display = 'block';
 }
 
 window.irParaLoginNarrador = function() {
-    window.location.href = 'admin.html'; 
+    document.getElementById('fase-selecao').style.display = 'none';
+    document.getElementById('fase-login-narrador').style.display = 'block';
 }
 
 window.voltarParaSelecao = function() {
-    document.getElementById('fase-jogador').style.display = 'none';
+    document.getElementById('fase-login-jogador').style.display = 'none';
+    document.getElementById('fase-login-narrador').style.display = 'none';
     document.getElementById('fase-selecao').style.display = 'block';
 }
 
-window.fazerLoginJogador = function() {
-    const email = document.getElementById('player-email').value;
-    const pass = document.getElementById('player-pass').value;
-    const msg = document.getElementById('error-msg');
-    
+window.fazerLoginNarrador = function() {
+    const email = document.getElementById('narrador-email').value;
+    const pass = document.getElementById('narrador-pass').value;
+    const msg = document.getElementById('error-msg-narrador');
+
     if(!email || !pass) { msg.innerText = "Preencha tudo."; return; }
     msg.innerText = "Entrando...";
 
     signInWithEmailAndPassword(auth, email, pass)
     .then((userCredential) => {
+        if(userCredential.user.email === EMAIL_MESTRE) {
+            window.location.href = 'admin.html';
+        } else {
+            msg.innerText = "Este login não é de narrador.";
+        }
+    })
+    .catch((error) => {
+        msg.innerText = "Erro: " + error.message;
+    });
+}
+
+window.fazerLoginJogador = function() {
+    const email = document.getElementById('player-email').value;
+    const pass = document.getElementById('player-pass').value;
+    const msg = document.getElementById('error-msg-player');
+    
+    if(!email || !pass) { msg.innerText = "Preencha tudo."; return; }
+    msg.innerText = "Verificando...";
+
+    signInWithEmailAndPassword(auth, email, pass)
+    .then((userCredential) => {
         currentUser = userCredential.user;
-        document.getElementById('fase-jogador').style.display = 'none';
+        document.getElementById('fase-login-jogador').style.display = 'none';
         document.getElementById('fase-personagem').style.display = 'block';
     })
     .catch((error) => {
         msg.innerText = "Login inválido.";
-        console.error(error);
     });
 }
 
@@ -90,8 +114,8 @@ function salvarNaNuvem() {
         ultimoAcesso: Date.now()
     });
 
-    set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
     set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
+    set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
 }
 
 async function carregarEstadoDaNuvem() {

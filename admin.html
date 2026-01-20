@@ -9,18 +9,7 @@
 </head>
 <body>
 
-    <div id="login-screen-admin">
-        <div class="admin-box">
-            <h1>Acesso do Narrador</h1>
-            <input type="email" id="admin-email" placeholder="Email" class="input-login">
-            <input type="password" id="admin-pass" placeholder="Senha" class="input-login">
-            <button class="btn-main" onclick="adminLogin()">Entrar</button>
-            <br>
-            <button class="btn-voltar" onclick="window.location.href='index.html'">Voltar</button>
-        </div>
-    </div>
-
-    <div id="admin-container" style="display: none;">
+    <div id="admin-container">
         <div class="admin-header">
             <h1>Gestão da Mesa</h1>
             <div>
@@ -31,7 +20,7 @@
 
         <div style="display: flex; gap: 40px; align-items: flex-start; justify-content: center;">
             
-            <div class="admin-box" style="width: 300px;">
+            <div class="admin-box" style="width: 300px; padding: 20px;">
                 <h3>Criar Novo Jogador</h3>
                 <input type="email" id="new-user-email" placeholder="Email do Jogador" class="input-login">
                 <input type="password" id="new-user-pass" placeholder="Senha" class="input-login">
@@ -67,28 +56,22 @@
         const app = initializeApp(firebaseConfig, "primary");
         const auth = getAuth(app);
         const db = getDatabase(app);
-
-        // SECONDARY APP FOR USER CREATION (Prevents Admin logout)
         const secondaryApp = initializeApp(firebaseConfig, "Secondary");
         const secondaryAuth = getAuth(secondaryApp);
 
-        window.adminLogin = function() {
-            const e = document.getElementById('admin-email').value;
-            const p = document.getElementById('admin-pass').value;
-            signInWithEmailAndPassword(auth, e, p).catch(err => alert("Erro: " + err.message));
-        }
+        const EMAIL_MESTRE = "mestre@rpg.com";
+
+        onAuthStateChanged(auth, user => {
+            if(!user || user.email !== EMAIL_MESTRE) {
+                window.location.href = 'index.html';
+            } else {
+                carregarUsuarios();
+            }
+        });
 
         window.fazerLogout = function() {
             signOut(auth).then(() => window.location.href = 'index.html');
         }
-
-        onAuthStateChanged(auth, user => {
-            if(user) {
-                document.getElementById('login-screen-admin').style.display = 'none';
-                document.getElementById('admin-container').style.display = 'block';
-                carregarUsuarios();
-            }
-        });
 
         window.criarUsuario = function() {
             const email = document.getElementById('new-user-email').value;

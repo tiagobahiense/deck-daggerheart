@@ -10,25 +10,17 @@
     -webkit-user-drag: none;
 }
 
-img {
-    pointer-events: none;
-}
+img { pointer-events: none; }
 
 body {
-    margin: 0;
-    padding: 0;
+    margin: 0; padding: 0;
     font-family: 'MedievalSharp', cursive;
-    background: #000;
-    color: #fff;
-    height: 100vh;
-    overflow: hidden;
+    background: #000; color: #fff;
+    height: 100vh; overflow: hidden;
 }
 
-/* --- TELAS DE FUNDO E LOGIN --- */
-
-#login-screen, #start-screen, #login-screen-mestre, #login-screen-admin, #loading-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
+#login-screen, #start-screen, #login-screen-mestre, #loading-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: url('img/background_epico.png') no-repeat center center/cover;
     z-index: 9999;
     display: flex; justify-content: center; align-items: center; flex-direction: column;
@@ -37,14 +29,10 @@ body {
 #loading-overlay { background: #000; color: var(--gold); font-size: 2rem; }
 
 .login-box, .start-content, .admin-box {
-    background: var(--dark-overlay);
-    padding: 40px;
-    border: 2px solid var(--gold);
-    border-radius: 15px;
-    text-align: center;
-    box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-    width: 350px;
-    max-width: 90%;
+    background: var(--dark-overlay); padding: 40px;
+    border: 2px solid var(--gold); border-radius: 15px;
+    text-align: center; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+    width: 350px; max-width: 90%;
     animation: fadeIn 0.5s ease-in-out;
 }
 
@@ -61,8 +49,6 @@ body {
 .input-login:focus { border-color: var(--gold); outline: none; }
 
 #error-msg { color: #ff4444; font-size: 0.9rem; margin-top: 10px; min-height: 20px; }
-
-/* --- BOTÕES GERAIS --- */
 
 button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2s; }
 
@@ -84,8 +70,6 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 }
 .btn-voltar:hover { background: var(--gold) !important; color: #000 !important; }
 
-/* --- ADMIN PANEL --- */
-
 #admin-container { padding: 20px; height: 100vh; overflow-y: auto; background: #111; }
 .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
 .admin-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
@@ -95,8 +79,6 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 .btn-reset-hand { background: #8b0000; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 0.7rem; }
 .btn-nav { background: #333; color: #fff; padding: 10px 20px; border: 1px solid #555; border-radius: 5px; text-decoration: none; font-size: 1rem; }
 .btn-nav:hover { background: #555; }
-
-/* --- INTERFACE DE JOGO (TABULEIRO) --- */
 
 #app-container {
     height: 100vh; width: 100vw;
@@ -123,8 +105,6 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 }
 
 #area-jogo { flex-grow: 1; position: relative; width: 100%; overflow-y: auto; }
-
-/* --- MESA E SLOTS --- */
 
 #mesa-area { padding-top: 30px; display: flex; justify-content: center; gap: 40px; align-items: flex-start; }
 
@@ -167,8 +147,6 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 }
 .btn-limpar:hover { background: #ff0000; transform: scale(1.1); }
 
-/* --- DECK E RESERVA --- */
-
 #deck-container-wrapper { width: 100%; display: flex; justify-content: flex-end; padding-right: 5%; height: 0; pointer-events: none; }
 #deck-area {
     position: relative; top: -150px; width: 120px; cursor: pointer; text-align: center; transition: transform 0.2s; z-index: 60; pointer-events: auto;
@@ -188,8 +166,6 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
     width: 70px; height: 100px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 5px; opacity: 0.7; cursor: pointer; transition: 0.3s; filter: grayscale(0.8);
 }
 .carta-reserva:hover { transform: scale(2.5) translateY(-20px); z-index: 200; opacity: 1; filter: grayscale(0); }
-
-/* --- MÃO DO JOGADOR --- */
 
 #mao-area {
     height: 35vh; width: 100%;
@@ -215,8 +191,6 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
     white-space: nowrap; border: 1px solid var(--gold); pointer-events: none; z-index: 10000;
 }
 
-/* --- TOKENS E ESTADOS --- */
-
 .token-badge {
     position: absolute; top: -10px; left: 50%; transform: translateX(-50%);
     width: 28px; height: 28px; background: #fff; color: #000; border-radius: 50%;
@@ -229,8 +203,6 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 .token-3 { background: #ffccbc; color: #bf360c; }
 .token-4 { background: #f8bbd0; color: #880e4f; }
 .token-5 { background: #e1bee7; color: #4a148c; }
-
-/* --- MODAIS E GRIMÓRIO --- */
 
 .modal {
     display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -267,8 +239,6 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 }
 @keyframes pulse { 0% { opacity: 0.6; } 50% { opacity: 1; } 100% { opacity: 0.6; } }
 
-/* --- MODAL DECISÃO --- */
-
 .modal-decisao-content {
     background: #1a1510; border: 2px solid var(--gold); border-radius: 10px;
     padding: 30px; text-align: center; display: flex; flex-direction: column;
@@ -289,8 +259,6 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
     box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); width: 100%; margin-bottom: 10px;
 }
 .btn-confirmar:hover { background: #fff; }
-
-/* --- MOBILE --- */
 
 @media (max-width: 768px) {
     #area-jogo {

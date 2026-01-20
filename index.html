@@ -20,16 +20,27 @@
             </div>
         </div>
 
-        <div class="login-box" id="fase-jogador" style="display: none;">
+        <div class="login-box" id="fase-login-jogador" style="display: none;">
             <h1>Acesso do Jogador</h1>
-            <p>Use o login criado pelo Mestre</p>
+            <p>Insira suas credenciais</p>
             
-            <input type="email" id="player-email" placeholder="Login (E-mail)" class="input-login">
+            <input type="email" id="player-email" placeholder="Email" class="input-login">
             <input type="password" id="player-pass" placeholder="Senha" class="input-login">
-            
-            <div id="error-msg"></div>
+            <div id="error-msg-player" style="color: red; font-size: 0.9rem; margin-top: 5px;"></div>
             
             <button class="btn-entrar" onclick="fazerLoginJogador()">Entrar</button>
+            <button class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
+        </div>
+
+        <div class="login-box" id="fase-login-narrador" style="display: none;">
+            <h1>Acesso do Narrador</h1>
+            <p>Área Restrita</p>
+            
+            <input type="email" id="narrador-email" placeholder="Email" class="input-login">
+            <input type="password" id="narrador-pass" placeholder="Senha" class="input-login">
+            <div id="error-msg-narrador" style="color: red; font-size: 0.9rem; margin-top: 5px;"></div>
+            
+            <button class="btn-entrar" onclick="fazerLoginNarrador()">Acessar Admin</button>
             <button class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
         </div>
 
