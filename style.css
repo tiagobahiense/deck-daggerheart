@@ -541,10 +541,10 @@ button {
 
 /* --- ESTADO DE DESCANSO (CINZA) --- */
 .carta.indisponivel {
-    filter: var(--resting-gray);
+    filter: grayscale(1) brightness(0.8) saturate(0.5) drop-shadow(0 5px 10px rgba(0, 0, 0, 0.8));
 }
 .carta.indisponivel:hover {
-    filter: var(--resting-gray);
+    filter: grayscale(1) brightness(0.8) saturate(0.5) drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
 }
 
 /* --- TOKENS E BADGES --- */
