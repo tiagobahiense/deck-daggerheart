@@ -152,8 +152,9 @@
             </div>
             <div class="botoes-decisao">
                 <button class="btn-confirmar" onclick="confirmarEdicao()">OK / Voltar</button>
-                <button class="btn-reserva" onclick="moverParaReserva()">Reserva</button>
-                <button class="btn-deck" onclick="devolverAoDeck()">Devolver ao Deck</button>
+                <button class="btn-reserva" id="btn-para-reserva" onclick="moverParaReserva()" style="display: none;">Para Reserva</button>
+                <button class="btn-deck" id="btn-devolver-mao" onclick="devolverParaMao()" style="display: none;">Devolver à Mão</button>
+                <button class="btn-deck" id="btn-devolver-deck" onclick="devolverAoDeck()" style="display: none;">Devolver ao Deck</button>
             </div>
         </div>
     </div>

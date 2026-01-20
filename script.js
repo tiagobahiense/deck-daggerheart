@@ -124,6 +124,12 @@ window.abrirDecisaoReserva = function(idx) {
     cartaEmTransitoIndex = idx;
     origemTransito = 'reserva';
     const c = reservaDoJogador[idx];
+    
+    // Mostra botões corretos para carta da reserva
+    document.getElementById('btn-para-reserva').style.display = 'none';
+    document.getElementById('btn-devolver-mao').style.display = 'inline-block';
+    document.getElementById('btn-devolver-deck').style.display = 'none';
+    
     const preview = document.getElementById('preview-decisao');
     if (preview) {
         preview.style.backgroundImage = `url('${c.caminho}')`;
@@ -553,6 +559,12 @@ window.abrirDecisao = function(idx) {
     cartaEmTransitoIndex = idx;
     origemTransito = 'mao';
     const c = maoDoJogador[idx];
+    
+    // Mostra botões corretos para carta da mão
+    document.getElementById('btn-para-reserva').style.display = 'inline-block';
+    document.getElementById('btn-devolver-mao').style.display = 'none';
+    document.getElementById('btn-devolver-deck').style.display = 'inline-block';
+    
     const preview = document.getElementById('preview-decisao');
     if (preview) {
         preview.style.backgroundImage = `url('${c.caminho}')`;
@@ -721,6 +733,31 @@ window.devolverAoDeck = function() {
         window.fecharDecisao();
         renderizar();
         salvarNaNuvem();
+    }
+};
+
+window.devolverParaMao = function() {
+    if (origemTransito === 'reserva') {
+        const cartaDaReserva = reservaDoJogador[cartaEmTransitoIndex];
+        
+        // Reseta tokens e estado da carta
+        cartaDaReserva.tokens = 0;
+        cartaDaReserva.estado = 'ativo';
+        
+        if (maoDoJogador.length < LIMITE_MAO) {
+            // Há espaço na mão - adiciona normalmente
+            maoDoJogador.push(cartaDaReserva);
+            reservaDoJogador.splice(cartaEmTransitoIndex, 1);
+            window.fecharDecisao();
+            window.fecharReserva();
+            renderizar();
+            salvarNaNuvem();
+        } else {
+            // Mão cheia - abre modal de troca
+            cartaDaReservaParaResgatar = { carta: cartaDaReserva, indiceReserva: cartaEmTransitoIndex };
+            window.fecharDecisao();
+            window.mostrarModalTroca();
+        }
     }
 };
 
