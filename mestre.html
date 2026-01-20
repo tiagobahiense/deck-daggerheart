@@ -6,6 +6,12 @@
     <title>Mestre - Daggerheart</title>
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
+        /* PROTEÇÃO: Bloqueia seleção e arrasto na tela do mestre também */
+        * {
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+        
         body { 
             background: #111; 
             color: #d4af37; 
@@ -72,6 +78,7 @@
             transition: 0.2s; 
             cursor: help;
             background-color: #000;
+            pointer-events: none; /* Imagem segura, o mouse atravessa */
         }
         
         .mini-carta:hover { 
@@ -81,9 +88,8 @@
             box-shadow: 0 0 20px #000; 
         }
         
-        /* Estilo específico para reserva para diferenciar levemente (opcional) */
         .carta-reserva-visual {
-            opacity: 0.7; /* Um pouco mais transparente para indicar que está guardada */
+            opacity: 0.7;
             filter: grayscale(0.6);
         }
         .carta-reserva-visual:hover {
@@ -130,7 +136,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // SUA CONFIGURAÇÃO REAIS
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
             authDomain: "deck-daggerheart.firebaseapp.com",
@@ -142,11 +147,14 @@
             measurementId: "G-20TB05E9N2"
         };
 
-        // Inicializa Firebase
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Função de Banir
+        // --- SEGURANÇA NA TELA DO MESTRE ---
+        document.addEventListener('contextmenu', event => event.preventDefault());
+        document.addEventListener('dragstart', event => event.preventDefault());
+        // ------------------------------------
+
         window.removerJogador = function(nome) {
             if(confirm(`Tem certeza que deseja remover ${nome} da mesa? Isso apagará as cartas dele.`)) {
                 remove(ref(db, `mesa_rpg/jogadores/${nome}`))
@@ -155,7 +163,6 @@
             }
         }
 
-        // Conecta na lista de jogadores
         const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
 
         onValue(jogadoresRef, (snapshot) => {
@@ -174,7 +181,6 @@
                 const card = document.createElement('div');
                 card.className = 'card-jogador';
                 
-                // 1. Monta a Mão
                 let htmlMao = "";
                 if(p.mao && p.mao.length > 0) {
                     p.mao.forEach(c => {
@@ -184,7 +190,6 @@
                     htmlMao = "<span class='status-vazio'>Mão vazia</span>";
                 }
 
-                // 2. Monta os Slots Ativos
                 let htmlSlots = "";
                 if(p.slots) {
                     const ordem = ['Ancestralidade', 'Comunidade', 'Fundamental', 'Especializacao', 'Maestria'];
@@ -196,23 +201,16 @@
                 }
                 if(htmlSlots === "") htmlSlots = "<span class='status-vazio'>Nenhum ativo</span>";
 
-                // 3. Monta a Reserva (AGORA COM CARTAS VISÍVEIS)
                 let htmlReserva = "";
                 if(p.reserva && p.reserva.length > 0) {
-                     // Adicionamos um cabeçalho
                      htmlReserva = `<div class="label">Reserva (${p.reserva.length})</div>`;
-                     
-                     // Criamos um grid para as cartas da reserva
                      let cartasReservaHTML = "";
                      p.reserva.forEach(c => {
-                         // Adicionei uma classe extra 'carta-reserva-visual' se quiser estilizar diferente (ex: mais escuro)
                          cartasReservaHTML += `<div class="mini-carta carta-reserva-visual" style="background-image: url('${c.caminho}')" title="Reserva: ${c.nome}"></div>`;
                      });
-                     
                      htmlReserva += `<div class="grid-mini">${cartasReservaHTML}</div>`;
                 }
 
-                // Renderiza o Card
                 card.innerHTML = `
                     <div class="nome">${nome}</div>
                     

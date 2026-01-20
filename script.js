@@ -14,7 +14,6 @@ const firebaseConfig = {
     measurementId: "G-20TB05E9N2"
 };
 
-// Inicializa o Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
@@ -31,7 +30,6 @@ let slotsFixos = {
     'Maestria': null 
 };
 
-// Variáveis de controle
 let cartaEmTransitoIndex = null; 
 let origemTransito = null; 
 let slotDestinoAtual = null;
@@ -39,7 +37,23 @@ let slotDestinoAtual = null;
 const LIMITE_MAO = 5;
 const audio = document.getElementById('bg-music');
 
-// --- FUNÇÃO DE SALVAMENTO ---
+// --- SEGURANÇA: BLOQUEIO DE CLIQUE DIREITO E DOWNLOAD ---
+// Impede o menu de contexto (clique direito) em toda a página
+document.addEventListener('contextmenu', event => event.preventDefault());
+
+// Impede que as imagens sejam arrastadas para a área de trabalho
+document.addEventListener('dragstart', event => event.preventDefault());
+
+// (Opcional) Impede atalhos de teclado como Ctrl+S ou Ctrl+U
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey && (e.key === 's' || e.key === 'u')) {
+        e.preventDefault();
+        // console.log("Salvar bloqueado");
+    }
+});
+// ---------------------------------------------------------
+
+
 function salvarNaNuvem() {
     if (!nomeJogador) return;
     set(ref(db, 'mesa_rpg/jogadores/' + nomeJogador), {
@@ -50,7 +64,6 @@ function salvarNaNuvem() {
     }).catch((e) => console.error("Erro ao salvar:", e));
 }
 
-// --- FUNÇÃO DE CARREGAMENTO (RECUPERAR SESSÃO) ---
 async function carregarEstadoDaNuvem() {
     const dbRef = ref(db);
     try {
@@ -58,68 +71,51 @@ async function carregarEstadoDaNuvem() {
         if (snapshot.exists()) {
             const dados = snapshot.val();
             
-            // Restaura as variáveis
             maoDoJogador = dados.mao || [];
             reservaDoJogador = dados.reserva || [];
             if (dados.slots) slotsFixos = dados.slots;
 
-            // Restaura o visual da Mão e Reserva
             renderizar();
 
-            // Restaura o visual dos Slots Fixos (Mesa)
             Object.keys(slotsFixos).forEach(key => {
                 if (slotsFixos[key]) {
                     const div = document.getElementById(`slot-${key}`);
-                    // Limpa se tiver algo
                     const imgOld = div.querySelector('img');
                     if(imgOld) imgOld.remove();
                     
-                    // Cria imagem
                     const img = document.createElement('img');
                     img.src = slotsFixos[key].caminho;
                     div.appendChild(img);
                     
-                    // Mostra botão limpar
                     const btn = div.querySelector('.btn-limpar');
                     if(btn) btn.style.display = 'flex';
                 }
             });
-            console.log("Sessão restaurada com sucesso!");
         }
     } catch (error) {
         console.error("Erro ao recuperar dados:", error);
     }
 }
 
-// --- FUNÇÕES EXPOSTAS AO WINDOW ---
-
-// 1. Início e Login
 window.iniciarExperiencia = async function() {
     const input = document.getElementById('nome-personagem');
     if (!input.value.trim()) { 
         alert("Por favor, identifique seu personagem!"); 
         return; 
     }
-    
     nomeJogador = input.value.trim().toUpperCase();
     
-    // Troca de telas
     document.getElementById('start-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
     setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
     
-    // Configurações iniciais
     window.setVolume();
     audio.play().catch(() => console.log("Áudio aguardando interação."));
     
-    // 1. Carrega o catálogo de cartas
     await carregarDados();
-
-    // 2. Verifica se o jogador já existe e restaura as cartas
     await carregarEstadoDaNuvem();
 }
 
-// 2. Controles de Áudio
 window.toggleMusic = function() {
     const btn = document.getElementById('btn-music');
     if (audio.paused) { 
@@ -135,7 +131,6 @@ window.setVolume = function() {
     audio.volume = document.getElementById('volume').value;
 }
 
-// 3. Carregamento do JSON
 async function carregarDados() {
     try {
         const r = await fetch('./lista_cartas.json');
@@ -143,7 +138,6 @@ async function carregarDados() {
     } catch (e) { console.error("Erro no JSON", e); }
 }
 
-// --- GRIMÓRIO ---
 window.abrirGrimorio = function(tipo, slotDestino = null) {
     const modal = document.getElementById('grimorio-modal');
     const grid = document.getElementById('grid-cartas');
@@ -185,7 +179,6 @@ function selecionarCarta(carta) {
     else adicionarNaMao(carta);
 }
 
-// --- SLOTS FIXOS ---
 window.preencherSlotFixo = function(carta, idSlot) {
     slotsFixos[idSlot] = carta;
     salvarNaNuvem(); 
@@ -214,14 +207,13 @@ window.limparSlot = function(idSlot, evt) {
     if(btn) btn.style.display = 'none';
 }
 
-// --- MÃO E RESERVA ---
 function adicionarNaMao(carta) {
     if (maoDoJogador.length < LIMITE_MAO) {
         maoDoJogador.push(carta);
         renderizar();
         salvarNaNuvem(); 
     } else {
-        if(confirm("Mão cheia. Enviar para a Reserva?")) {
+        if(confirm("Sua mão está cheia (5 cartas). Deseja enviar esta carta para a Reserva (Mochila)?")) {
             reservaDoJogador.push(carta);
             renderizar();
             salvarNaNuvem(); 
@@ -274,7 +266,6 @@ window.fecharDecisao = function() {
     cartaEmTransitoIndex = null;
 }
 
-// --- RENDERIZAÇÃO ---
 function renderizar() {
     const divMao = document.getElementById('cartas-mao');
     divMao.innerHTML = '';

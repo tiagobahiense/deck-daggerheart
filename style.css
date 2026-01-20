@@ -3,9 +3,23 @@
     --modal-bg: rgba(20, 15, 10, 0.95);
 }
 
+/* --- PROTEÇÃO GLOBAL (BLOQUEIO DE SELEÇÃO) --- */
 * {
     box-sizing: border-box;
-    user-select: none;
+    user-select: none; /* Ninguém consegue selecionar texto ou imagem */
+    -webkit-user-drag: none; /* Impede arrastar imagens (Chrome/Safari) */
+    -moz-user-drag: none; /* Impede arrastar imagens (Firefox) */
+    -ms-user-drag: none; /* Impede arrastar imagens (Edge) */
+}
+
+/* PROTEÇÃO DE IMAGEM: 
+   Isso faz com que o mouse "atravesse" a imagem. 
+   O navegador não sabe que você clicou numa imagem, 
+   então não oferece "Salvar imagem como".
+   O clique é registrado na DIV pai (o slot), então o jogo funciona normal.
+*/
+img {
+    pointer-events: none; 
 }
 
 body {
@@ -15,7 +29,7 @@ body {
     background: #000;
     color: #fff;
     height: 100vh;
-    overflow: hidden; /* Impede rolagem na página inteira, apenas dentro do app */
+    overflow: hidden;
 }
 
 /* --- TELA DE START --- */
@@ -84,7 +98,7 @@ body {
     display: flex;
     gap: 10px;
     align-items: center;
-    z-index: 500; /* Garante que fique acima das cartas */
+    z-index: 500;
 }
 
 #btn-music {
@@ -121,15 +135,14 @@ body {
     box-shadow: 0 0 30px #000;
 }
 
-/* --- ÁREA DE JOGO (Mesa + Deck + Reserva) --- */
-/* Esta área ocupa o espaço entre o topo e a mão, permitindo scroll se necessário */
+/* --- ÁREA DE JOGO --- */
 #area-jogo {
     flex-grow: 1;
     position: relative;
     width: 100%;
 }
 
-/* --- MESA (Slots Fixos) --- */
+/* --- MESA --- */
 #mesa-area {
     padding-top: 30px;
     display: flex;
@@ -210,6 +223,8 @@ body {
     height: 100%;
     border-radius: 10px;
     object-fit: contain;
+    /* Extra segurança para imagem */
+    pointer-events: none; 
 }
 
 .label-slot {
@@ -255,7 +270,7 @@ body {
     font-size: 1.2rem;
     cursor: pointer;
     z-index: 200;
-    display: none; /* JS controla isso */
+    display: none;
     align-items: center;
     justify-content: center;
     padding-bottom: 3px;
@@ -267,7 +282,7 @@ body {
     transform: scale(1.1);
 }
 
-/* --- DECK (Pote) --- */
+/* --- DECK --- */
 #deck-area {
     position: absolute;
     right: 3%;
@@ -286,6 +301,7 @@ body {
 .pote-img {
     width: 100%;
     drop-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
+    pointer-events: none;
 }
 
 .label-deck {
@@ -439,7 +455,7 @@ body {
     gap: 15px;
     overflow-y: auto;
     justify-content: center;
-    padding: 100px 40px; /* Padding extra para zoom */
+    padding: 100px 40px;
 }
 
 .carta-modal {
@@ -500,10 +516,8 @@ body {
 .btn-cancelar { background: #444; }
 
 
-/* --- AJUSTES MOBILE / RESPONSIVIDADE --- */
+/* --- AJUSTES MOBILE --- */
 @media (max-width: 768px) {
-    
-    /* Permite que a área de jogo role se ficar muito comprida */
     #area-jogo {
         overflow-y: auto;
         display: flex;
@@ -512,8 +526,6 @@ body {
         gap: 20px;
         padding-bottom: 20px;
     }
-
-    /* Mais espaço no topo para o volume não cobrir a Ancestralidade */
     #mesa-area {
         padding-top: 60px; 
         flex-direction: column;
@@ -521,17 +533,14 @@ body {
         gap: 15px;
         width: 100%;
     }
-
     .grupo-fixo {
         width: 95%;
         max-width: 350px;
     }
-    
     .slot-fixo { width: 80px; height: 110px; }
     .slot-classe { width: 90px; height: 125px; }
     .seta-evolucao { font-size: 1rem; }
-
-    /* DECK: Crucial - muda para position relative para não flutuar em cima de nada */
+    
     #deck-area {
         position: relative; 
         top: auto;
@@ -539,29 +548,24 @@ body {
         margin: 10px auto;
         width: 100px;
     }
-
-    /* RESERVA: Entra no fluxo normal da página */
+    
     #reserva-area {
         position: relative;
         bottom: auto;
         margin-bottom: 10px;
     }
-    
     #cartas-reserva { min-height: 80px; }
     .carta-reserva { width: 50px; height: 75px; }
 
-    /* MÃO */
     #mao-area {
         height: 30vh;
         background-position: center bottom;
     }
-    
     .carta {
         width: 90px;
         height: 135px;
         margin: 0 -20px;
     }
-    
     .carta:hover {
         transform: translateY(-40px) scale(1.4) !important;
         margin: 0 10px;
