@@ -50,6 +50,8 @@ const imageObserver = new IntersectionObserver((entries) => {
                 };
                 img.onerror = () => {
                     console.warn(`Erro ao carregar imagem: ${src}`);
+                    // Usa cor de fundo em caso de erro
+                    cardDiv.style.backgroundColor = '#2a2a2a';
                 };
                 img.src = src;
                 imageObserver.unobserve(cardDiv);
@@ -226,7 +228,7 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
             const div = document.createElement('div');
             div.className = 'carta-modal lazy-card';
             div.dataset.src = carta.caminho;
-            div.style.backgroundImage = `url('img/card_back_placeholder.png')`; // Placeholder inicial
+            div.style.backgroundColor = '#1a1a1a';
             div.onclick = () => selecionarCarta(carta);
             grid.appendChild(div);
             imageObserver.observe(div);
@@ -252,7 +254,7 @@ function renderizar() {
         const el = document.createElement('div');
         el.className = 'carta lazy-card';
         el.dataset.src = carta.caminho;
-        el.style.backgroundImage = `url('img/card_back_placeholder.png')`; // Placeholder inicial
+        el.style.backgroundColor = '#1a1a1a';
 
         const centro = (maoDoJogador.length - 1) / 2;
         const rotacao = (i - centro) * 4;
@@ -286,7 +288,7 @@ function renderizar() {
         const el = document.createElement('div');
         el.className = 'carta-reserva lazy-card';
         el.dataset.src = carta.caminho;
-        el.style.backgroundImage = `url('img/card_back_placeholder.png')`; // Placeholder inicial
+        el.style.backgroundColor = '#1a1a1a';
         el.onclick = () => {
             if (typeof window.resgatarReserva === 'function') {
                 window.resgatarReserva(i);
