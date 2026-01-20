@@ -2,8 +2,8 @@
     --gold: #d4af37;
     --modal-bg: rgba(20, 15, 10, 0.95);
     --dark-overlay: rgba(0, 0, 0, 0.95);
-    --resting-gray: grayscale(100%) brightness(50%);
-    --resting-opacity: 0.5;
+    --resting-opacity: 0.7;
+    --resting-gray: brightness(0.8) saturate(0.5);
 }
 
 /* --- RESETS GERAIS --- */
@@ -253,7 +253,7 @@ button {
     display: flex;
     justify-content: center;
     gap: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     padding: 10px;
     background: rgba(0, 0, 0, 0.5);
     border-radius: 10px;
@@ -541,27 +541,11 @@ button {
 
 /* --- ESTADO DE DESCANSO (CINZA) --- */
 .carta.indisponivel {
-    filter: var(--resting-gray) brightness(70%);
+    filter: var(--resting-gray);
     opacity: var(--resting-opacity);
 }
 .carta.indisponivel:hover {
-    filter: var(--resting-gray) brightness(80%);
-}
-.carta:hover::after {
-    content: attr(data-status);
-    position: absolute;
-    top: -30px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.7rem;
-    white-space: nowrap;
-    border: 1px solid var(--gold);
-    pointer-events: none;
-    z-index: 10000;
+    filter: var(--resting-gray);
 }
 
 /* --- TOKENS E BADGES --- */
@@ -633,120 +617,24 @@ button {
     font-size: 1.2rem;
 }
 
-#grid-cartas {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    overflow-y: auto;
-    justify-content: center;
-    padding: 100px 40px;
-}
-
-.carta-modal {
-    width: 105px;
-    height: 150px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: transform 0.2s ease-out;
-    position: relative;
-}
-.carta-modal:hover {
-    transform: scale(2.2);
-    z-index: 6000;
-    filter: drop-shadow(0 0 20px var(--gold));
-}
-
-.lazy-card {
-    background-color: #1a1510;
-    background-image: url('img/card_back_placeholder.png');
-    border: 1px solid #333;
-    animation: pulse 1.5s infinite ease-in-out;
-}
-@keyframes pulse {
-    0% { opacity: 0.6; }
-    50% { opacity: 1; }
-    100% { opacity: 0.6; }
-}
-
-.modal-decisao-content {
-    background: #1a1510;
-    border: 2px solid var(--gold);
-    border-radius: 10px;
-    padding: 30px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-}
-.carta-preview-decisao {
-    width: 140px;
-    height: 200px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-}
-.botoes-decisao {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-.botoes-decisao button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: #fff;
-    font-weight: bold;
-}
-.grupo-tokens {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    background: #000;
-    padding: 10px;
-    border-radius: 8px;
-    border: 1px solid #333;
-}
-
-.btn-reserva { background: #2e8b57; }
-.btn-deck { background: #8b0000; }
-.btn-cancelar { background: #444; }
-.btn-token { background: #1976d2; }
-.btn-estado { background: #616161; }
-.btn-confirmar {
-    background: var(--gold);
-    color: #000 !important;
-    font-size: 1.1rem;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
-    width: 100%;
-    margin-bottom: 10px;
-}
-.btn-confirmar:hover {
-    background: #fff;
-}
-
 /* --- VISUAL ESPECÍFICO DO MESTRE/ADMIN --- */
 .card-jogador {
     background: #1a1a1a;
     border: 1px solid #444;
     border-radius: 8px;
-    width: 320px;
+    width: 200px;
     padding: 15px;
     display: flex;
     flex-direction: column;
     gap: 10px;
     box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     position: relative;
+    margin-right: 10px;
 }
 
 .nome {
-    font-size: 1.4rem;
-    color: #fff;
+    font-size: 1.2rem;
+    color: var(--gold);
     text-align: center;
     border-bottom: 1px solid #333;
     padding-bottom: 5px;

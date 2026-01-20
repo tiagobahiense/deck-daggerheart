@@ -56,7 +56,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -167,8 +167,7 @@
                         charHtml += `
                             <li>
                                 ${charName}
-                                <button class="btn-reset-hand" onclick="resetarMao('${charName}')">Resetar Tudo</button>
-                                <button class="btn-banir" onclick="removerPerfil('${charName}')">💀 Remover Perfil</button>
+                                <button class="btn-banir" onclick="removerPerfil('${uid}', '${charName}', '${data.email}')">💀 Remover Perfil</button>
                             </li>
                         `;
                     });
@@ -176,7 +175,9 @@
                     const div = document.createElement('div');
                     div.className = 'player-card-admin';
                     div.innerHTML = `
-                        <div class="player-email">${data.email}</div>
+                        <div class="player-email">${data.email}
+                            <button class="btn-banir" onclick="removerConta('${uid}', '${data.email}')">💀 Remover Conta</button>
+                        </div>
                         <ul class="char-list" style="list-style: none; padding: 0;">
                             ${charHtml || '<li style="font-style:italic">Sem personagens</li>'}
                         </ul>
@@ -186,35 +187,47 @@
             });
         }
 
-        window.resetarMao = function(charName) {
-            if (confirm(`Apagar TODAS as cartas (mão, reserva e slots) de ${charName}?`)) {
-                // Reseta mão, reserva e slots
-                set(ref(db, `mesa_rpg/jogadores/${charName}/mao`), [])
-                    .then(() => set(ref(db, `mesa_rpg/jogadores/${charName}/reserva`), []))
-                    .then(() => set(ref(db, `mesa_rpg/jogadores/${charName}/slots`), {
-                        'Ancestralidade': null,
-                        'Comunidade': null,
-                        'Fundamental': null,
-                        'Especializacao': null,
-                        'Maestria': null
-                    }))
+        window.removerPerfil = function(uid, charName, email) {
+            if (confirm(`Tem certeza que deseja remover o perfil "${charName}"?`)) {
+                // Remove o perfil da mesa
+                remove(ref(db, `mesa_rpg/jogadores/${charName}`))
                     .then(() => {
-                        alert(`Todas as cartas de ${charName} foram resetadas!`);
+                        // Remove o personagem da lista de characters do usuário
+                        const userRef = ref(db, `mesa_rpg/accounts/${uid}/characters/${charName}`);
+                        return remove(userRef);
+                    })
+                    .then(() => {
+                        alert(`Perfil "${charName}" removido com sucesso!`);
+                        carregarUsuarios();
                     })
                     .catch((error) => {
-                        alert(`Erro ao resetar: ${error.message}`);
+                        alert(`Erro ao remover: ${error.message}`);
                         console.error("Erro detalhado:", error);
                     });
             }
         };
 
-        window.removerPerfil = function(charName) {
-            if (confirm(`Tem certeza que deseja remover o perfil "${charName}"?`)) {
-                // Remove o perfil da mesa
-                remove(ref(db, `mesa_rpg/jogadores/${charName}`))
+        window.removerConta = function(uid, email) {
+            if (confirm(`Tem certeza que deseja remover a conta "${email}" e TODOS os seus personagens?`)) {
+                // Remove todos os personagens da conta
+                get(ref(db, `mesa_rpg/accounts/${uid}/characters`))
+                    .then(snapshot => {
+                        if (snapshot.exists()) {
+                            const chars = snapshot.val();
+                            const promises = [];
+                            Object.keys(chars).forEach(charName => {
+                                promises.push(remove(ref(db, `mesa_rpg/jogadores/${charName}`)));
+                            });
+                            return Promise.all(promises);
+                        }
+                        return Promise.resolve();
+                    })
                     .then(() => {
-                        alert(`Perfil "${charName}" removido com sucesso!`);
-                        // Atualiza a lista de usuários
+                        // Remove a conta
+                        return remove(ref(db, `mesa_rpg/accounts/${uid}`));
+                    })
+                    .then(() => {
+                        alert(`Conta "${email}" e todos os seus personagens foram removidos com sucesso!`);
                         carregarUsuarios();
                     })
                     .catch((error) => {
