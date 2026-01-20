@@ -17,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-const EMAIL_MESTRE = "mestre@rpg.com"; 
+const EMAIL_MESTRE = "tgbahiense@gmail.com"; 
 
 let currentUser = null;
 let nomeJogador = "";

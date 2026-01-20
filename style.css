@@ -19,7 +19,7 @@ body {
     height: 100vh; overflow: hidden;
 }
 
-#login-screen, #start-screen, #login-screen-mestre, #loading-overlay, #login-screen-admin {
+#login-screen, #start-screen, #login-screen-mestre, #login-screen-admin, #loading-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: url('img/background_epico.png') no-repeat center center/cover;
     z-index: 9999;
@@ -56,7 +56,7 @@ body {
 
 .toggle-password {
     position: absolute;
-    right: 10px;
+    right: 15px;
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
@@ -64,6 +64,7 @@ body {
     color: #aaa;
     z-index: 10;
 }
+.toggle-password:hover { color: var(--gold); }
 
 #error-msg, #error-msg-player, #error-msg-narrador { 
     color: #ff4444; font-size: 0.9rem; margin-top: 10px; min-height: 20px; 
@@ -196,8 +197,8 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 
 .carta {
     width: 140px; height: 210px;
-    background-size: contain; background-repeat: no-repeat; background-position: center;
-    border-radius: 10px; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.8));
+    background-size: contain; background-repeat: no-repeat;
+    background-position: center; border-radius: 10px; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.8));
     margin: 0 -30px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     transform-origin: bottom center; cursor: pointer; position: relative;
 }
