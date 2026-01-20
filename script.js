@@ -526,12 +526,16 @@ function salvarUsoDeCartaNaNuvem() {
     const carta = maoDoJogador[cartaEmTransitoIndex];
     if (!carta) return;
     
+    console.log(`📤 Salvando uso de carta: ${carta.nome} - ${nomeJogador}`);
+    
     // Registra o uso da carta no Firebase
     set(ref(db, 'mesa_rpg/jogadores/' + nomeJogador + '/cartaUsada'), {
         caminho: carta.caminho,
         nome: carta.nome || 'Carta',
         timestamp: Date.now()
-    }).catch((e) => console.error("Erro ao salvar uso de carta:", e));
+    }).then(() => {
+        console.log(`✅ Carta usada registrada com sucesso`);
+    }).catch((e) => console.error("❌ Erro ao salvar uso de carta:", e));
 }
 
 // Outras funções mantidas como estavam...

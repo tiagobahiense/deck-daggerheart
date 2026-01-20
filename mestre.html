@@ -42,6 +42,59 @@
         .btn-nav-mestre:hover {
             background: #555;
         }
+        
+        #carta-usada-animada {
+            position: fixed;
+            width: 200px;
+            height: 300px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border-radius: 10px;
+            pointer-events: none;
+            display: none;
+            z-index: 9999;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
+        }
+        
+        #carta-usada-animada.ativa {
+            animation: carta-usar 2.5s ease-in-out forwards;
+        }
+        
+        @keyframes carta-usar {
+            0% {
+                opacity: 1;
+                transform: scale(1) rotate(0deg);
+                filter: drop-shadow(0 0 0px rgba(0, 255, 0, 0));
+            }
+            20% {
+                opacity: 1;
+                transform: scale(1.1) rotate(0deg);
+                filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0.8));
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.5) rotate(-5deg);
+                filter: drop-shadow(0 0 50px rgba(0, 255, 0, 1));
+            }
+            55% {
+                transform: scale(1.5) rotate(5deg);
+            }
+            60% {
+                transform: scale(1.5) rotate(-5deg);
+            }
+            65% {
+                transform: scale(1.5) rotate(5deg);
+            }
+            70% {
+                transform: scale(1.5) rotate(-3deg);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(1.5) rotate(0deg);
+                filter: drop-shadow(0 0 50px rgba(0, 255, 0, 0.5));
+            }
+        }
     </style>
 </head>
 <body>
@@ -204,21 +257,38 @@
                         ${htmlReserva}
                     `;
                     painel.appendChild(card);
-                    
-                    // Listener para detectar quando uma carta foi usada
-                    const cartaUsadaRef = ref(db, `mesa_rpg/jogadores/${nome}/cartaUsada`);
-                    onValue(cartaUsadaRef, (snap) => {
-                        if(snap.exists()) {
-                            const cartaUsada = snap.val();
-                            mostrarAnimacaoCartaUsada(cartaUsada.caminho);
-                        }
-                    });
                 });
+            });
+            
+            // Listener SEPARADO para cartas usadas
+            const jogadoresRef2 = ref(db, 'mesa_rpg/jogadores');
+            onValue(jogadoresRef2, (snapshot) => {
+                const dados = snapshot.val();
+                if(dados) {
+                    Object.keys(dados).forEach(nome => {
+                        const cartaUsadaRef = ref(db, `mesa_rpg/jogadores/${nome}/cartaUsada`);
+                        onValue(cartaUsadaRef, (snap) => {
+                            if(snap.exists()) {
+                                const cartaUsada = snap.val();
+                                console.log(`🎯 Carta usada detectada por ${nome}:`, cartaUsada);
+                                mostrarAnimacaoCartaUsada(cartaUsada.caminho);
+                            }
+                        }, (error) => {
+                            console.error('Erro ao monitorar carta usada:', error);
+                        });
+                    });
+                }
             });
         }
 
         function mostrarAnimacaoCartaUsada(caminhoImagem) {
+            console.log('🎬 Iniciando animação de carta usada:', caminhoImagem);
             const cartaAnimada = document.getElementById('carta-usada-animada');
+            
+            if(!cartaAnimada) {
+                console.error('❌ Container de animação não encontrado!');
+                return;
+            }
             
             cartaAnimada.style.backgroundImage = `url('${caminhoImagem}')`;
             cartaAnimada.style.display = 'block';
@@ -227,13 +297,11 @@
             cartaAnimada.style.left = (window.innerWidth / 2 - 100) + 'px';
             cartaAnimada.style.top = (window.innerHeight / 2 - 150) + 'px';
             
-            // Define a animação de crescimento e aura
-            cartaAnimada.style.setProperty('--dx', '0px');
-            cartaAnimada.style.setProperty('--dy', '0px');
-            
             cartaAnimada.classList.remove('ativa');
             void cartaAnimada.offsetWidth;
             cartaAnimada.classList.add('ativa');
+            
+            console.log('✅ Animação iniciada');
             
             setTimeout(() => {
                 cartaAnimada.style.display = 'none';
