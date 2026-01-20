@@ -180,6 +180,7 @@
         }
 
         window.realizarDescanso = function(tipo) {
+            console.log(`🌙 Restaurando descanso ${tipo} para todos os jogadores...`);
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
             get(jogadoresRef).then(snapshot => {
                 if(snapshot.exists()) {
@@ -189,20 +190,24 @@
                         if(player.mao) {
                             let mudou = false;
                             player.mao.forEach(carta => {
+                                // Se for 'curto', remove apenas cartas em estado 'curto'
                                 if(tipo === 'curto' && carta.estado === 'curto') {
                                     carta.estado = 'ativo';
                                     mudou = true;
                                 }
+                                // Se for 'longo', remove cartas em AMBOS os estados (curto e longo)
                                 if(tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) {
                                     carta.estado = 'ativo';
                                     mudou = true;
                                 }
                             });
                             if(mudou) {
+                                console.log(`✅ Atualizando ${nome}: ${mudou ? 'mudanças encontradas' : 'sem mudanças'}`);
                                 set(ref(db, `mesa_rpg/jogadores/${nome}/mao`), player.mao);
                             }
                         }
                     });
+                    console.log('✨ Descanso restaurado para todos!');
                 }
             });
         }
