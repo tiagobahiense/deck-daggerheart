@@ -31,7 +31,6 @@ let slotDestinoAtual = null;
 const LIMITE_MAO = 5;
 const audio = document.getElementById('bg-music');
 
-// OBSERVER PARA LAZY LOAD
 const imageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -48,6 +47,20 @@ const imageObserver = new IntersectionObserver((entries, observer) => {
 
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('dragstart', event => event.preventDefault());
+
+window.irParaLoginJogador = function() {
+    document.getElementById('fase-selecao').style.display = 'none';
+    document.getElementById('fase-jogador').style.display = 'block';
+}
+
+window.irParaMestre = function() {
+    window.location.href = 'mestre.html';
+}
+
+window.voltarParaSelecao = function() {
+    document.getElementById('fase-jogador').style.display = 'none';
+    document.getElementById('fase-selecao').style.display = 'block';
+}
 
 function salvarNaNuvem() {
     if (!nomeJogador) return;
@@ -148,13 +161,11 @@ window.abrirGrimorio = function(tipo, slotDestino = null) {
     lista.forEach(carta => {
         const div = document.createElement('div');
         div.className = 'carta-modal lazy-card';
-        // Não define backgroundImage direto. Usa dataset e observer.
         div.dataset.src = carta.caminho;
         
         div.onclick = () => selecionarCarta(carta);
         grid.appendChild(div);
         
-        // Inicia observação
         imageObserver.observe(div);
     });
     

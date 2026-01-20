@@ -10,14 +10,27 @@
 <body>
 
     <div id="start-screen">
-        <div class="start-content">
+        
+        <div class="start-content" id="fase-selecao">
             <h1>Grimório Daggerheart</h1>
+            <p>Escolha seu destino</p>
+            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
+                <button onclick="irParaLoginJogador()">Sou Jogador</button>
+                <button onclick="irParaMestre()" style="background: #8b0000; color: #fff; border-color: #ff4444;">Sou Narrador</button>
+            </div>
+        </div>
+
+        <div class="start-content" id="fase-jogador" style="display: none;">
+            <h1>Área do Jogador</h1>
             <p>Identifique-se, aventureiro</p>
             <input type="text" id="nome-personagem" placeholder="Nome do Personagem" autocomplete="off"
                    style="padding: 10px; font-size: 1.2rem; border-radius: 5px; border: none; text-align: center; margin-bottom: 15px; width: 80%;">
             <br>
             <button onclick="iniciarExperiencia()">Entrar na Mesa</button>
+            <br>
+            <button onclick="voltarParaSelecao()" style="background: transparent; border: 1px solid #666; font-size: 0.9rem; margin-top: 10px;">Voltar</button>
         </div>
+
     </div>
 
     <div id="app-container" style="display: none; opacity: 0;">
