@@ -123,7 +123,7 @@ window.fazerLoginNarrador = function() {
             msg.innerText = "✅ Acesso concedido! Redirecionando...";
             debug('Redirecionando para admin.html');
             
-            // Aguarda 500ms antes de redirecionar
+            // Aguarda 500ms antes de redirecionar para garantir
             setTimeout(() => {
                 window.location.href = 'admin.html';
             }, 500);
