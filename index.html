@@ -105,6 +105,20 @@
         <div class="modal-decisao-content">
             <h3>Gerenciar Carta</h3>
             <div class="carta-preview-decisao" id="preview-decisao"></div>
+            
+            <div class="grupo-tokens">
+                <span>Tokens:</span>
+                <button class="btn-token" onclick="alterarToken(-1)">-</button>
+                <span id="label-token-qtd">0</span>
+                <button class="btn-token" onclick="alterarToken(1)">+</button>
+            </div>
+
+            <div class="grupo-tokens">
+                <button class="btn-estado" onclick="alternarEstado('curto')">Gastar (Curto)</button>
+                <button class="btn-estado" onclick="alternarEstado('longo')">Gastar (Longo)</button>
+                <button class="btn-estado" onclick="alternarEstado('ativo')" style="background: #e65100;">Restaurar</button>
+            </div>
+
             <div class="botoes-decisao">
                 <button class="btn-reserva" onclick="moverParaReserva()">Guardar na Reserva</button>
                 <button class="btn-deck" onclick="devolverAoDeck()">Devolver ao Deck</button>

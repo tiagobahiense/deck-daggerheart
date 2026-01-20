@@ -1,8 +1,6 @@
-// --- IMPORTAÇÕES DO FIREBASE ---
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// --- CONFIGURAÇÃO DO FIREBASE ---
 const firebaseConfig = {
     apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
     authDomain: "deck-daggerheart.firebaseapp.com",
@@ -17,7 +15,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// --- ESTADO GLOBAL ---
 let nomeJogador = "";
 let catalogoCartas = [];
 let maoDoJogador = [];
@@ -37,22 +34,8 @@ let slotDestinoAtual = null;
 const LIMITE_MAO = 5;
 const audio = document.getElementById('bg-music');
 
-// --- SEGURANÇA: BLOQUEIO DE CLIQUE DIREITO E DOWNLOAD ---
-// Impede o menu de contexto (clique direito) em toda a página
 document.addEventListener('contextmenu', event => event.preventDefault());
-
-// Impede que as imagens sejam arrastadas para a área de trabalho
 document.addEventListener('dragstart', event => event.preventDefault());
-
-// (Opcional) Impede atalhos de teclado como Ctrl+S ou Ctrl+U
-document.addEventListener('keydown', function(e) {
-    if (e.ctrlKey && (e.key === 's' || e.key === 'u')) {
-        e.preventDefault();
-        // console.log("Salvar bloqueado");
-    }
-});
-// ---------------------------------------------------------
-
 
 function salvarNaNuvem() {
     if (!nomeJogador) return;
@@ -209,11 +192,15 @@ window.limparSlot = function(idSlot, evt) {
 
 function adicionarNaMao(carta) {
     if (maoDoJogador.length < LIMITE_MAO) {
+        carta.tokens = 0;
+        carta.estado = 'ativo';
         maoDoJogador.push(carta);
         renderizar();
         salvarNaNuvem(); 
     } else {
         if(confirm("Sua mão está cheia (5 cartas). Deseja enviar esta carta para a Reserva (Mochila)?")) {
+            carta.tokens = 0;
+            carta.estado = 'ativo';
             reservaDoJogador.push(carta);
             renderizar();
             salvarNaNuvem(); 
@@ -225,8 +212,37 @@ window.abrirDecisao = function(idx) {
     cartaEmTransitoIndex = idx;
     origemTransito = 'mao';
     const c = maoDoJogador[idx];
+    
     document.getElementById('preview-decisao').style.backgroundImage = `url('${c.caminho}')`;
+    document.getElementById('label-token-qtd').innerText = c.tokens || 0;
+    
     document.getElementById('decisao-modal').style.display = 'flex';
+}
+
+window.alterarToken = function(delta) {
+    if(cartaEmTransitoIndex !== null && origemTransito === 'mao') {
+        let card = maoDoJogador[cartaEmTransitoIndex];
+        if(!card.tokens) card.tokens = 0;
+        
+        let novoValor = card.tokens + delta;
+        if(novoValor < 0) novoValor = 0;
+        if(novoValor > 5) novoValor = 5;
+        
+        card.tokens = novoValor;
+        document.getElementById('label-token-qtd').innerText = card.tokens;
+        renderizar();
+        salvarNaNuvem();
+    }
+}
+
+window.alternarEstado = function(novoEstado) {
+    if(cartaEmTransitoIndex !== null && origemTransito === 'mao') {
+        let card = maoDoJogador[cartaEmTransitoIndex];
+        card.estado = novoEstado;
+        renderizar();
+        salvarNaNuvem();
+        window.fecharDecisao();
+    }
 }
 
 window.resgatarReserva = function(idx) {
@@ -274,9 +290,26 @@ function renderizar() {
         const el = document.createElement('div');
         el.className = 'carta';
         el.style.backgroundImage = `url('${c.caminho}')`;
+        
         const centro = (maoDoJogador.length - 1) / 2;
         const rotacao = (i - centro) * 4; 
         el.style.transform = `rotate(${rotacao}deg)`;
+        
+        if(c.estado === 'curto') {
+            el.classList.add('indisponivel');
+            el.setAttribute('data-status', 'Indisponível: Descanso Curto');
+        } else if(c.estado === 'longo') {
+            el.classList.add('indisponivel');
+            el.setAttribute('data-status', 'Indisponível: Descanso Longo');
+        }
+
+        if(c.tokens && c.tokens > 0) {
+            const badge = document.createElement('div');
+            badge.className = `token-badge token-${c.tokens}`;
+            badge.innerText = c.tokens;
+            el.appendChild(badge);
+        }
+
         el.onclick = () => window.abrirDecisao(i);
         divMao.appendChild(el);
     });
