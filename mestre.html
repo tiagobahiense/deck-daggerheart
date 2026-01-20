@@ -57,6 +57,9 @@
         <p>Carregando jogadores...</p>
     </div>
 
+    <!-- Container para animação de carta usada -->
+    <div id="carta-usada-animada" class="carta-tabuleiro-animada"></div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -201,8 +204,41 @@
                         ${htmlReserva}
                     `;
                     painel.appendChild(card);
+                    
+                    // Listener para detectar quando uma carta foi usada
+                    const cartaUsadaRef = ref(db, `mesa_rpg/jogadores/${nome}/cartaUsada`);
+                    onValue(cartaUsadaRef, (snap) => {
+                        if(snap.exists()) {
+                            const cartaUsada = snap.val();
+                            mostrarAnimacaoCartaUsada(cartaUsada.caminho);
+                        }
+                    });
                 });
             });
+        }
+
+        function mostrarAnimacaoCartaUsada(caminhoImagem) {
+            const cartaAnimada = document.getElementById('carta-usada-animada');
+            
+            cartaAnimada.style.backgroundImage = `url('${caminhoImagem}')`;
+            cartaAnimada.style.display = 'block';
+            
+            // Posiciona no centro da tela
+            cartaAnimada.style.left = (window.innerWidth / 2 - 100) + 'px';
+            cartaAnimada.style.top = (window.innerHeight / 2 - 150) + 'px';
+            
+            // Define a animação de crescimento e aura
+            cartaAnimada.style.setProperty('--dx', '0px');
+            cartaAnimada.style.setProperty('--dy', '0px');
+            
+            cartaAnimada.classList.remove('ativa');
+            void cartaAnimada.offsetWidth;
+            cartaAnimada.classList.add('ativa');
+            
+            setTimeout(() => {
+                cartaAnimada.style.display = 'none';
+                cartaAnimada.classList.remove('ativa');
+            }, 2500);
         }
 
     </script>

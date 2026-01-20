@@ -521,6 +521,19 @@ function salvarNaNuvem() {
     }).catch((e) => console.error("Erro ao salvar:", e));
 }
 
+function salvarUsoDeCartaNaNuvem() {
+    if (!nomeJogador || !currentUser || cartaEmTransitoIndex === null) return;
+    const carta = maoDoJogador[cartaEmTransitoIndex];
+    if (!carta) return;
+    
+    // Registra o uso da carta no Firebase
+    set(ref(db, 'mesa_rpg/jogadores/' + nomeJogador + '/cartaUsada'), {
+        caminho: carta.caminho,
+        nome: carta.nome || 'Carta',
+        timestamp: Date.now()
+    }).catch((e) => console.error("Erro ao salvar uso de carta:", e));
+}
+
 // Outras funções mantidas como estavam...
 
 window.preencherSlotFixo = function(carta, idSlot) {
@@ -649,6 +662,9 @@ window.usarCarta = function() {
     const carta = maoDoJogador[cartaEmTransitoIndex];
     const cartaAnimada = document.getElementById('carta-tabuleiro-animada');
     
+    // Fecha o modal IMEDIATAMENTE para permitir ver a animação
+    window.fecharDecisao();
+    
     // Configura a carta animada
     cartaAnimada.style.backgroundImage = `url('${carta.caminho}')`;
     cartaAnimada.style.display = 'block';
@@ -679,9 +695,11 @@ window.usarCarta = function() {
     // Adiciona a classe que dispara a animação
     cartaAnimada.classList.add('ativa');
     
-    // Fecha o modal após a animação
+    // Salva a ação de uso da carta na nuvem
+    salvarUsoDeCartaNaNuvem();
+    
+    // Limpa a animação após terminar
     setTimeout(() => {
-        window.fecharDecisao();
         cartaAnimada.style.display = 'none';
         cartaAnimada.classList.remove('ativa');
     }, 2500);
