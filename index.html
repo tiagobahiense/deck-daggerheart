@@ -124,6 +124,9 @@
             </section>
         </div> 
         <footer id="mao-area"><div id="cartas-mao"></div></footer>
+        
+        <!-- Container para animação de uso de carta -->
+        <div id="carta-tabuleiro-animada" class="carta-tabuleiro-animada"></div>
     </div>
 
     <div id="grimorio-modal" class="modal">
@@ -151,6 +154,7 @@
                 <button class="btn-estado" onclick="definirEstado('longo')">Gastar (Longo)</button>
             </div>
             <div class="botoes-decisao">
+                <button class="btn-usar-carta" id="btn-usar-carta" onclick="usarCarta()" style="display: none;">⚡ Usar Carta</button>
                 <button class="btn-confirmar" onclick="confirmarEdicao()">OK / Voltar</button>
                 <button class="btn-reserva" id="btn-para-reserva" onclick="moverParaReserva()" style="display: none;">Para Reserva</button>
                 <button class="btn-deck" id="btn-devolver-mao" onclick="devolverParaMao()" style="display: none;">Devolver à Mão</button>

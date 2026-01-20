@@ -126,6 +126,7 @@ window.abrirDecisaoReserva = function(idx) {
     const c = reservaDoJogador[idx];
     
     // Mostra botões corretos para carta da reserva
+    document.getElementById('btn-usar-carta').style.display = 'none';
     document.getElementById('btn-para-reserva').style.display = 'none';
     document.getElementById('btn-devolver-mao').style.display = 'inline-block';
     document.getElementById('btn-devolver-deck').style.display = 'none';
@@ -561,6 +562,7 @@ window.abrirDecisao = function(idx) {
     const c = maoDoJogador[idx];
     
     // Mostra botões corretos para carta da mão
+    document.getElementById('btn-usar-carta').style.display = 'inline-block';
     document.getElementById('btn-para-reserva').style.display = 'inline-block';
     document.getElementById('btn-devolver-mao').style.display = 'none';
     document.getElementById('btn-devolver-deck').style.display = 'inline-block';
@@ -639,6 +641,50 @@ window.confirmarEdicao = function() {
     debug('Confirmando edição - renderizando cartas');
     renderizar();
     window.fecharDecisao(); 
+};
+
+window.usarCarta = function() {
+    if (cartaEmTransitoIndex === null || origemTransito !== 'mao') return;
+    
+    const carta = maoDoJogador[cartaEmTransitoIndex];
+    const cartaAnimada = document.getElementById('carta-tabuleiro-animada');
+    
+    // Configura a carta animada
+    cartaAnimada.style.backgroundImage = `url('${carta.caminho}')`;
+    cartaAnimada.style.display = 'block';
+    
+    // Posiciona no canto inferior esquerdo (onde está a mão)
+    const maoArea = document.getElementById('mao-area');
+    const rect = maoArea.getBoundingClientRect();
+    cartaAnimada.style.left = (rect.left + rect.width / 4) + 'px';
+    cartaAnimada.style.top = (rect.top - 100) + 'px';
+    
+    // Calcula o deslocamento para o centro da tela
+    const centerX = window.innerWidth / 2 - 100; // -100 porque a carta tem 200px
+    const centerY = window.innerHeight / 2 - 150; // -150 porque a carta tem 300px
+    
+    const dx = centerX - (rect.left + rect.width / 4);
+    const dy = centerY - (rect.top - 100);
+    
+    // Define variáveis CSS para a animação
+    cartaAnimada.style.setProperty('--dx', dx + 'px');
+    cartaAnimada.style.setProperty('--dy', dy + 'px');
+    
+    // Remove classe anterior se existir
+    cartaAnimada.classList.remove('ativa');
+    
+    // Força o reflow para resetar a animação
+    void cartaAnimada.offsetWidth;
+    
+    // Adiciona a classe que dispara a animação
+    cartaAnimada.classList.add('ativa');
+    
+    // Fecha o modal após a animação
+    setTimeout(() => {
+        window.fecharDecisao();
+        cartaAnimada.style.display = 'none';
+        cartaAnimada.classList.remove('ativa');
+    }, 2500);
 };
 
 window.resgatarReserva = function(idx) {
