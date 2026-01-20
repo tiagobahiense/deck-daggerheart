@@ -50,10 +50,10 @@ const imageObserver = new IntersectionObserver((entries, observer) => {
             }
         }
     });
+}, {
+    rootMargin: '100px 0px',
+    threshold: 0.01
 });
-
-document.addEventListener('contextmenu', event => event.preventDefault());
-document.addEventListener('dragstart', event => event.preventDefault());
 
 // --- UTILITÁRIOS ---
 window.togglePassword = function(id) {
@@ -237,19 +237,21 @@ window.iniciarExperiencia = async function() {
     setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
 
     window.setVolume();
-    audio.play().catch(() => console.log("Audio waiting"));
+    if (audio) audio.play().catch(() => console.log("Audio waiting"));
 
     await carregarDados();
     await carregarEstadoDaNuvem();
 }
 
 window.toggleMusic = function() {
+    if (!audio) return;
     const btn = document.getElementById('btn-music');
     if (audio.paused) { audio.play(); btn.innerText = "🔊"; }
     else { audio.pause(); btn.innerText = "🔇"; }
 }
 
 window.setVolume = function() {
+    if (!audio) return;
     audio.volume = document.getElementById('volume').value;
 }
 
@@ -269,6 +271,7 @@ window.abrirGrimorio = function(tipo, slotDestino = null) {
     const titulo = document.getElementById('modal-titulo');
     slotDestinoAtual = slotDestino;
     grid.innerHTML = '';
+
     let lista = [];
     if (tipo === 'Geral') {
         titulo.innerText = "Grimório Principal";
@@ -277,6 +280,7 @@ window.abrirGrimorio = function(tipo, slotDestino = null) {
         titulo.innerText = `Selecionar: ${tipo}`;
         lista = catalogoCartas.filter(c => c.categoria === tipo);
     }
+
     lista.forEach(carta => {
         const div = document.createElement('div');
         div.className = 'carta-modal lazy-card';
@@ -285,6 +289,7 @@ window.abrirGrimorio = function(tipo, slotDestino = null) {
         grid.appendChild(div);
         imageObserver.observe(div);
     });
+
     modal.style.display = 'flex';
 }
 
@@ -416,6 +421,7 @@ window.fecharDecisao = function() {
 
 function renderizar() {
     const divMao = document.getElementById('cartas-mao');
+    if (!divMao) return;
     divMao.innerHTML = '';
     maoDoJogador.forEach((c, i) => {
         const el = document.createElement('div');
@@ -445,6 +451,7 @@ function renderizar() {
     });
 
     const divRes = document.getElementById('cartas-reserva');
+    if (!divRes) return;
     divRes.innerHTML = '';
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0';
 
@@ -459,3 +466,8 @@ function renderizar() {
 
 // 🔧 REMOVENDO onAuthStateChanged QUE CAUSAVA LOOP
 debug('Script carregado - Sistema de debug ativo');
+
+// Verifica se o audio existe antes de usar
+if (audio) {
+    audio.volume = 0.05;
+}
