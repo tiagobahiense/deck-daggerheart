@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -17,13 +17,10 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// EMAIL OFICIAL DO MESTRE
-const EMAIL_MESTRE = "tgbahiense@gmail.com"; 
+// CONFIGURA PERSISTENCIA (Para não deslogar quando muda de pagina)
+setPersistence(auth, browserLocalPersistence);
 
-// 🔧 FUNÇÃO DE DEBUG
-function debug(mensagem, dados = null) {
-    console.log(`🔍 DEBUG: ${mensagem}`, dados || '');
-}
+const EMAIL_MESTRE = "tgbahiense@gmail.com"; 
 
 let currentUser = null;
 let nomeJogador = "";
@@ -37,7 +34,6 @@ let slotDestinoAtual = null;
 const LIMITE_MAO = 5;
 const audio = document.getElementById('bg-music');
 
-// --- OBSERVER (LAZY LOAD) ---
 const imageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -55,15 +51,12 @@ const imageObserver = new IntersectionObserver((entries, observer) => {
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('dragstart', event => event.preventDefault());
 
-// --- UTILITÁRIOS ---
-
 window.togglePassword = function(id) {
     const input = document.getElementById(id);
     input.type = input.type === "password" ? "text" : "password";
 }
 
 window.voltarParaSelecao = function() {
-    debug('Voltando para seleção');
     document.getElementById('fase-login-jogador').style.display = 'none';
     document.getElementById('fase-login-narrador').style.display = 'none';
     document.getElementById('fase-personagem').style.display = 'none';
@@ -71,71 +64,60 @@ window.voltarParaSelecao = function() {
 }
 
 window.forcarLogout = function() {
-    debug('Forçando logout');
     signOut(auth).then(() => {
         alert("Logout realizado. A página será recarregada.");
         location.reload();
     });
 }
 
-// --- NAVEGAÇÃO SEGURA ---
+// --- NAVEGAÇÃO SEGURA (NÃO REDIRECIONA AUTOMÁTICO) ---
 
 window.irParaLoginNarrador = function() {
-    debug('Abrindo tela de login do narrador');
-    document.getElementById('fase-selecao').style.display = 'none';
-    document.getElementById('fase-login-narrador').style.display = 'block';
+    // Se já estiver logado como mestre, vai direto
+    if (auth.currentUser && auth.currentUser.email.toLowerCase().trim() === EMAIL_MESTRE.toLowerCase().trim()) {
+        window.location.href = 'admin.html';
+    } else {
+        document.getElementById('fase-selecao').style.display = 'none';
+        document.getElementById('fase-login-narrador').style.display = 'block';
+    }
 }
 
 window.irParaLoginJogador = function() {
-    debug('Abrindo tela de login do jogador');
-    document.getElementById('fase-selecao').style.display = 'none';
-    document.getElementById('fase-login-jogador').style.display = 'block';
+    // Se já estiver logado como jogador (não mestre), vai pra personagem
+    if (auth.currentUser && auth.currentUser.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) {
+        currentUser = auth.currentUser;
+        document.getElementById('fase-selecao').style.display = 'none';
+        document.getElementById('fase-personagem').style.display = 'block';
+    } else {
+        document.getElementById('fase-selecao').style.display = 'none';
+        document.getElementById('fase-login-jogador').style.display = 'block';
+    }
 }
 
 // --- FUNÇÕES DE LOGIN ---
 
 window.fazerLoginNarrador = function() {
-    const email = document.getElementById('narrador-email').value.trim().toLowerCase();
+    const email = document.getElementById('narrador-email').value;
     const pass = document.getElementById('narrador-pass').value;
     const msg = document.getElementById('error-msg-narrador');
 
-    debug('Tentativa de login narrador', { email });
-
-    if(!email || !pass) { 
-        msg.innerText = "Preencha email e senha."; 
-        return; 
-    }
-
-    msg.innerText = "Autenticando...";
+    if(!email || !pass) { msg.innerText = "Preencha tudo."; return; }
+    msg.innerText = "Entrando...";
 
     signInWithEmailAndPassword(auth, email, pass)
     .then((userCredential) => {
-        const emailLogado = userCredential.user.email.toLowerCase().trim();
-        const emailMestre = EMAIL_MESTRE.toLowerCase().trim();
+        const mail = userCredential.user.email.toLowerCase().trim();
+        const masterMail = EMAIL_MESTRE.toLowerCase().trim();
         
-        debug('Login bem-sucedido', { 
-            emailLogado, 
-            emailMestre,
-            saoIguais: emailLogado === emailMestre 
-        });
-        
-        if(emailLogado === emailMestre) {
-            msg.innerText = "✅ Acesso concedido! Redirecionando...";
-            debug('Redirecionando para admin.html');
-            
-            // Aguarda 500ms antes de redirecionar
-            setTimeout(() => {
-                window.location.href = 'admin.html';
-            }, 500);
+        if(mail === masterMail) {
+            window.location.href = 'admin.html';
         } else {
-            msg.innerText = `❌ Erro: ${emailLogado} não é narrador.`;
-            debug('Email não autorizado como narrador');
+            msg.innerText = `Erro: ${mail} não é um Narrador.`;
             signOut(auth);
         }
     })
     .catch((error) => {
-        debug('Erro no login', error);
-        msg.innerText = "❌ Login inválido: " + error.message;
+        msg.innerText = "Erro: " + error.message;
     });
 }
 
@@ -144,30 +126,24 @@ window.fazerLoginJogador = function() {
     const pass = document.getElementById('player-pass').value;
     const msg = document.getElementById('error-msg-player');
     
-    debug('Tentativa de login jogador', { email });
-
+    // SEGURANÇA: MESTRE NÃO ENTRA COMO JOGADOR
     if(email === EMAIL_MESTRE.toLowerCase().trim()) {
-        msg.innerText = "❌ O Mestre não pode logar como jogador.";
+        msg.innerText = "Erro: O Mestre não pode logar como jogador.";
         return;
     }
 
-    if(!email || !pass) { 
-        msg.innerText = "Preencha email e senha."; 
-        return; 
-    }
-
+    if(!email || !pass) { msg.innerText = "Preencha tudo."; return; }
     msg.innerText = "Verificando...";
 
     signInWithEmailAndPassword(auth, email, pass)
     .then((userCredential) => {
         currentUser = userCredential.user;
-        debug('Jogador autenticado', { email: currentUser.email });
         document.getElementById('fase-login-jogador').style.display = 'none';
         document.getElementById('fase-personagem').style.display = 'block';
     })
     .catch((error) => {
-        debug('Erro no login do jogador', error);
-        msg.innerText = "❌ Login inválido.";
+        msg.innerText = "Login inválido.";
+        console.error(error);
     });
 }
 
@@ -214,13 +190,8 @@ async function carregarEstadoDaNuvem() {
 
 window.iniciarExperiencia = async function() {
     const input = document.getElementById('nome-personagem');
-    if (!input.value.trim()) { 
-        alert("Nome do personagem obrigatório!"); 
-        return; 
-    }
+    if (!input.value.trim()) { alert("Nome do personagem obrigatório!"); return; }
     nomeJogador = input.value.trim().toUpperCase();
-    
-    debug('Iniciando experiência', { nomeJogador });
     
     if(currentUser) {
         set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
@@ -240,22 +211,15 @@ window.iniciarExperiencia = async function() {
 
 window.toggleMusic = function() {
     const btn = document.getElementById('btn-music');
-    if (audio.paused) { audio.play(); btn.innerText = "🔊"; } 
-    else { audio.pause(); btn.innerText = "🔇"; }
+    if (audio.paused) { audio.play(); btn.innerText = "🔊"; } else { audio.pause(); btn.innerText = "🔇"; }
 }
-
-window.setVolume = function() { 
-    audio.volume = document.getElementById('volume').value; 
-}
+window.setVolume = function() { audio.volume = document.getElementById('volume').value; }
 
 async function carregarDados() {
     try {
         const r = await fetch('./lista_cartas.json');
         catalogoCartas = await r.json();
-        debug('Cartas carregadas', { total: catalogoCartas.length });
-    } catch (e) { 
-        console.error("JSON Error", e); 
-    }
+    } catch (e) { console.error("JSON Error", e); }
 }
 
 window.abrirGrimorio = function(tipo, slotDestino = null) {
@@ -283,9 +247,7 @@ window.abrirGrimorio = function(tipo, slotDestino = null) {
     modal.style.display = 'flex';
 }
 
-window.fecharGrimorio = function() { 
-    document.getElementById('grimorio-modal').style.display = 'none'; 
-}
+window.fecharGrimorio = function() { document.getElementById('grimorio-modal').style.display = 'none'; }
 
 function selecionarCarta(carta) {
     const destino = slotDestinoAtual;
@@ -451,6 +413,3 @@ function renderizar() {
         divRes.appendChild(el);
     });
 }
-
-// 🔧 REMOVENDO onAuthStateChanged QUE CAUSAVA LOOP
-debug('Script carregado - Sistema de debug ativo');

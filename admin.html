@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Admin - Daggerheart</title>
-    <link rel="stylesheet" href="style.css?v=5.0">
+    <link rel="stylesheet" href="style.css?v=8.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -55,8 +55,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -72,12 +72,9 @@
         const app = initializeApp(firebaseConfig, "primary");
         const auth = getAuth(app);
         const db = getDatabase(app);
-        
-        // App secundário para criar usuários sem deslogar o admin
         const secondaryApp = initializeApp(firebaseConfig, "Secondary");
         const secondaryAuth = getAuth(secondaryApp);
 
-        // CONFIGURAÇÃO DO MESTRE
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
         window.togglePassword = function(id) {
@@ -85,27 +82,20 @@
             input.type = input.type === "password" ? "text" : "password";
         }
 
-        window.fazerLogout = function() {
-            signOut(auth).then(() => window.location.href = 'index.html');
-        }
-
-        // VERIFICAÇÃO DE SEGURANÇA (SEM REDIRECT AUTOMÁTICO PARA EVITAR LOOP)
         onAuthStateChanged(auth, user => {
             const deniedScreen = document.getElementById('access-denied-screen');
-            const adminContainer = document.getElementById('admin-container');
             const debugText = document.getElementById('debug-text');
+            const adminContainer = document.getElementById('admin-container');
 
-            if (!user) {
-                window.location.href = 'index.html'; // Só volta se não tiver logado
+            if(!user) {
+                window.location.href = 'index.html';
                 return;
             }
-
-            // Normaliza e verifica
+            
             const currentEmail = user.email.toLowerCase().trim();
             const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
 
-            if (currentEmail !== masterEmail) {
-                // ERRO ENCONTRADO - TRAVA A TELA E MOSTRA O MOTIVO
+            if(currentEmail !== masterEmail) {
                 deniedScreen.style.display = 'flex';
                 adminContainer.style.display = 'none';
                 
@@ -116,12 +106,15 @@
                     <p>UID: ${user.uid}</p>
                 `;
             } else {
-                // SUCESSO - MOSTRA O PAINEL
                 deniedScreen.style.display = 'none';
                 adminContainer.style.display = 'block';
                 carregarUsuarios();
             }
         });
+
+        window.fazerLogout = function() {
+            signOut(auth).then(() => window.location.href = 'index.html');
+        }
 
         window.criarUsuario = function() {
             const email = document.getElementById('new-user-email').value;
