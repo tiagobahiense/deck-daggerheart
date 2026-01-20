@@ -208,6 +208,7 @@
             }
 
             iniciarPainel();
+            configurarListenersDeCartasUsadas();
         });
 
         function iniciarPainel() {
@@ -278,60 +279,68 @@
                         ${htmlReserva}
                     `;
                     painel.appendChild(card);
-                    
-                    // Configurar listener para cartas usadas deste jogador
-                    configurarListenerCartaUsada(nome);
                 });
             });
         }
 
-        function configurarListenerCartaUsada(nomeJogador) {
-            const cartaUsadaRef = ref(db, `mesa_rpg/jogadores/${nomeJogador}/cartaUsada`);
-            onValue(cartaUsadaRef, (snapshot) => {
-                if(snapshot.exists()) {
-                    const cartaUsada = snapshot.val();
-                    console.log(`🎯 Carta usada detectada por ${nomeJogador}:`, cartaUsada);
-                    animarCartaEspecifica(nomeJogador, cartaUsada);
+        function configurarListenersDeCartasUsadas() {
+            const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
+            onValue(jogadoresRef, (snapshot) => {
+                const dados = snapshot.val();
+                if(dados) {
+                    Object.keys(dados).forEach(nomeJogador => {
+                        const cartaUsadaRef = ref(db, `mesa_rpg/jogadores/${nomeJogador}/cartaUsada`);
+                        onValue(cartaUsadaRef, (snap) => {
+                            if(snap.exists()) {
+                                const cartaUsada = snap.val();
+                                console.log(`🎯 ${nomeJogador} usou carta:`, cartaUsada.nome);
+                                animarCartaEspecifica(nomeJogador, cartaUsada);
+                            }
+                        });
+                    });
                 }
-            });
+            }, { onlyOnce: false });
         }
 
         function animarCartaEspecifica(nomeJogador, cartaUsada) {
-            // Encontra o grid de mão do jogador
-            const gridMao = document.querySelector(`[data-jogador="${nomeJogador}"]`);
-            if(!gridMao) {
-                console.warn(`Grid de mão não encontrado para ${nomeJogador}`);
-                return;
-            }
-
-            // Procura pela carta que foi usada
-            const cartas = gridMao.querySelectorAll('.mini-carta');
-            let cartaEncontrada = null;
-
-            for(let carta of cartas) {
-                const bgImage = carta.style.backgroundImage;
-                // Compara se a imagem de fundo contém o mesmo caminho
-                if(bgImage && bgImage.includes(cartaUsada.caminho.split('/').pop())) {
-                    cartaEncontrada = carta;
-                    break;
+            // Aguarda um pouco para garantir que o DOM foi atualizado
+            setTimeout(() => {
+                const gridMao = document.querySelector(`[data-jogador="${nomeJogador}"]`);
+                if(!gridMao) {
+                    console.warn(`Grid de mão não encontrado para ${nomeJogador}`);
+                    return;
                 }
-            }
 
-            if(cartaEncontrada) {
-                console.log('✨ Animando carta específica em', nomeJogador);
-                // Remove animação anterior se existir
-                cartaEncontrada.style.animation = 'none';
-                void cartaEncontrada.offsetWidth; // Force reflow
-                // Aplica nova animação
-                cartaEncontrada.style.animation = 'mini-carta-usar 0.8s ease-out';
-                
-                // Remove animação após terminar
-                setTimeout(() => {
+                // Procura pela carta que foi usada comparando o caminho completo
+                const cartas = gridMao.querySelectorAll('.mini-carta');
+                let cartaEncontrada = null;
+
+                for(let carta of cartas) {
+                    const bgImage = carta.style.backgroundImage;
+                    // Extrai o caminho da URL
+                    if(bgImage) {
+                        const caminhoExtraido = bgImage.replace(/url\(['"]?([^'")]+)['"]?\)/g, '$1');
+                        // Compara se os caminhos são iguais ou se o final é igual
+                        if(caminhoExtraido === cartaUsada.caminho || caminhoExtraido.includes(cartaUsada.caminho.split('/').pop())) {
+                            cartaEncontrada = carta;
+                            break;
+                        }
+                    }
+                }
+
+                if(cartaEncontrada) {
+                    console.log('✨ Animando carta específica em', nomeJogador);
                     cartaEncontrada.style.animation = 'none';
-                }, 800);
-            } else {
-                console.warn('Carta específica não encontrada na mão de', nomeJogador);
-            }
+                    void cartaEncontrada.offsetWidth;
+                    cartaEncontrada.style.animation = 'mini-carta-usar 0.8s ease-out';
+                    
+                    setTimeout(() => {
+                        cartaEncontrada.style.animation = 'none';
+                    }, 800);
+                } else {
+                    console.warn('Carta não encontrada. Buscando em:', Array.from(cartas).map(c => c.style.backgroundImage));
+                }
+            }, 100);
         }
     </script>
 </body>
