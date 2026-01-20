@@ -50,7 +50,11 @@ document.addEventListener('dragstart', event => event.preventDefault());
 
 window.togglePassword = function(id) {
     const input = document.getElementById(id);
-    input.type = input.type === "password" ? "text" : "password";
+    if (input.type === "password") {
+        input.type = "text";
+    } else {
+        input.type = "password";
+    }
 }
 
 window.irParaLoginJogador = function() {
@@ -69,6 +73,7 @@ window.voltarParaSelecao = function() {
     document.getElementById('fase-selecao').style.display = 'block';
 }
 
+// LOGIN NARRADOR
 window.fazerLoginNarrador = function() {
     const email = document.getElementById('narrador-email').value;
     const pass = document.getElementById('narrador-pass').value;
@@ -93,6 +98,7 @@ window.fazerLoginNarrador = function() {
     });
 }
 
+// LOGIN JOGADOR
 window.fazerLoginJogador = function() {
     const email = document.getElementById('player-email').value;
     const pass = document.getElementById('player-pass').value;
@@ -113,18 +119,37 @@ window.fazerLoginJogador = function() {
     });
 }
 
+// INICIAR JOGO APÓS LOGIN E NOME DO PERSONAGEM
+window.iniciarExperiencia = async function() {
+    const input = document.getElementById('nome-personagem');
+    if (!input.value.trim()) { alert("Nome do personagem obrigatório!"); return; }
+    nomeJogador = input.value.trim().toUpperCase();
+    
+    // Salva o vínculo da conta com o personagem
+    if (currentUser) {
+        set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
+        set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
+    }
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
+    
+    window.setVolume();
+    audio.play().catch(() => console.log("Audio waiting"));
+    
+    await carregarDados();
+    await carregarEstadoDaNuvem();
+}
+
 function salvarNaNuvem() {
     if (!nomeJogador || !currentUser) return;
-    
     set(ref(db, 'mesa_rpg/jogadores/' + nomeJogador), {
         mao: maoDoJogador,
         reserva: reservaDoJogador,
         slots: slotsFixos,
         ultimoAcesso: Date.now()
-    });
-
-    set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
-    set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
+    }).catch((e) => console.error("Erro ao salvar:", e));
 }
 
 async function carregarEstadoDaNuvem() {
@@ -151,22 +176,6 @@ async function carregarEstadoDaNuvem() {
             });
         }
     } catch (error) { console.error("Erro ao recuperar:", error); }
-}
-
-window.iniciarExperiencia = async function() {
-    const input = document.getElementById('nome-personagem');
-    if (!input.value.trim()) { alert("Nome do personagem obrigatório!"); return; }
-    nomeJogador = input.value.trim().toUpperCase();
-    
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-container').style.display = 'flex';
-    setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
-    
-    window.setVolume();
-    audio.play().catch(() => console.log("Audio waiting"));
-    
-    await carregarDados();
-    await carregarEstadoDaNuvem();
 }
 
 window.toggleMusic = function() {
@@ -341,30 +350,20 @@ function renderizar() {
         const centro = (maoDoJogador.length - 1) / 2;
         const rotacao = (i - centro) * 4; 
         el.style.transform = `rotate(${rotacao}deg)`;
-        
-        if(c.estado === 'curto') {
-            el.classList.add('indisponivel');
-            el.setAttribute('data-status', 'Indisponível: Descanso Curto');
-        } else if(c.estado === 'longo') {
-            el.classList.add('indisponivel');
-            el.setAttribute('data-status', 'Indisponível: Descanso Longo');
-        }
-
+        if(c.estado === 'curto') { el.classList.add('indisponivel'); el.setAttribute('data-status', 'Indisponível: Descanso Curto'); }
+        else if(c.estado === 'longo') { el.classList.add('indisponivel'); el.setAttribute('data-status', 'Indisponível: Descanso Longo'); }
         if(c.tokens && c.tokens > 0) {
             const badge = document.createElement('div');
             badge.className = `token-badge token-${c.tokens}`;
             badge.innerText = c.tokens;
             el.appendChild(badge);
         }
-
         el.onclick = () => window.abrirDecisao(i);
         divMao.appendChild(el);
     });
-
     const divRes = document.getElementById('cartas-reserva');
     divRes.innerHTML = '';
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0';
-    
     reservaDoJogador.forEach((c, i) => {
         const el = document.createElement('div');
         el.className = 'carta-reserva';

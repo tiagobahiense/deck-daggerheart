@@ -1,15 +1,10 @@
-:root {
-    --gold: #d4af37;
-    --modal-bg: rgba(20, 15, 10, 0.95);
-    --dark-overlay: rgba(0, 0, 0, 0.95);
-}
-
+:root { --gold: #d4af37; --modal-bg: rgba(20, 15, 10, 0.95); --dark-overlay: rgba(0, 0, 0, 0.95); }
 * { box-sizing: border-box; user-select: none; -webkit-user-drag: none; }
 img { pointer-events: none; }
 body { margin: 0; padding: 0; font-family: 'MedievalSharp', cursive; background: #000; color: #fff; height: 100vh; overflow: hidden; }
 
-/* TELAS */
-#login-screen, #start-screen, #login-screen-mestre, #loading-overlay, #login-screen-admin, #access-denied-screen {
+/* TELAS GERAIS */
+#login-screen, #start-screen, #login-screen-mestre, #loading-overlay, #login-screen-admin {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: url('img/background_epico.png') no-repeat center center/cover;
     z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column;
@@ -17,29 +12,28 @@ body { margin: 0; padding: 0; font-family: 'MedievalSharp', cursive; background:
 
 #loading-overlay { background: #000; color: var(--gold); font-size: 2rem; z-index: 10000; }
 
-/* TELA DE ERRO (Trava o loop) */
+/* TELA DE ERRO (Anti-Loop) */
 #access-denied-screen {
-    background: rgba(20, 0, 0, 0.98); z-index: 10001; display: none; text-align: center;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(50, 0, 0, 1); z-index: 10005;
+    display: none; justify-content: center; align-items: center; flex-direction: column;
 }
 .debug-box {
-    background: #000; border: 1px solid red; padding: 15px; margin: 20px;
-    font-family: monospace; color: #ff9999; text-align: left; font-size: 0.9rem;
-    max-width: 90%; word-break: break-all;
+    background: #000; border: 2px solid red; padding: 20px; margin: 20px;
+    font-family: monospace; color: #ffaaaa; text-align: left; max-width: 90%;
 }
 
+/* CAIXAS DE LOGIN */
 .login-box, .start-content, .admin-box {
     background: var(--dark-overlay); padding: 40px;
     border: 2px solid var(--gold); border-radius: 15px;
     text-align: center; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-    width: 380px; max-width: 90%;
-    animation: fadeIn 0.5s ease-in-out;
-    position: relative;
+    width: 380px; max-width: 90%; animation: fadeIn 0.5s ease-in-out; position: relative;
 }
-
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
 
+/* INPUTS */
 .input-group { position: relative; width: 100%; margin: 15px 0; }
-
 .input-login {
     display: block; width: 100%; padding: 12px; padding-right: 40px;
     font-size: 1rem; border-radius: 5px; border: 1px solid #555;
@@ -53,18 +47,15 @@ body { margin: 0; padding: 0; font-family: 'MedievalSharp', cursive; background:
 }
 .toggle-password:hover { color: var(--gold); }
 
-#error-msg, #error-msg-player, #error-msg-narrador { 
-    color: #ff4444; font-size: 0.9rem; margin-top: 10px; min-height: 20px; 
-}
+#error-msg, #error-msg-player, #error-msg-narrador { color: #ff4444; font-size: 0.9rem; margin-top: 10px; min-height: 20px; }
 
+/* BOTOES */
 button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2s; }
-
 .btn-entrar, .btn-main, .start-content button {
     background: var(--gold); color: #000; border: none; padding: 12px 30px;
     font-size: 1.2rem; border-radius: 5px; width: 100%; font-weight: bold; margin-top: 10px;
 }
 .btn-entrar:hover, .btn-main:hover { background: #fff; transform: scale(1.02); }
-
 .btn-voltar {
     background: rgba(255, 255, 255, 0.1) !important;
     border: 1px solid var(--gold) !important; color: var(--gold) !important;
@@ -73,18 +64,17 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 }
 .btn-voltar:hover { background: var(--gold) !important; color: #000 !important; }
 
-/* Admin */
+/* LAYOUT JOGO E ADMIN */
 #admin-container { padding: 20px; height: 100vh; overflow-y: auto; background: #111; }
 .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
 .admin-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
 .player-card-admin { background: #1a1a1a; border: 1px solid #444; border-radius: 8px; padding: 15px; width: 300px; }
 .player-email { color: var(--gold); font-size: 1.1rem; margin-bottom: 10px; border-bottom: 1px dashed #333; padding-bottom: 5px; }
-.char-list li { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.9rem; color: #ccc; }
-.btn-reset-hand { background: #8b0000; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 0.7rem; }
+.btn-reset-hand { background: #8b0000; color: #fff; border: none; padding: 2px 8px; border-radius: 3px; font-size: 0.7rem; cursor: pointer; }
 .btn-nav { background: #333; color: #fff; padding: 10px 20px; border: 1px solid #555; border-radius: 5px; text-decoration: none; font-size: 1rem; }
 .btn-nav:hover { background: #555; }
 
-/* App */
+/* JOGO CSS */
 #app-container { height: 100vh; width: 100vw; background: url('img/background_epico.png') no-repeat center center/cover; position: relative; transition: opacity 1s; display: flex; flex-direction: column; }
 #audio-control { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.8); padding: 8px 15px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.2); display: flex; gap: 10px; align-items: center; z-index: 500; }
 #btn-music { background: none; border: none; font-size: 1.5rem; color: #fff; padding: 0; }
@@ -142,6 +132,12 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 .btn-reserva { background: #2e8b57; } .btn-deck { background: #8b0000; } .btn-cancelar { background: #444; } .btn-token { background: #1976d2; } .btn-estado { background: #616161; }
 .btn-confirmar { background: var(--gold); color: #000 !important; font-size: 1.1rem; box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); width: 100%; margin-bottom: 10px; }
 .btn-confirmar:hover { background: #fff; }
+.card-jogador { background: #1a1a1a; border: 1px solid #444; border-radius: 8px; width: 320px; padding: 15px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.5); position: relative; }
+.mini-carta { width: 50px; height: 75px; background-size: contain; background-repeat: no-repeat; background-position: center; border: 1px solid #333; border-radius: 4px; transition: 0.2s; cursor: pointer; background-color: #000; position: relative; }
+.mini-carta:hover { transform: scale(4); z-index: 100; border-color: gold; box-shadow: 0 0 20px #000; }
+.btn-banir { margin-top: 15px; background-color: #3e0000; color: #ff6666; border: 1px solid #500; padding: 8px; cursor: pointer; font-family: inherit; border-radius: 4px; transition: 0.2s; font-size: 0.8rem; }
+.btn-banir:hover { background-color: #800; color: white; border-color: red; }
+.token-count { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 18px; height: 18px; background: #fff; color: #000; border-radius: 50%; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; border: 1px solid #000; font-weight: bold; z-index: 10; }
 
 @media (max-width: 768px) {
     #area-jogo { overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; padding-bottom: 20px; }
