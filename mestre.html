@@ -199,18 +199,12 @@
                         <div class="label">Mesa (Ativos)</div>
                         <div class="grid-mini">${htmlSlots}</div>
                         ${htmlReserva}
-                        <button class="btn-banir" onclick="removerJogador('${nome}')">💀 Remover da Mesa</button>
                     `;
                     painel.appendChild(card);
                 });
             });
         }
 
-        window.removerJogador = function(nome) {
-            if(confirm(`Tem certeza que deseja remover ${nome} da mesa?`)) {
-                remove(ref(db, `mesa_rpg/jogadores/${nome}`));
-            }
-        }
     </script>
 </body>
 </html>

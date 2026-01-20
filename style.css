@@ -1017,24 +1017,6 @@ button {
     padding: 10px;
 }
 
-.btn-banir {
-    margin-top: 15px;
-    background-color: #3e0000;
-    color: #ff6666;
-    border: 1px solid #500;
-    padding: 8px;
-    cursor: pointer;
-    font-family: inherit;
-    border-radius: 4px;
-    transition: 0.2s;
-    font-size: 0.8rem;
-}
-.btn-banir:hover {
-    background-color: #800;
-    color: white;
-    border-color: red;
-}
-
 /* --- RESPONSIVIDADE --- */
 @media (max-width: 768px) {
     #area-jogo {
