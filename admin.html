@@ -28,10 +28,10 @@
         </div>
 
         <div style="display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
-            
+
             <div class="admin-box" style="width: 300px; padding: 20px;">
                 <h3>Criar Novo Jogador</h3>
-                
+
                 <div class="input-group">
                     <input type="email" id="new-user-email" placeholder="Email do Jogador" class="input-login">
                 </div>
@@ -39,7 +39,7 @@
                     <input type="password" id="new-user-pass" placeholder="Senha" class="input-login">
                     <span class="toggle-password" onclick="togglePassword('new-user-pass')">👁️</span>
                 </div>
-                
+
                 <button class="btn-main" onclick="criarUsuario()">Criar Conta</button>
             </div>
 
@@ -56,7 +56,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -77,6 +77,10 @@
 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
+        // Garante persistência do login
+        setPersistence(auth, browserSessionPersistence)
+            .catch((error) => console.error("Erro ao definir persistência:", error));
+
         window.togglePassword = function(id) {
             const input = document.getElementById(id);
             input.type = input.type === "password" ? "text" : "password";
@@ -87,18 +91,21 @@
             const debugText = document.getElementById('debug-text');
             const adminContainer = document.getElementById('admin-container');
 
-            if(!user) {
-                window.location.href = 'index.html';
+            console.log("onAuthStateChanged chamado. Usuário:", user ? user.email : "Nenhum");
+
+            if (!user) {
+                deniedScreen.style.display = 'flex';
+                debugText.innerHTML = "Nenhum usuário logado.";
+                adminContainer.style.display = 'none';
                 return;
             }
-            
+
             const currentEmail = user.email.toLowerCase().trim();
             const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
 
-            if(currentEmail !== masterEmail) {
+            if (currentEmail !== masterEmail) {
                 deniedScreen.style.display = 'flex';
                 adminContainer.style.display = 'none';
-                
                 debugText.innerHTML = `
                     <p><strong>DIAGNÓSTICO TÉCNICO:</strong></p>
                     <p>Logado como: <span style="color: white">${currentEmail}</span></p>
@@ -119,7 +126,7 @@
         window.criarUsuario = function() {
             const email = document.getElementById('new-user-email').value;
             const pass = document.getElementById('new-user-pass').value;
-            
+
             if(!email || !pass) return alert("Preencha tudo");
 
             createUserWithEmailAndPassword(secondaryAuth, email, pass)
@@ -129,7 +136,7 @@
                         email: email,
                         characters: {}
                     });
-                    signOut(secondaryAuth); 
+                    signOut(secondaryAuth);
                     alert("Usuário criado: " + email);
                     document.getElementById('new-user-email').value = "";
                     document.getElementById('new-user-pass').value = "";
@@ -143,7 +150,7 @@
             onValue(ref(db, 'mesa_rpg/accounts'), snapshot => {
                 const list = document.getElementById('users-list');
                 list.innerHTML = "";
-                
+
                 if(!snapshot.exists()) { list.innerHTML = "<p>Nenhuma conta encontrada.</p>"; return; }
 
                 snapshot.forEach(childSnap => {
@@ -154,7 +161,7 @@
                     chars.forEach(charName => {
                         charHtml += `
                             <li>
-                                ${charName} 
+                                ${charName}
                                 <button class="btn-reset-hand" onclick="resetarMao('${charName}')">Resetar Mão</button>
                             </li>
                         `;
