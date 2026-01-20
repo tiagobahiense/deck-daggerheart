@@ -332,6 +332,7 @@ window.iniciarExperiencia = async function() {
 
     await carregarDados();
     await carregarEstadoDaNuvem();
+    monitorarEstadoEmTempoReal();
     renderizar();
 };
 
@@ -348,6 +349,25 @@ async function carregarEstadoDaNuvem() {
     } catch (error) {
         console.error("Erro ao recuperar estado:", error);
     }
+}
+
+// Função para monitorar mudanças em tempo real
+function monitorarEstadoEmTempoReal() {
+    if (!nomeJogador) return;
+    
+    const jogadorRef = child(ref(db), `mesa_rpg/jogadores/${nomeJogador}`);
+    onValue(jogadorRef, (snapshot) => {
+        if (snapshot.exists()) {
+            const dados = snapshot.val();
+            maoDoJogador = dados.mao || [];
+            reservaDoJogador = dados.reserva || [];
+            if (dados.slots) slotsFixos = dados.slots;
+            debug('📡 Estado atualizado em tempo real', { mao: maoDoJogador.length, reserva: reservaDoJogador.length });
+            renderizar();
+        }
+    }, (error) => {
+        console.error('Erro ao monitorar estado:', error);
+    });
 }
 
 // Função para selecionar uma carta
