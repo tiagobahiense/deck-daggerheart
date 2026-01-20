@@ -69,58 +69,64 @@
             measurementId: "G-20TB05E9N2"
         };
 
-        const app = initializeApp(firebaseConfig, "primary");
+        const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-        const secondaryApp = initializeApp(firebaseConfig, "Secondary");
-        const secondaryAuth = getAuth(secondaryApp);
 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
-        // Garante persistência do login
+        // Configura persistência do login
         setPersistence(auth, browserSessionPersistence)
-            .catch((error) => console.error("Erro ao definir persistência:", error));
+            .then(() => {
+                console.log("Persistência de autenticação configurada com sucesso.");
+                // Escuta o estado de autenticação somente após a persistência estar configurada
+                onAuthStateChanged(auth, user => {
+                    const deniedScreen = document.getElementById('access-denied-screen');
+                    const debugText = document.getElementById('debug-text');
+                    const adminContainer = document.getElementById('admin-container');
+
+                    console.log("onAuthStateChanged chamado. Usuário:", user ? user.email : "Nenhum");
+
+                    if (!user) {
+                        deniedScreen.style.display = 'flex';
+                        debugText.innerHTML = "Nenhum usuário logado. <br>Por favor, faça login.";
+                        adminContainer.style.display = 'none';
+                        return;
+                    }
+
+                    const currentEmail = user.email.toLowerCase().trim();
+                    const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
+
+                    if (currentEmail !== masterEmail) {
+                        deniedScreen.style.display = 'flex';
+                        adminContainer.style.display = 'none';
+                        debugText.innerHTML = `
+                            <p><strong>DIAGNÓSTICO:</strong></p>
+                            <p>Logado como: <span style="color: white">${currentEmail}</span></p>
+                            <p>Mestre esperado: <span style="color: yellow">${masterEmail}</span></p>
+                            <p>UID: ${user.uid}</p>
+                        `;
+                    } else {
+                        deniedScreen.style.display = 'none';
+                        adminContainer.style.display = 'block';
+                        carregarUsuarios();
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error("Erro ao definir persistência:", error);
+                document.getElementById('debug-text').innerHTML = "Erro ao carregar autenticação. Consulte o console.";
+            });
 
         window.togglePassword = function(id) {
             const input = document.getElementById(id);
             input.type = input.type === "password" ? "text" : "password";
         }
 
-        onAuthStateChanged(auth, user => {
-            const deniedScreen = document.getElementById('access-denied-screen');
-            const debugText = document.getElementById('debug-text');
-            const adminContainer = document.getElementById('admin-container');
-
-            console.log("onAuthStateChanged chamado. Usuário:", user ? user.email : "Nenhum");
-
-            if (!user) {
-                deniedScreen.style.display = 'flex';
-                debugText.innerHTML = "Nenhum usuário logado.";
-                adminContainer.style.display = 'none';
-                return;
-            }
-
-            const currentEmail = user.email.toLowerCase().trim();
-            const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
-
-            if (currentEmail !== masterEmail) {
-                deniedScreen.style.display = 'flex';
-                adminContainer.style.display = 'none';
-                debugText.innerHTML = `
-                    <p><strong>DIAGNÓSTICO TÉCNICO:</strong></p>
-                    <p>Logado como: <span style="color: white">${currentEmail}</span></p>
-                    <p>Mestre esperado: <span style="color: yellow">${masterEmail}</span></p>
-                    <p>UID: ${user.uid}</p>
-                `;
-            } else {
-                deniedScreen.style.display = 'none';
-                adminContainer.style.display = 'block';
-                carregarUsuarios();
-            }
-        });
-
         window.fazerLogout = function() {
-            signOut(auth).then(() => window.location.href = 'index.html');
+            signOut(auth).then(() => {
+                window.location.href = 'index.html';
+            });
         }
 
         window.criarUsuario = function() {
@@ -129,14 +135,13 @@
 
             if(!email || !pass) return alert("Preencha tudo");
 
-            createUserWithEmailAndPassword(secondaryAuth, email, pass)
+            createUserWithEmailAndPassword(auth, email, pass)
                 .then((cred) => {
                     const uid = cred.user.uid;
                     set(ref(db, `mesa_rpg/accounts/${uid}`), {
                         email: email,
                         characters: {}
                     });
-                    signOut(secondaryAuth);
                     alert("Usuário criado: " + email);
                     document.getElementById('new-user-email').value = "";
                     document.getElementById('new-user-pass').value = "";
