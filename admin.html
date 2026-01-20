@@ -56,7 +56,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, deleteUser, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, deleteUser, fetchSignInMethodsForEmail, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -134,19 +134,32 @@
 
             if(!email || !pass) return alert("Preencha tudo");
 
-            createUserWithEmailAndPassword(auth, email, pass)
-                .then((cred) => {
-                    const uid = cred.user.uid;
-                    set(ref(db, `mesa_rpg/accounts/${uid}`), {
-                        email: email,
-                        characters: {}
-                    });
-                    alert("Usuário criado: " + email);
-                    document.getElementById('new-user-email').value = "";
-                    document.getElementById('new-user-pass').value = "";
+            // Verifica se o e-mail já existe no Firebase Auth
+            fetchSignInMethodsForEmail(auth, email)
+                .then((signInMethods) => {
+                    if (signInMethods.length > 0) {
+                        alert("Este e-mail já está registrado. Use outro e-mail.");
+                        return;
+                    }
+
+                    // Se não existir, cria a conta
+                    createUserWithEmailAndPassword(auth, email, pass)
+                        .then((cred) => {
+                            const uid = cred.user.uid;
+                            set(ref(db, `mesa_rpg/accounts/${uid}`), {
+                                email: email,
+                                characters: {}
+                            });
+                            alert("Usuário criado: " + email);
+                            document.getElementById('new-user-email').value = "";
+                            document.getElementById('new-user-pass').value = "";
+                        })
+                        .catch((error) => {
+                            alert("Erro ao criar: " + error.message);
+                        });
                 })
                 .catch((error) => {
-                    alert("Erro ao criar: " + error.message);
+                    alert("Erro ao verificar e-mail: " + error.message);
                 });
         }
 
@@ -226,12 +239,17 @@
                         return remove(ref(db, `mesa_rpg/accounts/${uid}`));
                     })
                     .then(() => {
-                        // Busca o usuário no Firebase Auth para removê-lo
-                        return getAuth().getUser(uid);
+                        // Faz login temporário com a conta que será removida
+                        return signInWithEmailAndPassword(auth, email, "senha-temporaria");
                     })
-                    .then((userRecord) => {
+                    .catch(() => {
+                        // Se não conseguir fazer login, continua o processo
+                        return { user: { uid: uid } };
+                    })
+                    .then((cred) => {
                         // Remove o usuário do Firebase Auth
-                        return deleteUser(userRecord.uid);
+                        const user = cred.user || { uid: uid };
+                        return deleteUser(user);
                     })
                     .then(() => {
                         alert(`Conta "${email}" e todos os seus personagens foram removidos com sucesso!`);
