@@ -21,16 +21,36 @@
         }
         #controles-mestre {
             display: flex;
-            justify-content: center;
-            gap: 20px;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            border: 1px solid var(--gold);
+        }
+        .btn-nav-mestre {
+            background: #333;
+            color: #fff;
+            padding: 10px 20px;
+            border: 1px solid #555;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .btn-nav-mestre:hover {
+            background: #555;
         }
     </style>
 </head>
 <body>
     <div id="controles-mestre">
-        <button class="btn-rest curto" onclick="realizarDescanso('curto')">Restaurar Descanso Curto</button>
-        <button class="btn-rest longo" onclick="realizarDescanso('longo')">Restaurar Descanso Longo</button>
+        <div>
+            <button class="btn-rest curto" onclick="realizarDescanso('curto')">Restaurar Descanso Curto</button>
+            <button class="btn-rest longo" onclick="realizarDescanso('longo')">Restaurar Descanso Longo</button>
+        </div>
+        <button class="btn-nav-mestre" onclick="window.location.href='admin.html'">Ir para o Painel Admin</button>
     </div>
 
     <div id="painel">
