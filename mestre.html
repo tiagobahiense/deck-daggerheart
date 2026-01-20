@@ -11,6 +11,13 @@
 
     <div id="loading-overlay">Verificando acesso...</div>
 
+    <div id="access-denied-screen" style="display: none;">
+        <h1 style="color: red;">ACESSO NEGADO</h1>
+        <p>Você não é o Narrador.</p>
+        <div class="debug-info" id="debug-text"></div>
+        <button class="btn-voltar" onclick="fazerLogout()">Sair</button>
+    </div>
+
     <div style="position: absolute; top: 20px; right: 20px; z-index: 1000;">
         <a href="admin.html" class="btn-nav">Admin</a>
         <button class="btn-nav" onclick="fazerLogout()">Sair</button>
@@ -52,20 +59,25 @@
         }
 
         onAuthStateChanged(auth, (user) => {
-            if(!user) {
+            const overlay = document.getElementById('loading-overlay');
+            const denied = document.getElementById('access-denied-screen');
+            const debugText = document.getElementById('debug-text');
+
+            if (!user) {
                 window.location.href = "index.html";
                 return;
             }
 
-            const currentEmail = user.email.toLowerCase().trim();
-            const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
+            const currentEmail = user.email.trim().toLowerCase();
+            const masterEmail = EMAIL_MESTRE.trim().toLowerCase();
 
             if (currentEmail === masterEmail) {
-                document.getElementById('loading-overlay').style.display = 'none';
+                overlay.style.display = 'none';
                 iniciarPainel();
             } else {
-                alert("Acesso restrito ao Narrador.");
-                window.location.href = "index.html";
+                overlay.style.display = 'none';
+                denied.style.display = 'flex';
+                debugText.innerHTML = `Logado: ${currentEmail} | Esperado: ${masterEmail}`;
             }
         });
 

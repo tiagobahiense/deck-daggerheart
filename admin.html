@@ -9,7 +9,18 @@
 </head>
 <body>
 
-    <div id="admin-container">
+    <div id="access-denied-screen">
+        <h1 style="color: red;">ACESSO NEGADO</h1>
+        <p>Você está logado, mas este usuário não é o Narrador.</p>
+        
+        <div class="debug-info" id="debug-text">
+            Verificando credenciais...
+        </div>
+
+        <button class="btn-voltar" onclick="fazerLogout()">Sair</button>
+    </div>
+
+    <div id="admin-container" style="display: none;">
         <div class="admin-header">
             <h1>Gestão da Mesa</h1>
             <div>
@@ -78,6 +89,10 @@
         }
 
         onAuthStateChanged(auth, user => {
+            const deniedScreen = document.getElementById('access-denied-screen');
+            const debugText = document.getElementById('debug-text');
+            const adminContainer = document.getElementById('admin-container');
+
             if(!user) {
                 window.location.href = 'index.html';
                 return;
@@ -87,9 +102,16 @@
             const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
 
             if(currentEmail !== masterEmail) {
-                alert(`Acesso Negado. Você está logado como ${currentEmail}, mas o mestre é ${masterEmail}. Fazendo logout...`);
-                signOut(auth).then(() => window.location.href = 'index.html');
+                deniedScreen.style.display = 'flex';
+                adminContainer.style.display = 'none';
+                debugText.innerHTML = `
+                    <br>Logado como: <b>${currentEmail}</b>
+                    <br>Mestre esperado: <b>${masterEmail}</b>
+                    <br>ID: ${user.uid}
+                `;
             } else {
+                deniedScreen.style.display = 'none';
+                adminContainer.style.display = 'block';
                 carregarUsuarios();
             }
         });

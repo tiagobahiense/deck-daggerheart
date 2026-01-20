@@ -19,7 +19,6 @@ body {
     height: 100vh; overflow: hidden;
 }
 
-/* Telas de Fundo */
 #login-screen, #start-screen, #login-screen-mestre, #loading-overlay, #login-screen-admin {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: url('img/background_epico.png') no-repeat center center/cover;
@@ -29,8 +28,19 @@ body {
 
 #loading-overlay { background: #000; color: var(--gold); font-size: 2rem; z-index: 10000; }
 
+#access-denied-screen {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(50, 0, 0, 0.95); z-index: 10001;
+    display: none; justify-content: center; align-items: center; flex-direction: column;
+    text-align: center; color: #fff;
+}
+.debug-info {
+    background: #000; border: 1px solid red; padding: 20px; margin: 20px;
+    font-family: monospace; color: #ffaaaa; text-align: left;
+}
+
 .login-box, .start-content, .admin-box {
-    background: rgba(0, 0, 0, 0.9); padding: 40px;
+    background: var(--dark-overlay); padding: 40px;
     border: 2px solid var(--gold); border-radius: 15px;
     text-align: center; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
     width: 380px; max-width: 90%;
@@ -43,30 +53,18 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Campos de Input e Senha */
-.input-group {
-    position: relative;
-    width: 100%;
-    margin: 15px 0;
-}
+.input-group { position: relative; width: 100%; margin: 15px 0; }
 
 .input-login {
-    display: block; width: 100%; padding: 12px;
-    padding-right: 40px; /* Espaço para o olho */
+    display: block; width: 100%; padding: 12px; padding-right: 40px;
     font-size: 1rem; border-radius: 5px; border: 1px solid #555;
     background: #222; color: #fff; text-align: center;
 }
 .input-login:focus { border-color: var(--gold); outline: none; }
 
 .toggle-password {
-    position: absolute;
-    right: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-    font-size: 1.2rem;
-    color: #aaa;
-    z-index: 10;
+    position: absolute; right: 15px; top: 50%; transform: translateY(-50%);
+    cursor: pointer; font-size: 1.2rem; color: #aaa; z-index: 10;
 }
 .toggle-password:hover { color: var(--gold); }
 
@@ -74,28 +72,22 @@ body {
     color: #ff4444; font-size: 0.9rem; margin-top: 10px; min-height: 20px; 
 }
 
-/* Botões */
 button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2s; }
 
 .btn-entrar, .btn-main, .start-content button {
     background: var(--gold); color: #000; border: none; padding: 12px 30px;
     font-size: 1.2rem; border-radius: 5px; width: 100%; font-weight: bold; margin-top: 10px;
 }
-.btn-entrar:hover, .btn-main:hover {
-    background: #fff; transform: scale(1.02);
-}
+.btn-entrar:hover, .btn-main:hover { background: #fff; transform: scale(1.02); }
 
 .btn-voltar {
     background: rgba(255, 255, 255, 0.1) !important;
-    border: 1px solid var(--gold) !important;
-    color: var(--gold) !important;
-    margin-top: 15px !important;
-    font-size: 1rem !important;
+    border: 1px solid var(--gold) !important; color: var(--gold) !important;
+    margin-top: 15px !important; font-size: 1rem !important;
     padding: 8px 20px; width: 100%; border-radius: 5px;
 }
 .btn-voltar:hover { background: var(--gold) !important; color: #000 !important; }
 
-/* Admin Painel */
 #admin-container { padding: 20px; height: 100vh; overflow-y: auto; background: #111; }
 .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
 .admin-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
@@ -106,7 +98,6 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 .btn-nav { background: #333; color: #fff; padding: 10px 20px; border: 1px solid #555; border-radius: 5px; text-decoration: none; font-size: 1rem; }
 .btn-nav:hover { background: #555; }
 
-/* Jogo Principal */
 #app-container {
     height: 100vh; width: 100vw;
     background: url('img/background_epico.png') no-repeat center center/cover;
@@ -205,8 +196,7 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 .carta {
     width: 140px; height: 210px;
     background-size: contain; background-repeat: no-repeat;
-    background-position: center;
-    border-radius: 10px; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.8));
+    background-position: center; border-radius: 10px; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.8));
     margin: 0 -30px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     transform-origin: bottom center; cursor: pointer; position: relative;
 }
@@ -289,23 +279,16 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 .btn-confirmar:hover { background: #fff; }
 
 @media (max-width: 768px) {
-    #area-jogo {
-        overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; padding-bottom: 20px;
-    }
-    #mesa-area {
-        padding-top: 60px; flex-direction: column; align-items: center; gap: 15px; width: 100%;
-    }
+    #area-jogo { overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; padding-bottom: 20px; }
+    #mesa-area { padding-top: 60px; flex-direction: column; align-items: center; gap: 15px; width: 100%; }
     .grupo-fixo { width: 95%; max-width: 350px; }
     .slot-fixo { width: 80px; height: 110px; }
     .slot-classe { width: 90px; height: 125px; }
-    
     #deck-container-wrapper { height: auto; padding: 0; justify-content: center; }
     #deck-area { position: relative; top: auto; right: auto; margin: 10px auto; width: 100px; }
-    
     #reserva-area { position: relative; bottom: auto; margin-bottom: 10px; }
     #cartas-reserva { min-height: 80px; }
     .carta-reserva { width: 50px; height: 75px; }
-    
     #mao-area { height: 30vh; background-position: center bottom; }
     .carta { width: 90px; height: 135px; margin: 0 -20px; }
     .carta:hover { transform: translateY(-40px) scale(1.4) !important; margin: 0 10px; }

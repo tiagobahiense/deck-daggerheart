@@ -345,20 +345,30 @@ function renderizar() {
         const centro = (maoDoJogador.length - 1) / 2;
         const rotacao = (i - centro) * 4; 
         el.style.transform = `rotate(${rotacao}deg)`;
-        if(c.estado === 'curto') { el.classList.add('indisponivel'); el.setAttribute('data-status', 'Indisponível: Descanso Curto'); }
-        else if(c.estado === 'longo') { el.classList.add('indisponivel'); el.setAttribute('data-status', 'Indisponível: Descanso Longo'); }
+        
+        if(c.estado === 'curto') {
+            el.classList.add('indisponivel');
+            el.setAttribute('data-status', 'Indisponível: Descanso Curto');
+        } else if(c.estado === 'longo') {
+            el.classList.add('indisponivel');
+            el.setAttribute('data-status', 'Indisponível: Descanso Longo');
+        }
+
         if(c.tokens && c.tokens > 0) {
             const badge = document.createElement('div');
             badge.className = `token-badge token-${c.tokens}`;
             badge.innerText = c.tokens;
             el.appendChild(badge);
         }
+
         el.onclick = () => window.abrirDecisao(i);
         divMao.appendChild(el);
     });
+
     const divRes = document.getElementById('cartas-reserva');
     divRes.innerHTML = '';
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0';
+    
     reservaDoJogador.forEach((c, i) => {
         const el = document.createElement('div');
         el.className = 'carta-reserva';
