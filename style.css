@@ -599,6 +599,50 @@ button {
     box-shadow: 0 0 50px var(--gold);
     overflow: hidden;
 }
+
+/* --- GRID DE CARTAS DO GRIMÓRIO --- */
+#grid-cartas {
+    flex: 1;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 15px;
+    padding: 20px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.carta-modal {
+    width: 140px;
+    height: 210px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    border: 2px solid #333;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.carta-modal:hover {
+    transform: scale(1.1);
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+    z-index: 100;
+}
+
+/* --- LAZY LOADING --- */
+.lazy-card {
+    background-color: #1a1a1a !important;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.8; }
+}
+}
 .modal-header {
     display: flex;
     justify-content: space-between;

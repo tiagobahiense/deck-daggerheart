@@ -47,14 +47,16 @@ const imageObserver = new IntersectionObserver((entries) => {
                 img.onload = () => {
                     cardDiv.style.backgroundImage = `url('${src}')`;
                     cardDiv.classList.remove('lazy-card');
+                    imageObserver.unobserve(cardDiv);
                 };
                 img.onerror = () => {
                     console.warn(`Erro ao carregar imagem: ${src}`);
                     // Usa cor de fundo em caso de erro
                     cardDiv.style.backgroundColor = '#2a2a2a';
+                    cardDiv.classList.remove('lazy-card');
+                    imageObserver.unobserve(cardDiv);
                 };
                 img.src = src;
-                imageObserver.unobserve(cardDiv);
             }
         }
     });
