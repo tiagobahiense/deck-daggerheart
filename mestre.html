@@ -28,6 +28,21 @@
             font-family: inherit; font-size: 1.2rem; cursor: pointer; border-radius: 5px; margin-top: 10px;
         }
         .btn-entrar:hover { filter: brightness(1.2); }
+        
+        .btn-voltar {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid #d4af37 !important;
+            color: #d4af37 !important;
+            margin-top: 15px !important;
+            font-size: 1rem !important;
+            padding: 8px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .btn-voltar:hover {
+            background: #d4af37 !important;
+            color: #000 !important;
+        }
 
         #app-mestre { display: none; }
 
@@ -88,7 +103,7 @@
             <input type="password" id="mestre-pass" placeholder="Senha" class="input-login">
             <button class="btn-entrar" onclick="verificarCredenciais()">Entrar</button>
             <br>
-            <button onclick="window.location.href='index.html'" style="background:transparent; border:1px solid #666; font-size:0.8rem; margin-top:15px; color:#aaa;">Voltar</button>
+            <button onclick="window.location.href='index.html'" class="btn-voltar">Voltar</button>
         </div>
     </div>
 

@@ -49,6 +49,18 @@ body {
 }
 .start-content button:hover { transform: scale(1.05); color: #000; filter: brightness(1.2); }
 
+.btn-voltar {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid var(--gold) !important;
+    color: var(--gold) !important;
+    margin-top: 15px !important;
+    font-size: 1rem !important;
+}
+.btn-voltar:hover {
+    background: var(--gold) !important;
+    color: #000 !important;
+}
+
 .input-login {
     display: block; width: 80%; margin: 10px auto; padding: 10px;
     font-size: 1rem; border-radius: 5px; border: none; text-align: center;
@@ -197,6 +209,12 @@ body {
     width: 100%; margin-bottom: 10px;
 }
 .btn-confirmar:hover { background: #fff; }
+
+.btn-entrar {
+    background: #8b0000; color: #fff; border: 2px solid #ff4444; padding: 10px 30px;
+    font-family: inherit; font-size: 1.2rem; cursor: pointer; border-radius: 5px; margin-top: 10px;
+}
+.btn-entrar:hover { filter: brightness(1.2); }
 
 @media (max-width: 768px) {
     #area-jogo { overflow-y: auto; display: flex; flex-direction: column; align-items: center; gap: 20px; padding-bottom: 20px; }
