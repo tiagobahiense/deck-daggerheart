@@ -444,6 +444,14 @@ window.iniciarExperiencia = async function() {
     document.getElementById('app-container').style.display = 'flex';
     setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
 
+    // Iniciar música de fundo
+    const audio = document.getElementById('bg-music');
+    if (audio) {
+        audio.volume = 0.05;
+        audio.play().catch(err => console.warn('Não foi possível iniciar a música:', err));
+        document.getElementById('btn-music').innerText = '🔊';
+    }
+
     await carregarDados();
     await carregarEstadoDaNuvem();
     monitorarEstadoEmTempoReal();
