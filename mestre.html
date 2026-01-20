@@ -52,7 +52,7 @@
         }
 
         onAuthStateChanged(auth, (user) => {
-            if (user && user.email === EMAIL_MESTRE) {
+            if (user && user.email.toLowerCase() === EMAIL_MESTRE.toLowerCase()) {
                 document.getElementById('loading-overlay').style.display = 'none';
                 iniciarPainel();
             } else {

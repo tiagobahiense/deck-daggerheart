@@ -17,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-const EMAIL_MESTRE = "mestre@rpg.com"; // Substitua pelo e-mail que você criou no Firebase
+const EMAIL_MESTRE = "mestre@rpg.com"; 
 
 let currentUser = null;
 let nomeJogador = "";
@@ -48,6 +48,15 @@ const imageObserver = new IntersectionObserver((entries, observer) => {
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('dragstart', event => event.preventDefault());
 
+window.togglePassword = function(id) {
+    const input = document.getElementById(id);
+    if (input.type === "password") {
+        input.type = "text";
+    } else {
+        input.type = "password";
+    }
+}
+
 window.irParaLoginJogador = function() {
     document.getElementById('fase-selecao').style.display = 'none';
     document.getElementById('fase-login-jogador').style.display = 'block';
@@ -74,7 +83,10 @@ window.fazerLoginNarrador = function() {
 
     signInWithEmailAndPassword(auth, email, pass)
     .then((userCredential) => {
-        if(userCredential.user.email === EMAIL_MESTRE) {
+        const mail = userCredential.user.email.toLowerCase().trim();
+        const masterMail = EMAIL_MESTRE.toLowerCase().trim();
+        
+        if(mail === masterMail) {
             window.location.href = 'admin.html';
         } else {
             msg.innerText = "Este login não é de narrador.";
@@ -100,7 +112,8 @@ window.fazerLoginJogador = function() {
         document.getElementById('fase-personagem').style.display = 'block';
     })
     .catch((error) => {
-        msg.innerText = "Login inválido.";
+        msg.innerText = "Login inválido ou usuário não encontrado.";
+        console.error(error);
     });
 }
 

@@ -24,9 +24,15 @@
             <h1>Acesso do Jogador</h1>
             <p>Insira suas credenciais</p>
             
-            <input type="email" id="player-email" placeholder="Email" class="input-login">
-            <input type="password" id="player-pass" placeholder="Senha" class="input-login">
-            <div id="error-msg-player" style="color: red; font-size: 0.9rem; margin-top: 5px;"></div>
+            <div class="input-group">
+                <input type="email" id="player-email" placeholder="Email" class="input-login">
+            </div>
+            <div class="input-group">
+                <input type="password" id="player-pass" placeholder="Senha" class="input-login">
+                <span class="toggle-password" onclick="togglePassword('player-pass')">👁️</span>
+            </div>
+            
+            <div id="error-msg-player"></div>
             
             <button class="btn-entrar" onclick="fazerLoginJogador()">Entrar</button>
             <button class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
@@ -36,9 +42,15 @@
             <h1>Acesso do Narrador</h1>
             <p>Área Restrita</p>
             
-            <input type="email" id="narrador-email" placeholder="Email" class="input-login">
-            <input type="password" id="narrador-pass" placeholder="Senha" class="input-login">
-            <div id="error-msg-narrador" style="color: red; font-size: 0.9rem; margin-top: 5px;"></div>
+            <div class="input-group">
+                <input type="email" id="narrador-email" placeholder="Email" class="input-login">
+            </div>
+            <div class="input-group">
+                <input type="password" id="narrador-pass" placeholder="Senha" class="input-login">
+                <span class="toggle-password" onclick="togglePassword('narrador-pass')">👁️</span>
+            </div>
+            
+            <div id="error-msg-narrador"></div>
             
             <button class="btn-entrar" onclick="fazerLoginNarrador()">Acessar Admin</button>
             <button class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>

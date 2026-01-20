@@ -22,8 +22,15 @@
             
             <div class="admin-box" style="width: 300px; padding: 20px;">
                 <h3>Criar Novo Jogador</h3>
-                <input type="email" id="new-user-email" placeholder="Email do Jogador" class="input-login">
-                <input type="password" id="new-user-pass" placeholder="Senha" class="input-login">
+                
+                <div class="input-group">
+                    <input type="email" id="new-user-email" placeholder="Email do Jogador" class="input-login">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="new-user-pass" placeholder="Senha" class="input-login">
+                    <span class="toggle-password" onclick="togglePassword('new-user-pass')">👁️</span>
+                </div>
+                
                 <button class="btn-main" onclick="criarUsuario()">Criar Conta</button>
             </div>
 
@@ -61,8 +68,17 @@
 
         const EMAIL_MESTRE = "mestre@rpg.com";
 
+        window.togglePassword = function(id) {
+            const input = document.getElementById(id);
+            if (input.type === "password") {
+                input.type = "text";
+            } else {
+                input.type = "password";
+            }
+        }
+
         onAuthStateChanged(auth, user => {
-            if(!user || user.email !== EMAIL_MESTRE) {
+            if(!user || user.email.toLowerCase() !== EMAIL_MESTRE.toLowerCase()) {
                 window.location.href = 'index.html';
             } else {
                 carregarUsuarios();
