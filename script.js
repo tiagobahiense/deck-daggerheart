@@ -442,9 +442,7 @@ window.definirEstado = function(novoEstado) {
     if (cartaEmTransitoIndex !== null && origemTransito === 'mao') {
         let card = maoDoJogador[cartaEmTransitoIndex];
         card.estado = novoEstado;
-        renderizar();
         salvarNaNuvem();
-        window.fecharDecisao();
     }
 };
 

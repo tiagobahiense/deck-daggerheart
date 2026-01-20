@@ -542,7 +542,6 @@ button {
 /* --- ESTADO DE DESCANSO (CINZA) --- */
 .carta.indisponivel {
     filter: var(--resting-gray);
-    opacity: var(--resting-opacity);
 }
 .carta.indisponivel:hover {
     filter: var(--resting-gray);
