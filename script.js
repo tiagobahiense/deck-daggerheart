@@ -265,6 +265,7 @@ function renderizar() {
         if (carta.estado === 'curto' || carta.estado === 'longo') {
             el.classList.add('indisponivel');
             el.setAttribute('data-status', carta.estado === 'curto' ? 'Indisponível: Descanso Curto' : 'Indisponível: Descanso Longo');
+            debug(`Carta em descanso: ${carta.nome || 'sem nome'} - Estado: ${carta.estado}`);
         }
 
         if (carta.tokens && carta.tokens > 0) {
@@ -442,6 +443,7 @@ window.definirEstado = function(novoEstado) {
     if (cartaEmTransitoIndex !== null && origemTransito === 'mao') {
         let card = maoDoJogador[cartaEmTransitoIndex];
         card.estado = novoEstado;
+        debug(`Estado alterado para: ${novoEstado}`, card);
         // Atualiza o preview para mostrar feedback visual
         const preview = document.getElementById('preview-decisao');
         if (preview) {
@@ -456,6 +458,7 @@ window.definirEstado = function(novoEstado) {
 };
 
 window.confirmarEdicao = function() { 
+    debug('Confirmando edição - renderizando cartas');
     renderizar();
     window.fecharDecisao(); 
 };
