@@ -56,7 +56,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, deleteUser } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, deleteUser, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -208,6 +208,7 @@
 
         window.removerConta = function(uid, email) {
             if (confirm(`Tem certeza que deseja remover a conta "${email}" e TODOS os seus personagens?`)) {
+                // Primeiro, remove todos os personagens da conta
                 get(ref(db, `mesa_rpg/accounts/${uid}/characters`))
                     .then(snapshot => {
                         if (snapshot.exists()) {
@@ -221,7 +222,16 @@
                         return Promise.resolve();
                     })
                     .then(() => {
+                        // Remove a conta do Realtime Database
                         return remove(ref(db, `mesa_rpg/accounts/${uid}`));
+                    })
+                    .then(() => {
+                        // Busca o usuário no Firebase Auth para removê-lo
+                        return getAuth().getUser(uid);
+                    })
+                    .then((userRecord) => {
+                        // Remove o usuário do Firebase Auth
+                        return deleteUser(userRecord.uid);
                     })
                     .then(() => {
                         alert(`Conta "${email}" e todos os seus personagens foram removidos com sucesso!`);
