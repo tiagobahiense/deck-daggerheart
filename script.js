@@ -78,11 +78,68 @@ window.fecharGrimorio = function() {
     if (modal) modal.style.display = 'none';
 };
 
-window.fecharDecisao = function() {
-    const modal = document.getElementById('decisao-modal');
+window.fecharReserva = function() {
+    const modal = document.getElementById('reserva-modal');
     if (modal) modal.style.display = 'none';
-    cartaEmTransitoIndex = null;
-    origemTransito = null;
+};
+
+window.abrirReserva = function() {
+    const modal = document.getElementById('reserva-modal');
+    const grid = document.getElementById('grid-reserva');
+    grid.innerHTML = '';
+    
+    if (reservaDoJogador.length === 0) {
+        grid.innerHTML = '<p style="color: #aaa; text-align: center; grid-column: 1/-1;">Nenhuma carta em reserva</p>';
+    } else {
+        reservaDoJogador.forEach(carta => {
+            const div = document.createElement('div');
+            div.className = 'carta-modal lazy-card';
+            div.dataset.src = carta.caminho;
+            div.style.backgroundColor = '#1a1a1a';
+            div.onclick = () => {
+                window.fecharReserva();
+                window.abrirDecisaoReserva(reservaDoJogador.indexOf(carta));
+            };
+            grid.appendChild(div);
+            imageObserver.observe(div);
+        });
+    }
+    
+    if (modal) modal.style.display = 'flex';
+};
+
+window.abrirDecisaoReserva = function(idx) {
+    if (idx === null || idx === undefined || !reservaDoJogador[idx]) {
+        console.error('Índice de carta em reserva inválido:', idx);
+        return;
+    }
+    cartaEmTransitoIndex = idx;
+    origemTransito = 'reserva';
+    const c = reservaDoJogador[idx];
+    const preview = document.getElementById('preview-decisao');
+    if (preview) {
+        preview.style.backgroundImage = `url('${c.caminho}')`;
+        preview.innerHTML = '';
+        
+        // Adiciona ícone de descanso se aplicável (apenas um)
+        if (c.estado === 'curto' || c.estado === 'longo') {
+            const iconoDiv = document.createElement('div');
+            iconoDiv.className = c.estado === 'curto' ? 'icone-descanso icone-descanso-curto' : 'icone-descanso icone-descanso-longo';
+            
+            const img = document.createElement('img');
+            img.src = c.estado === 'curto' ? 'img/meia-lua.png' : 'img/lua-cheia.png';
+            img.alt = c.estado === 'curto' ? 'Descanso Curto' : 'Descanso Longo';
+            iconoDiv.appendChild(img);
+            preview.appendChild(iconoDiv);
+            preview.style.filter = 'grayscale(1) brightness(0.7)';
+        } else {
+            preview.style.filter = 'none';
+        }
+    }
+    const label = document.getElementById('label-token-qtd');
+    if (label) label.innerText = c.tokens || 0;
+    const modal = document.getElementById('decisao-modal');
+    if (modal) modal.style.display = 'flex';
 };
 
 // Funções de navegação entre telas de login
@@ -294,22 +351,64 @@ function renderizar() {
         imageObserver.observe(el);
     });
 
-    // Renderiza reserva
+    // Renderiza reserva como container clicável com modal
     divRes.innerHTML = '';
-    divRes.style.opacity = reservaDoJogador.length ? '1' : '0';
-    reservaDoJogador.forEach((carta, i) => {
-        const el = document.createElement('div');
-        el.className = 'carta-reserva lazy-card';
-        el.dataset.src = carta.caminho;
-        el.style.backgroundColor = '#1a1a1a';
-        el.onclick = () => {
-            if (typeof window.resgatarReserva === 'function') {
-                window.resgatarReserva(i);
+    divRes.style.opacity = reservaDoJogador.length ? '1' : '0.3';
+    
+    if (reservaDoJogador.length > 0) {
+        // Cria um container que mostra a pilha de cartas
+        const container = document.createElement('div');
+        container.className = 'reserva-container';
+        container.style.position = 'relative';
+        container.style.width = '100%';
+        container.style.height = '100%';
+        container.style.cursor = 'pointer';
+        
+        // Mostra as primeiras cartas da reserva com efeito de sobreposição
+        for (let i = 0; i < Math.min(3, reservaDoJogador.length); i++) {
+            const carta = reservaDoJogador[i];
+            const cartaEl = document.createElement('div');
+            cartaEl.className = 'carta-reserva-stacked lazy-card';
+            cartaEl.dataset.src = carta.caminho;
+            cartaEl.style.backgroundColor = '#1a1a1a';
+            cartaEl.style.position = 'absolute';
+            cartaEl.style.width = '100%';
+            cartaEl.style.height = '100%';
+            cartaEl.style.top = `${i * 4}px`;
+            cartaEl.style.left = `${i * 4}px`;
+            cartaEl.style.zIndex = i;
+            cartaEl.style.pointerEvents = 'none'; // Não interfere com cliques
+            
+            container.appendChild(cartaEl);
+            imageObserver.observe(cartaEl);
+        }
+        
+        // Rótulo de quantidade
+        if (reservaDoJogador.length > 0) {
+            const label = document.createElement('div');
+            label.style.position = 'absolute';
+            label.style.bottom = '8px';
+            label.style.right = '8px';
+            label.style.backgroundColor = 'rgba(218, 165, 32, 0.9)';
+            label.style.color = '#fff';
+            label.style.padding = '4px 8px';
+            label.style.borderRadius = '4px';
+            label.style.fontSize = '12px';
+            label.style.fontWeight = 'bold';
+            label.style.zIndex = '10';
+            label.innerText = `${reservaDoJogador.length}`;
+            container.appendChild(label);
+        }
+        
+        // Abre modal ao clicar
+        container.onclick = () => {
+            if (typeof window.abrirReserva === 'function') {
+                window.abrirReserva();
             }
         };
-        divRes.appendChild(el);
-        imageObserver.observe(el);
-    });
+        
+        divRes.appendChild(container);
+    }
 }
 
 // Função para iniciar a experiência do jogador
