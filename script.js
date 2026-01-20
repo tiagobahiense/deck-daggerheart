@@ -267,10 +267,14 @@ function renderizar() {
             el.setAttribute('data-status', carta.estado === 'curto' ? 'Indisponível: Descanso Curto' : 'Indisponível: Descanso Longo');
             debug(`Carta em descanso: ${carta.nome || 'sem nome'} - Estado: ${carta.estado}`);
             
-            // Adiciona ícone de descanso
+            // Adiciona ícone de descanso (apenas um)
             const iconoDiv = document.createElement('div');
             iconoDiv.className = carta.estado === 'curto' ? 'icone-descanso icone-descanso-curto' : 'icone-descanso icone-descanso-longo';
-            iconoDiv.innerHTML = carta.estado === 'curto' ? '🌙😴' : '😴💤';
+            
+            const img = document.createElement('img');
+            img.src = carta.estado === 'curto' ? 'img/meia-lua.png' : 'img/lua-cheia.png';
+            img.alt = carta.estado === 'curto' ? 'Descanso Curto' : 'Descanso Longo';
+            iconoDiv.appendChild(img);
             el.appendChild(iconoDiv);
         }
 
@@ -427,11 +431,15 @@ window.abrirDecisao = function(idx) {
         preview.style.backgroundImage = `url('${c.caminho}')`;
         preview.innerHTML = ''; // Limpa ícones anteriores
         
-        // Adiciona ícone de descanso se aplicável
+        // Adiciona ícone de descanso se aplicável (apenas um)
         if (c.estado === 'curto' || c.estado === 'longo') {
             const iconoDiv = document.createElement('div');
             iconoDiv.className = c.estado === 'curto' ? 'icone-descanso icone-descanso-curto' : 'icone-descanso icone-descanso-longo';
-            iconoDiv.innerHTML = c.estado === 'curto' ? '🌙😴' : '😴💤';
+            
+            const img = document.createElement('img');
+            img.src = c.estado === 'curto' ? 'img/meia-lua.png' : 'img/lua-cheia.png';
+            img.alt = c.estado === 'curto' ? 'Descanso Curto' : 'Descanso Longo';
+            iconoDiv.appendChild(img);
             preview.appendChild(iconoDiv);
             preview.style.filter = 'grayscale(1) brightness(0.7)';
         } else {
@@ -473,7 +481,11 @@ window.definirEstado = function(novoEstado) {
             if (novoEstado === 'curto' || novoEstado === 'longo') {
                 const iconoDiv = document.createElement('div');
                 iconoDiv.className = novoEstado === 'curto' ? 'icone-descanso icone-descanso-curto' : 'icone-descanso icone-descanso-longo';
-                iconoDiv.innerHTML = novoEstado === 'curto' ? '🌙😴' : '😴💤';
+                
+                const img = document.createElement('img');
+                img.src = novoEstado === 'curto' ? 'img/meia-lua.png' : 'img/lua-cheia.png';
+                img.alt = novoEstado === 'curto' ? 'Descanso Curto' : 'Descanso Longo';
+                iconoDiv.appendChild(img);
                 preview.appendChild(iconoDiv);
                 preview.style.filter = 'grayscale(1) brightness(0.7)';
             } else {
