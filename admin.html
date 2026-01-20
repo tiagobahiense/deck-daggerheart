@@ -4,16 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Painel Admin - Daggerheart</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=5.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div id="access-denied-screen">
         <h1 style="color: red;">ACESSO NEGADO</h1>
-        <p>Login detectado, mas não autorizado como Narrador.</p>
+        <p>Você está logado, mas não como Narrador.</p>
         <div class="debug-box" id="debug-text">
-            Carregando diagnóstico...
+            Verificando credenciais...
         </div>
         <button class="btn-voltar" onclick="fazerLogout()" style="margin-top: 20px; border-color: red; color: red;">SAIR E TENTAR NOVAMENTE</button>
     </div>
@@ -28,8 +28,10 @@
         </div>
 
         <div style="display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+            
             <div class="admin-box" style="width: 300px; padding: 20px;">
                 <h3>Criar Novo Jogador</h3>
+                
                 <div class="input-group">
                     <input type="email" id="new-user-email" placeholder="Email do Jogador" class="input-login">
                 </div>
@@ -37,6 +39,7 @@
                     <input type="password" id="new-user-pass" placeholder="Senha" class="input-login">
                     <span class="toggle-password" onclick="togglePassword('new-user-pass')">👁️</span>
                 </div>
+                
                 <button class="btn-main" onclick="criarUsuario()">Criar Conta</button>
             </div>
 
@@ -46,13 +49,14 @@
                     <p>Carregando...</p>
                 </div>
             </div>
+
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, remove, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -92,8 +96,7 @@
             const debugText = document.getElementById('debug-text');
 
             if (!user) {
-                // Se não tem usuário, aí sim manda pro login
-                window.location.href = 'index.html';
+                window.location.href = 'index.html'; // Só volta se não tiver logado
                 return;
             }
 
@@ -107,11 +110,10 @@
                 adminContainer.style.display = 'none';
                 
                 debugText.innerHTML = `
-                    <p><strong>DADOS TÉCNICOS:</strong></p>
+                    <p><strong>DIAGNÓSTICO TÉCNICO:</strong></p>
                     <p>Logado como: <span style="color: white">${currentEmail}</span></p>
                     <p>Mestre esperado: <span style="color: yellow">${masterEmail}</span></p>
                     <p>UID: ${user.uid}</p>
-                    <p><em>Compare os emails acima. Se houver diferença (espaço, letra), corrija no código.</em></p>
                 `;
             } else {
                 // SUCESSO - MOSTRA O PAINEL
@@ -130,12 +132,11 @@
             createUserWithEmailAndPassword(secondaryAuth, email, pass)
                 .then((cred) => {
                     const uid = cred.user.uid;
-                    // Salva no banco para listagem
                     set(ref(db, `mesa_rpg/accounts/${uid}`), {
                         email: email,
                         characters: {}
                     });
-                    signOut(secondaryAuth); // Desloga o secundário
+                    signOut(secondaryAuth); 
                     alert("Usuário criado: " + email);
                     document.getElementById('new-user-email').value = "";
                     document.getElementById('new-user-pass').value = "";

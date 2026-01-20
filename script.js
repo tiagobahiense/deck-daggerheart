@@ -17,7 +17,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// EMAIL OFICIAL DO MESTRE (Verifique se não tem espaços)
+// EMAIL OFICIAL DO MESTRE
 const EMAIL_MESTRE = "tgbahiense@gmail.com"; 
 
 let currentUser = null;
@@ -50,7 +50,7 @@ const imageObserver = new IntersectionObserver((entries, observer) => {
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('dragstart', event => event.preventDefault());
 
-// --- UTILITÁRIOS DE TELA ---
+// --- UTILITÁRIOS ---
 
 window.togglePassword = function(id) {
     const input = document.getElementById(id);
@@ -66,12 +66,12 @@ window.voltarParaSelecao = function() {
 
 window.forcarLogout = function() {
     signOut(auth).then(() => {
-        alert("Logout realizado. Tente entrar novamente.");
+        alert("Logout realizado. A página será recarregada.");
         location.reload();
     });
 }
 
-// --- LOGICA DE NAVEGAÇÃO SEGURA (SEM REDIRECT AUTOMÁTICO) ---
+// --- NAVEGAÇÃO SEGURA (NÃO REDIRECIONA AUTOMÁTICO PARA EVITAR LOOP) ---
 
 // 1. Clicou em "Sou Narrador"
 window.irParaLoginNarrador = function() {
@@ -79,7 +79,7 @@ window.irParaLoginNarrador = function() {
     if (auth.currentUser && auth.currentUser.email.toLowerCase().trim() === EMAIL_MESTRE.toLowerCase().trim()) {
         window.location.href = 'admin.html';
     } else {
-        // Se não, mostra tela de login
+        // Se não, pede login
         document.getElementById('fase-selecao').style.display = 'none';
         document.getElementById('fase-login-narrador').style.display = 'block';
     }
@@ -93,7 +93,7 @@ window.irParaLoginJogador = function() {
         document.getElementById('fase-selecao').style.display = 'none';
         document.getElementById('fase-personagem').style.display = 'block';
     } else {
-        // Se não, mostra tela de login
+        // Se não, pede login
         document.getElementById('fase-selecao').style.display = 'none';
         document.getElementById('fase-login-jogador').style.display = 'block';
     }
@@ -107,7 +107,7 @@ window.fazerLoginNarrador = function() {
     const msg = document.getElementById('error-msg-narrador');
 
     if(!email || !pass) { msg.innerText = "Preencha tudo."; return; }
-    msg.innerText = "Verificando...";
+    msg.innerText = "Entrando...";
 
     signInWithEmailAndPassword(auth, email, pass)
     .then((userCredential) => {
@@ -118,7 +118,7 @@ window.fazerLoginNarrador = function() {
             window.location.href = 'admin.html';
         } else {
             msg.innerText = `Erro: ${mail} não é um Narrador.`;
-            signOut(auth); // Desloga se for o user errado
+            signOut(auth);
         }
     })
     .catch((error) => {
@@ -146,7 +146,7 @@ window.fazerLoginJogador = function() {
     });
 }
 
-// --- SISTEMA DE JOGO ---
+// --- LÓGICA DE JOGO ---
 
 function salvarNaNuvem() {
     if (!nomeJogador || !currentUser) return;
@@ -192,7 +192,6 @@ window.iniciarExperiencia = async function() {
     if (!input.value.trim()) { alert("Nome do personagem obrigatório!"); return; }
     nomeJogador = input.value.trim().toUpperCase();
     
-    // Salva o vinculo
     if(currentUser) {
         set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
         set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
