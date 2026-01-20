@@ -266,6 +266,12 @@ function renderizar() {
             el.classList.add('indisponivel');
             el.setAttribute('data-status', carta.estado === 'curto' ? 'Indisponível: Descanso Curto' : 'Indisponível: Descanso Longo');
             debug(`Carta em descanso: ${carta.nome || 'sem nome'} - Estado: ${carta.estado}`);
+            
+            // Adiciona ícone de descanso
+            const iconoDiv = document.createElement('div');
+            iconoDiv.className = carta.estado === 'curto' ? 'icone-descanso icone-descanso-curto' : 'icone-descanso icone-descanso-longo';
+            iconoDiv.innerHTML = carta.estado === 'curto' ? '🌙😴' : '😴💤';
+            el.appendChild(iconoDiv);
         }
 
         if (carta.tokens && carta.tokens > 0) {
@@ -417,7 +423,21 @@ window.abrirDecisao = function(idx) {
     origemTransito = 'mao';
     const c = maoDoJogador[idx];
     const preview = document.getElementById('preview-decisao');
-    if (preview) preview.style.backgroundImage = `url('${c.caminho}')`;
+    if (preview) {
+        preview.style.backgroundImage = `url('${c.caminho}')`;
+        preview.innerHTML = ''; // Limpa ícones anteriores
+        
+        // Adiciona ícone de descanso se aplicável
+        if (c.estado === 'curto' || c.estado === 'longo') {
+            const iconoDiv = document.createElement('div');
+            iconoDiv.className = c.estado === 'curto' ? 'icone-descanso icone-descanso-curto' : 'icone-descanso icone-descanso-longo';
+            iconoDiv.innerHTML = c.estado === 'curto' ? '🌙😴' : '😴💤';
+            preview.appendChild(iconoDiv);
+            preview.style.filter = 'grayscale(1) brightness(0.7)';
+        } else {
+            preview.style.filter = 'none';
+        }
+    }
     const label = document.getElementById('label-token-qtd');
     if (label) label.innerText = c.tokens || 0;
     const modal = document.getElementById('decisao-modal');
@@ -444,10 +464,17 @@ window.definirEstado = function(novoEstado) {
         let card = maoDoJogador[cartaEmTransitoIndex];
         card.estado = novoEstado;
         debug(`Estado alterado para: ${novoEstado}`, card);
+        
         // Atualiza o preview para mostrar feedback visual
         const preview = document.getElementById('preview-decisao');
         if (preview) {
+            preview.innerHTML = ''; // Limpa ícones anteriores
+            
             if (novoEstado === 'curto' || novoEstado === 'longo') {
+                const iconoDiv = document.createElement('div');
+                iconoDiv.className = novoEstado === 'curto' ? 'icone-descanso icone-descanso-curto' : 'icone-descanso icone-descanso-longo';
+                iconoDiv.innerHTML = novoEstado === 'curto' ? '🌙😴' : '😴💤';
+                preview.appendChild(iconoDiv);
                 preview.style.filter = 'grayscale(1) brightness(0.7)';
             } else {
                 preview.style.filter = 'none';

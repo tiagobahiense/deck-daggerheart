@@ -547,6 +547,38 @@ button {
     filter: grayscale(1) brightness(0.8) saturate(0.5) drop-shadow(0 0 25px rgba(255, 215, 0, 0.6));
 }
 
+/* --- ÍCONES DE DESCANSO --- */
+.icone-descanso {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 3rem;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+    z-index: 5;
+    pointer-events: none;
+}
+
+.icone-descanso-curto {
+    font-size: 2.5rem;
+    animation: pulse-icon 1.5s ease-in-out infinite;
+}
+
+.icone-descanso-longo {
+    font-size: 2.5rem;
+    animation: sleep-z 2s ease-in-out infinite;
+}
+
+@keyframes pulse-icon {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+@keyframes sleep-z {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
 /* --- TOKENS E BADGES --- */
 .token-badge {
     position: absolute;
