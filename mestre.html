@@ -42,7 +42,7 @@
         .btn-nav-mestre:hover {
             background: #555;
         }
-        
+
         #carta-usada-animada {
             position: fixed;
             width: 200px;
@@ -56,11 +56,11 @@
             z-index: 9999;
             box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
         }
-        
+
         #carta-usada-animada.ativa {
             animation: carta-usar 2.5s ease-in-out forwards;
         }
-        
+
         @keyframes carta-usar {
             0% {
                 opacity: 1;
@@ -151,12 +151,10 @@
                         if(player.mao) {
                             let mudou = false;
                             player.mao.forEach(carta => {
-                                // Se for 'curto', remove apenas cartas em estado 'curto'
                                 if(tipo === 'curto' && carta.estado === 'curto') {
                                     carta.estado = 'ativo';
                                     mudou = true;
                                 }
-                                // Se for 'longo', remove cartas em AMBOS os estados (curto e longo)
                                 if(tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) {
                                     carta.estado = 'ativo';
                                     mudou = true;
@@ -212,13 +210,13 @@
                             let classes = "mini-carta";
                             let tooltip = c.nome;
                             let descansoIcon = "";
-                            if(c.estado === 'curto') { 
-                                classes += " indisponivel"; 
+                            if(c.estado === 'curto') {
+                                classes += " indisponivel";
                                 tooltip += " (Recarga: Descanso Curto)";
                                 descansoIcon = `<div class="icone-descanso-mini icone-descanso-curto-mini"><img src="img/meia-lua.png" alt="Descanso Curto"></div>`;
                             }
-                            if(c.estado === 'longo') { 
-                                classes += " indisponivel"; 
+                            if(c.estado === 'longo') {
+                                classes += " indisponivel";
                                 tooltip += " (Recarga: Descanso Longo)";
                                 descansoIcon = `<div class="icone-descanso-mini icone-descanso-longo-mini"><img src="img/lua-cheia.png" alt="Descanso Longo"></div>`;
                             }
@@ -260,54 +258,56 @@
                     painel.appendChild(card);
                 });
             });
-            
-            // Listener SEPARADO para cartas usadas
-            const jogadoresRef2 = ref(db, 'mesa_rpg/jogadores');
-            onValue(jogadoresRef2, (snapshot) => {
+
+            // Listener ÚNICO para cartas usadas (fora do loop)
+            const cartasUsadasRef = ref(db, 'mesa_rpg/jogadores');
+            onValue(cartasUsadasRef, (snapshot) => {
                 const dados = snapshot.val();
                 if(dados) {
                     Object.keys(dados).forEach(nome => {
-                        const cartaUsadaRef = ref(db, `mesa_rpg/jogadores/${nome}/cartaUsada`);
-                        onValue(cartaUsadaRef, (snap) => {
-                            if(snap.exists()) {
-                                const cartaUsada = snap.val();
-                                console.log(`🎯 Carta usada detectada por ${nome}:`, cartaUsada);
-                                mostrarAnimacaoCartaUsada(cartaUsada.caminho);
-                            }
-                        }, (error) => {
-                            console.error('Erro ao monitorar carta usada:', error);
-                        });
+                        const cartaUsada = dados[nome].cartaUsada;
+                        if(cartaUsada) {
+                            console.log(`🎯 Carta usada detectada por ${nome}:`, cartaUsada);
+                            mostrarAnimacaoCartaUsada(cartaUsada.caminho);
+                        }
                     });
                 }
+            }, (error) => {
+                console.error('Erro ao monitorar cartas usadas:', error);
             });
         }
 
         function mostrarAnimacaoCartaUsada(caminhoImagem) {
             console.log('🎬 Iniciando animação de carta usada:', caminhoImagem);
             const cartaAnimada = document.getElementById('carta-usada-animada');
-            
+
             if(!cartaAnimada) {
                 console.error('❌ Container de animação não encontrado!');
                 return;
             }
-            
+
             cartaAnimada.style.backgroundImage = `url('${caminhoImagem}')`;
             cartaAnimada.style.display = 'block';
-            
+
             // Posiciona no centro da tela
             cartaAnimada.style.left = (window.innerWidth / 2 - 100) + 'px';
             cartaAnimada.style.top = (window.innerHeight / 2 - 150) + 'px';
-            
+
             cartaAnimada.classList.remove('ativa');
             void cartaAnimada.offsetWidth;
             cartaAnimada.classList.add('ativa');
-            
+
             console.log('✅ Animação iniciada');
-            
+
             setTimeout(() => {
                 cartaAnimada.style.display = 'none';
                 cartaAnimada.classList.remove('ativa');
             }, 2500);
+        }
+
+        // Função para teste rápido da animação
+        window.testearAnimacao = function() {
+            mostrarAnimacaoCartaUsada("img/carta-teste.png");
         }
     </script>
 </body>
