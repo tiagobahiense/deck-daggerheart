@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set, get, child, remove, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -156,14 +156,24 @@ window.fazerLoginJogador = function() {
 
     signInWithEmailAndPassword(auth, email, pass)
     .then((userCredential) => {
+        const uid = userCredential.user.uid;
         currentUser = userCredential.user;
         debug('Jogador autenticado', { email: currentUser.email });
-        document.getElementById('fase-login-jogador').style.display = 'none';
-        document.getElementById('fase-personagem').style.display = 'block';
+
+        // Verifica se a conta está ativa
+        return get(ref(db, `mesa_rpg/accounts/${uid}/status`)).then(statusSnapshot => {
+            if (statusSnapshot.exists() && statusSnapshot.val() === 'inactive') {
+                signOut(auth);
+                msg.innerText = "❌ Esta conta está desativada. Contate o Narrador.";
+                throw new Error("Conta inativa");
+            }
+            document.getElementById('fase-login-jogador').style.display = 'none';
+            document.getElementById('fase-personagem').style.display = 'block';
+        });
     })
     .catch((error) => {
         debug('Erro no login do jogador', error);
-        msg.innerText = "❌ Login inválido.";
+        msg.innerText = error.message.includes("Conta inativa") ? "❌ Esta conta está desativada. Contate o Narrador." : "❌ Login inválido.";
     });
 }
 

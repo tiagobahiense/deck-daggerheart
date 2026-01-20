@@ -6,6 +6,27 @@
     <title>Painel Admin - Daggerheart</title>
     <link rel="stylesheet" href="style.css?v=8.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        .inactive-account {
+            opacity: 0.6;
+            border: 1px solid #ff6666;
+        }
+        .inactive-account .player-email {
+            color: #ff9999;
+        }
+        #inactive-users-list {
+            margin-top: 30px;
+            border-top: 1px solid #555;
+            padding-top: 20px;
+        }
+        .reactivate-btn {
+            background: #2e8b57 !important;
+            border-color: #2e8b57 !important;
+        }
+        .reactivate-btn:hover {
+            background: #3cb371 !important;
+        }
+    </style>
 </head>
 <body>
 
@@ -48,6 +69,11 @@
                 <div id="users-list" class="admin-grid">
                     <p>Carregando...</p>
                 </div>
+
+                <h3 style="text-align: center; color: #ff9999; margin-top: 30px;">Contas Inativas</h3>
+                <div id="inactive-users-list" class="admin-grid">
+                    <p>Carregando...</p>
+                </div>
             </div>
 
         </div>
@@ -55,8 +81,8 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set, remove, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, deleteUser, fetchSignInMethodsForEmail, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue, set, remove, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -109,6 +135,7 @@
                         deniedScreen.style.display = 'none';
                         adminContainer.style.display = 'block';
                         carregarUsuarios();
+                        carregarUsuariosInativos();
                     }
                 });
             })
@@ -134,33 +161,45 @@
 
             if(!email || !pass) return alert("Preencha tudo");
 
-            // Verifica se o e-mail já existe no Firebase Auth
-            fetchSignInMethodsForEmail(auth, email)
-                .then((signInMethods) => {
-                    if (signInMethods.length > 0) {
-                        alert("Este e-mail já está registrado. Use outro e-mail.");
+            // Verifica se o e-mail já existe no Realtime Database como inativo
+            get(ref(db, 'mesa_rpg/accounts_inactive')).then(snapshot => {
+                if (snapshot.exists()) {
+                    const inactiveAccounts = snapshot.val();
+                    if (inactiveAccounts[email]) {
+                        alert("Este e-mail já foi usado e está inativo. Reative a conta antes de usá-lo novamente.");
                         return;
                     }
+                }
 
-                    // Se não existir, cria a conta
-                    createUserWithEmailAndPassword(auth, email, pass)
-                        .then((cred) => {
-                            const uid = cred.user.uid;
-                            set(ref(db, `mesa_rpg/accounts/${uid}`), {
-                                email: email,
-                                characters: {}
+                // Verifica se o e-mail já existe no Firebase Auth
+                fetchSignInMethodsForEmail(auth, email)
+                    .then((signInMethods) => {
+                        if (signInMethods.length > 0) {
+                            alert("Este e-mail já está registrado. Use outro e-mail.");
+                            return;
+                        }
+
+                        // Se não existir, cria a conta
+                        createUserWithEmailAndPassword(auth, email, pass)
+                            .then((cred) => {
+                                const uid = cred.user.uid;
+                                set(ref(db, `mesa_rpg/accounts/${uid}`), {
+                                    email: email,
+                                    characters: {},
+                                    status: 'active'
+                                });
+                                alert("Usuário criado: " + email);
+                                document.getElementById('new-user-email').value = "";
+                                document.getElementById('new-user-pass').value = "";
+                            })
+                            .catch((error) => {
+                                alert("Erro ao criar: " + error.message);
                             });
-                            alert("Usuário criado: " + email);
-                            document.getElementById('new-user-email').value = "";
-                            document.getElementById('new-user-pass').value = "";
-                        })
-                        .catch((error) => {
-                            alert("Erro ao criar: " + error.message);
-                        });
-                })
-                .catch((error) => {
-                    alert("Erro ao verificar e-mail: " + error.message);
-                });
+                    })
+                    .catch((error) => {
+                        alert("Erro ao verificar e-mail: " + error.message);
+                    });
+            });
         }
 
         function carregarUsuarios() {
@@ -173,6 +212,8 @@
                 snapshot.forEach(childSnap => {
                     const uid = childSnap.key;
                     const data = childSnap.val();
+                    if (data.status === 'inactive') return; // Não mostra contas inativas
+
                     const chars = data.characters ? Object.keys(data.characters) : [];
 
                     let charHtml = "";
@@ -190,7 +231,7 @@
                     div.innerHTML = `
                         <div class="player-email">
                             ${data.email}
-                            <button class="btn-banir" onclick="removerConta('${uid}', '${data.email}')">💀 Remover Conta</button>
+                            <button class="btn-banir" onclick="removerConta('${uid}', '${data.email}')">💀 Desativar Conta</button>
                         </div>
                         <ul class="char-list" style="list-style: none; padding: 0;">
                             ${charHtml || '<li style="font-style:italic">Sem personagens</li>'}
@@ -198,6 +239,45 @@
                     `;
                     list.appendChild(div);
                 });
+            });
+        }
+
+        function carregarUsuariosInativos() {
+            onValue(ref(db, 'mesa_rpg/accounts'), snapshot => {
+                const list = document.getElementById('inactive-users-list');
+                list.innerHTML = "";
+
+                if(!snapshot.exists()) { list.innerHTML = "<p>Nenhuma conta inativa encontrada.</p>"; return; }
+
+                let hasInactive = false;
+                snapshot.forEach(childSnap => {
+                    const uid = childSnap.key;
+                    const data = childSnap.val();
+                    if (data.status !== 'inactive') return;
+
+                    hasInactive = true;
+                    const chars = data.characters ? Object.keys(data.characters) : [];
+
+                    let charHtml = "";
+                    chars.forEach(charName => {
+                        charHtml += `<li>${charName}</li>`;
+                    });
+
+                    const div = document.createElement('div');
+                    div.className = 'player-card-admin inactive-account';
+                    div.innerHTML = `
+                        <div class="player-email">
+                            ${data.email}
+                            <button class="btn-banir reactivate-btn" onclick="reativarConta('${uid}', '${data.email}')">✅ Reativar Conta</button>
+                        </div>
+                        <ul class="char-list" style="list-style: none; padding: 0;">
+                            ${charHtml || '<li style="font-style:italic">Sem personagens</li>'}
+                        </ul>
+                    `;
+                    list.appendChild(div);
+                });
+
+                if (!hasInactive) list.innerHTML = "<p>Nenhuma conta inativa encontrada.</p>";
             });
         }
 
@@ -220,7 +300,7 @@
         };
 
         window.removerConta = function(uid, email) {
-            if (confirm(`Tem certeza que deseja remover a conta "${email}" e TODOS os seus personagens?`)) {
+            if (confirm(`Tem certeza que deseja desativar a conta "${email}" e TODOS os seus personagens?`)) {
                 // Primeiro, remove todos os personagens da conta
                 get(ref(db, `mesa_rpg/accounts/${uid}/characters`))
                     .then(snapshot => {
@@ -235,28 +315,35 @@
                         return Promise.resolve();
                     })
                     .then(() => {
-                        // Remove a conta do Realtime Database
-                        return remove(ref(db, `mesa_rpg/accounts/${uid}`));
+                        // Marca a conta como inativa no Realtime Database
+                        return update(ref(db, `mesa_rpg/accounts/${uid}`), { status: 'inactive' });
                     })
                     .then(() => {
-                        // Faz login temporário com a conta que será removida
-                        return signInWithEmailAndPassword(auth, email, "senha-temporaria");
-                    })
-                    .catch(() => {
-                        // Se não conseguir fazer login, continua o processo
-                        return { user: { uid: uid } };
-                    })
-                    .then((cred) => {
-                        // Remove o usuário do Firebase Auth
-                        const user = cred.user || { uid: uid };
-                        return deleteUser(user);
-                    })
-                    .then(() => {
-                        alert(`Conta "${email}" e todos os seus personagens foram removidos com sucesso!`);
+                        alert(`Conta "${email}" foi desativada e todos os seus personagens foram removidos!`);
                         carregarUsuarios();
+                        carregarUsuariosInativos();
                     })
                     .catch((error) => {
-                        alert(`Erro ao remover conta: ${error.message}`);
+                        alert(`Erro ao desativar conta: ${error.message}`);
+                        console.error("Erro detalhado:", error);
+                    });
+            }
+        };
+
+        window.reativarConta = function(uid, email) {
+            if (confirm(`Tem certeza que deseja reativar a conta "${email}"?`)) {
+                update(ref(db, `mesa_rpg/accounts/${uid}`), { status: 'active' })
+                    .then(() => {
+                        // Remove da lista de inativos (se existir)
+                        return remove(ref(db, `mesa_rpg/accounts_inactive/${email}`));
+                    })
+                    .then(() => {
+                        alert(`Conta "${email}" foi reativada com sucesso!`);
+                        carregarUsuarios();
+                        carregarUsuariosInativos();
+                    })
+                    .catch((error) => {
+                        alert(`Erro ao reativar conta: ${error.message}`);
                         console.error("Erro detalhado:", error);
                     });
             }
