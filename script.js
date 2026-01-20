@@ -83,6 +83,13 @@ window.fecharReserva = function() {
     if (modal) modal.style.display = 'none';
 };
 
+window.fecharDecisao = function() {
+    const modal = document.getElementById('decisao-modal');
+    if (modal) modal.style.display = 'none';
+    cartaEmTransitoIndex = null;
+    origemTransito = null;
+};
+
 window.abrirReserva = function() {
     const modal = document.getElementById('reserva-modal');
     const grid = document.getElementById('grid-reserva');
