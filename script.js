@@ -20,11 +20,8 @@ let catalogoCartas = [];
 let maoDoJogador = [];
 let reservaDoJogador = [];
 let slotsFixos = { 
-    'Ancestralidade': null, 
-    'Comunidade': null, 
-    'Fundamental': null, 
-    'Especializacao': null, 
-    'Maestria': null 
+    'Ancestralidade': null, 'Comunidade': null, 
+    'Fundamental': null, 'Especializacao': null, 'Maestria': null 
 };
 
 let cartaEmTransitoIndex = null; 
@@ -33,6 +30,21 @@ let slotDestinoAtual = null;
 
 const LIMITE_MAO = 5;
 const audio = document.getElementById('bg-music');
+
+// OBSERVER PARA LAZY LOAD
+const imageObserver = new IntersectionObserver((entries, observer) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const cardDiv = entry.target;
+            const src = cardDiv.dataset.src;
+            if (src) {
+                cardDiv.style.backgroundImage = `url('${src}')`;
+                cardDiv.classList.remove('lazy-card');
+                observer.unobserve(cardDiv);
+            }
+        }
+    });
+});
 
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('dragstart', event => event.preventDefault());
@@ -101,13 +113,8 @@ window.iniciarExperiencia = async function() {
 
 window.toggleMusic = function() {
     const btn = document.getElementById('btn-music');
-    if (audio.paused) { 
-        audio.play(); 
-        btn.innerText = "🔊"; 
-    } else { 
-        audio.pause(); 
-        btn.innerText = "🔇"; 
-    }
+    if (audio.paused) { audio.play(); btn.innerText = "🔊"; } 
+    else { audio.pause(); btn.innerText = "🔇"; }
 }
 
 window.setVolume = function() {
@@ -140,10 +147,15 @@ window.abrirGrimorio = function(tipo, slotDestino = null) {
     
     lista.forEach(carta => {
         const div = document.createElement('div');
-        div.className = 'carta-modal';
-        div.style.backgroundImage = `url('${carta.caminho}')`;
+        div.className = 'carta-modal lazy-card';
+        // Não define backgroundImage direto. Usa dataset e observer.
+        div.dataset.src = carta.caminho;
+        
         div.onclick = () => selecionarCarta(carta);
         grid.appendChild(div);
+        
+        // Inicia observação
+        imageObserver.observe(div);
     });
     
     modal.style.display = 'flex';
