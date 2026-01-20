@@ -50,11 +50,7 @@ document.addEventListener('dragstart', event => event.preventDefault());
 
 window.togglePassword = function(id) {
     const input = document.getElementById(id);
-    if (input.type === "password") {
-        input.type = "text";
-    } else {
-        input.type = "password";
-    }
+    input.type = input.type === "password" ? "text" : "password";
 }
 
 window.irParaLoginJogador = function() {
