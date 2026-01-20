@@ -442,11 +442,23 @@ window.definirEstado = function(novoEstado) {
     if (cartaEmTransitoIndex !== null && origemTransito === 'mao') {
         let card = maoDoJogador[cartaEmTransitoIndex];
         card.estado = novoEstado;
+        // Atualiza o preview para mostrar feedback visual
+        const preview = document.getElementById('preview-decisao');
+        if (preview) {
+            if (novoEstado === 'curto' || novoEstado === 'longo') {
+                preview.style.filter = 'grayscale(1) brightness(0.7)';
+            } else {
+                preview.style.filter = 'none';
+            }
+        }
         salvarNaNuvem();
     }
 };
 
-window.confirmarEdicao = function() { window.fecharDecisao(); };
+window.confirmarEdicao = function() { 
+    renderizar();
+    window.fecharDecisao(); 
+};
 
 window.resgatarReserva = function(idx) {
     if (maoDoJogador.length < LIMITE_MAO) {
