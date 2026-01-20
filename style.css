@@ -407,10 +407,11 @@ body {
 
 .token-badge {
     position: absolute;
-    top: 5px;
-    right: 5px;
-    width: 24px;
-    height: 24px;
+    top: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 28px;
+    height: 28px;
     background: #fff;
     color: #000;
     border-radius: 50%;
@@ -418,9 +419,9 @@ body {
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 0.9rem;
+    font-size: 1rem;
     border: 2px solid #000;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.8);
     z-index: 10;
 }
 
@@ -551,6 +552,7 @@ body {
 .btn-reserva { background: #2e8b57; }
 .btn-deck { background: #8b0000; }
 .btn-cancelar { background: #444; }
+.btn-confirmar { background: #d4af37; color: #000; }
 .btn-token { background: #1976d2; }
 .btn-estado { background: #616161; }
 

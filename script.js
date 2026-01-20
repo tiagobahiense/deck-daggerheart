@@ -235,7 +235,7 @@ window.alterarToken = function(delta) {
     }
 }
 
-window.alternarEstado = function(novoEstado) {
+window.definirEstado = function(novoEstado) {
     if(cartaEmTransitoIndex !== null && origemTransito === 'mao') {
         let card = maoDoJogador[cartaEmTransitoIndex];
         card.estado = novoEstado;
@@ -243,6 +243,10 @@ window.alternarEstado = function(novoEstado) {
         salvarNaNuvem();
         window.fecharDecisao();
     }
+}
+
+window.confirmarEdicao = function() {
+    window.fecharDecisao();
 }
 
 window.resgatarReserva = function(idx) {

@@ -114,14 +114,14 @@
             </div>
 
             <div class="grupo-tokens">
-                <button class="btn-estado" onclick="alternarEstado('curto')">Gastar (Curto)</button>
-                <button class="btn-estado" onclick="alternarEstado('longo')">Gastar (Longo)</button>
-                <button class="btn-estado" onclick="alternarEstado('ativo')" style="background: #e65100;">Restaurar</button>
+                <button class="btn-estado" onclick="definirEstado('curto')">Gastar (Curto)</button>
+                <button class="btn-estado" onclick="definirEstado('longo')">Gastar (Longo)</button>
             </div>
 
             <div class="botoes-decisao">
-                <button class="btn-reserva" onclick="moverParaReserva()">Guardar na Reserva</button>
-                <button class="btn-deck" onclick="devolverAoDeck()">Devolver ao Deck</button>
+                <button class="btn-confirmar" onclick="confirmarEdicao()">Confirmar / Voltar</button>
+                <button class="btn-reserva" onclick="moverParaReserva()">Reserva</button>
+                <button class="btn-deck" onclick="devolverAoDeck()">Deck</button>
                 <button class="btn-cancelar" onclick="fecharDecisao()">Cancelar</button>
             </div>
         </div>

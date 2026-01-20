@@ -40,10 +40,25 @@
         }
 
         .indisponivel { filter: grayscale(100%) brightness(50%); border-color: #555; }
-        .indisponivel:hover { filter: grayscale(0); } /* Mestre pode ver cor no hover */
+        .indisponivel:hover { filter: grayscale(0); }
 
         .token-count {
-            position: absolute; top: -5px; right: -5px; width: 18px; height: 18px; background: #fff; color: #000; border-radius: 50%; font-size: 0.7rem; display: flex; align-items: center; justify-content: center; border: 1px solid #000; font-weight: bold; z-index: 10;
+            position: absolute; 
+            top: -10px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 18px; 
+            height: 18px; 
+            background: #fff; 
+            color: #000; 
+            border-radius: 50%; 
+            font-size: 0.7rem; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border: 1px solid #000; 
+            font-weight: bold; 
+            z-index: 10;
         }
 
         .carta-reserva-visual { opacity: 0.7; filter: grayscale(0.6); pointer-events: none; }
