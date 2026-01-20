@@ -16,8 +16,9 @@
         #container-principal {
             display: flex;
             flex: 1;
-            overflow: hidden;
+            overflow: visible;
             gap: 0;
+            position: relative;
         }
 
         #area-jogadores {
@@ -27,18 +28,20 @@
             overflow: visible;
             border-right: 2px solid var(--gold);
             min-width: 0;
+            position: relative;
         }
 
         #painel {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
             gap: 15px;
-            max-height: 85vh;
+            height: 85vh;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: visible;
             padding: 15px;
             padding-right: 10px;
-            padding-bottom: 30px;
+            padding-bottom: 50px;
+            align-content: start;
         }
 
         .card-jogador {

@@ -82,7 +82,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, fetchSignInMethodsForEmail, updatePassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -231,6 +231,7 @@
                     div.innerHTML = `
                         <div class="player-email">
                             ${data.email}
+                            <button class="btn-main" onclick="abrirTrocarSenha('${uid}', '${data.email}')">🔐 Trocar Senha</button>
                             <button class="btn-banir" onclick="removerConta('${uid}', '${data.email}')">💀 Desativar Conta</button>
                         </div>
                         <ul class="char-list" style="list-style: none; padding: 0;">
@@ -300,7 +301,7 @@
         };
 
         window.removerConta = function(uid, email) {
-            if (confirm(`Tem certeza que deseja desativar a conta "${email}" e TODOS os seus personagens?`)) {
+            if (confirm(`Tem certeza que deseja desativar a conta "${email}" e DELETAR PERMANENTEMENTE TODOS os seus personagens?`)) {
                 // Primeiro, remove todos os personagens da conta
                 get(ref(db, `mesa_rpg/accounts/${uid}/characters`))
                     .then(snapshot => {
@@ -308,6 +309,7 @@
                             const chars = snapshot.val();
                             const promises = [];
                             Object.keys(chars).forEach(charName => {
+                                // Remove completamente o personagem do banco de dados
                                 promises.push(remove(ref(db, `mesa_rpg/jogadores/${charName}`)));
                             });
                             return Promise.all(promises);
@@ -315,11 +317,15 @@
                         return Promise.resolve();
                     })
                     .then(() => {
+                        // Remove a lista de personagens da conta
+                        return remove(ref(db, `mesa_rpg/accounts/${uid}/characters`));
+                    })
+                    .then(() => {
                         // Marca a conta como inativa no Realtime Database
                         return update(ref(db, `mesa_rpg/accounts/${uid}`), { status: 'inactive' });
                     })
                     .then(() => {
-                        alert(`Conta "${email}" foi desativada e todos os seus personagens foram removidos!`);
+                        alert(`Conta "${email}" foi desativada e TODOS os seus personagens foram permanentemente deletados!`);
                         carregarUsuarios();
                         carregarUsuariosInativos();
                     })
@@ -331,14 +337,18 @@
         };
 
         window.reativarConta = function(uid, email) {
-            if (confirm(`Tem certeza que deseja reativar a conta "${email}"?`)) {
+            if (confirm(`Tem certeza que deseja reativar a conta "${email}"? A conta volta zerada, sem personagem.`)) {
                 update(ref(db, `mesa_rpg/accounts/${uid}`), { status: 'active' })
+                    .then(() => {
+                        // Limpa a lista de personagens (conta volta zerada)
+                        return remove(ref(db, `mesa_rpg/accounts/${uid}/characters`));
+                    })
                     .then(() => {
                         // Remove da lista de inativos (se existir)
                         return remove(ref(db, `mesa_rpg/accounts_inactive/${email}`));
                     })
                     .then(() => {
-                        alert(`Conta "${email}" foi reativada com sucesso!`);
+                        alert(`Conta "${email}" foi reativada com sucesso! (Sem personagem)`);
                         carregarUsuarios();
                         carregarUsuariosInativos();
                     })
@@ -347,6 +357,30 @@
                         console.error("Erro detalhado:", error);
                     });
             }
+        };
+
+        window.abrirTrocarSenha = function(uid, email) {
+            const novaSenha = prompt(`Qual é a nova senha para ${email}?`);
+            if (!novaSenha || novaSenha.trim() === '') {
+                alert("Senha não pode estar vazia!");
+                return;
+            }
+            
+            const user = auth.currentUser;
+            if (!user) {
+                alert("Você não está autenticado!");
+                return;
+            }
+
+            // Usa updatePassword com o contexto do usuário
+            updatePassword(user, novaSenha)
+                .then(() => {
+                    alert(`Senha da conta "${email}" foi alterada com sucesso!`);
+                })
+                .catch((error) => {
+                    alert(`Erro ao alterar senha: ${error.message}`);
+                    console.error("Erro detalhado:", error);
+                });
         };
     </script>
 </body>
