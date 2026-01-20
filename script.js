@@ -42,9 +42,16 @@ const imageObserver = new IntersectionObserver((entries) => {
         if (entry.isIntersecting) {
             const cardDiv = entry.target;
             const src = cardDiv.dataset.src;
-            if (src) {
-                cardDiv.style.backgroundImage = `url('${src}')`;
-                cardDiv.classList.remove('lazy-card');
+            if (src && src.trim()) {
+                const img = new Image();
+                img.onload = () => {
+                    cardDiv.style.backgroundImage = `url('${src}')`;
+                    cardDiv.classList.remove('lazy-card');
+                };
+                img.onerror = () => {
+                    console.warn(`Erro ao carregar imagem: ${src}`);
+                };
+                img.src = src;
                 imageObserver.unobserve(cardDiv);
             }
         }
@@ -59,6 +66,19 @@ const imageObserver = new IntersectionObserver((entries) => {
 window.togglePassword = function(id) {
     const input = document.getElementById(id);
     if (input) input.type = input.type === "password" ? "text" : "password";
+};
+
+// Funções de modal (declaradas cedo para evitar problemas de escopo)
+window.fecharGrimorio = function() {
+    const modal = document.getElementById('grimorio-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.fecharDecisao = function() {
+    const modal = document.getElementById('decisao-modal');
+    if (modal) modal.style.display = 'none';
+    cartaEmTransitoIndex = null;
+    origemTransito = null;
 };
 
 // Funções de login (mantidas como estavam)
@@ -200,7 +220,7 @@ function renderizar() {
     divMao.innerHTML = '';
     maoDoJogador.forEach((carta, i) => {
         const el = document.createElement('div');
-        el.className = 'carta';
+        el.className = 'carta lazy-card';
         el.dataset.src = carta.caminho;
         el.style.backgroundImage = `url('img/card_back_placeholder.png')`; // Placeholder inicial
 
@@ -220,7 +240,11 @@ function renderizar() {
             el.appendChild(badge);
         }
 
-        el.onclick = () => window.abrirDecisao(i);
+        el.onclick = () => {
+            if (typeof window.abrirDecisao === 'function') {
+                window.abrirDecisao(i);
+            }
+        };
         divMao.appendChild(el);
         imageObserver.observe(el);
     });
@@ -230,10 +254,14 @@ function renderizar() {
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0';
     reservaDoJogador.forEach((carta, i) => {
         const el = document.createElement('div');
-        el.className = 'carta-reserva';
+        el.className = 'carta-reserva lazy-card';
         el.dataset.src = carta.caminho;
         el.style.backgroundImage = `url('img/card_back_placeholder.png')`; // Placeholder inicial
-        el.onclick = () => window.resgatarReserva(i);
+        el.onclick = () => {
+            if (typeof window.resgatarReserva === 'function') {
+                window.resgatarReserva(i);
+            }
+        };
         divRes.appendChild(el);
         imageObserver.observe(el);
     });
@@ -315,9 +343,6 @@ function salvarNaNuvem() {
 }
 
 // Outras funções mantidas como estavam...
-window.fecharGrimorio = function() {
-    document.getElementById('grimorio-modal').style.display = 'none';
-};
 
 window.preencherSlotFixo = function(carta, idSlot) {
     slotsFixos[idSlot] = carta;
@@ -349,6 +374,10 @@ window.limparSlot = function(idSlot, evt) {
 
 // Funções de decisão de cartas
 window.abrirDecisao = function(idx) {
+    if (idx === null || idx === undefined || !maoDoJogador[idx]) {
+        console.error('Índice de carta inválido:', idx);
+        return;
+    }
     cartaEmTransitoIndex = idx;
     origemTransito = 'mao';
     const c = maoDoJogador[idx];
@@ -356,12 +385,14 @@ window.abrirDecisao = function(idx) {
     if (preview) preview.style.backgroundImage = `url('${c.caminho}')`;
     const label = document.getElementById('label-token-qtd');
     if (label) label.innerText = c.tokens || 0;
-    document.getElementById('decisao-modal').style.display = 'flex';
+    const modal = document.getElementById('decisao-modal');
+    if (modal) modal.style.display = 'flex';
 };
 
 window.alterarToken = function(delta) {
-    if (cartaEmTransitoIndex !== null && origemTransito === 'mao') {
-        let card = maoDoJogador[cartaEmTransitoIndex];
+    if (cartaEmTransitoIndex !== null && cartaEmTransitoIndex !== undefined && origemTransito === 'mao') {
+        const card = maoDoJogador[cartaEmTransitoIndex];
+        if (!card) return;
         if (!card.tokens) card.tokens = 0;
         let novoValor = card.tokens + delta;
         if (novoValor < 0) novoValor = 0;
@@ -369,7 +400,6 @@ window.alterarToken = function(delta) {
         card.tokens = novoValor;
         const label = document.getElementById('label-token-qtd');
         if (label) label.innerText = card.tokens;
-        renderizar();
         salvarNaNuvem();
     }
 };
@@ -416,11 +446,6 @@ window.devolverAoDeck = function() {
         renderizar();
         salvarNaNuvem();
     }
-};
-
-window.fecharDecisao = function() {
-    document.getElementById('decisao-modal').style.display = 'none';
-    cartaEmTransitoIndex = null;
 };
 
 // Inicialização
