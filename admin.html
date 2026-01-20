@@ -78,8 +78,17 @@
         }
 
         onAuthStateChanged(auth, user => {
-            if(!user || user.email.toLowerCase() !== EMAIL_MESTRE.toLowerCase()) {
+            if(!user) {
                 window.location.href = 'index.html';
+                return;
+            }
+            
+            const currentEmail = user.email.toLowerCase().trim();
+            const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
+
+            if(currentEmail !== masterEmail) {
+                alert(`Acesso Negado. Você está logado como ${currentEmail}, mas o mestre é ${masterEmail}. Fazendo logout...`);
+                signOut(auth).then(() => window.location.href = 'index.html');
             } else {
                 carregarUsuarios();
             }

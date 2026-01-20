@@ -52,10 +52,19 @@
         }
 
         onAuthStateChanged(auth, (user) => {
-            if (user && user.email.toLowerCase() === EMAIL_MESTRE.toLowerCase()) {
+            if(!user) {
+                window.location.href = "index.html";
+                return;
+            }
+
+            const currentEmail = user.email.toLowerCase().trim();
+            const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
+
+            if (currentEmail === masterEmail) {
                 document.getElementById('loading-overlay').style.display = 'none';
                 iniciarPainel();
             } else {
+                alert("Acesso restrito ao Narrador.");
                 window.location.href = "index.html";
             }
         });

@@ -1,7 +1,7 @@
 :root {
     --gold: #d4af37;
     --modal-bg: rgba(20, 15, 10, 0.95);
-    --dark-overlay: rgba(0, 0, 0, 0.85);
+    --dark-overlay: rgba(0, 0, 0, 0.95);
 }
 
 * {
@@ -19,21 +19,23 @@ body {
     height: 100vh; overflow: hidden;
 }
 
-#login-screen, #start-screen, #login-screen-mestre, #login-screen-admin, #loading-overlay {
+/* Telas de Fundo */
+#login-screen, #start-screen, #login-screen-mestre, #loading-overlay, #login-screen-admin {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: url('img/background_epico.png') no-repeat center center/cover;
     z-index: 9999;
     display: flex; justify-content: center; align-items: center; flex-direction: column;
 }
 
-#loading-overlay { background: #000; color: var(--gold); font-size: 2rem; }
+#loading-overlay { background: #000; color: var(--gold); font-size: 2rem; z-index: 10000; }
 
 .login-box, .start-content, .admin-box {
-    background: var(--dark-overlay); padding: 40px;
+    background: rgba(0, 0, 0, 0.9); padding: 40px;
     border: 2px solid var(--gold); border-radius: 15px;
     text-align: center; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
-    width: 350px; max-width: 90%;
+    width: 380px; max-width: 90%;
     animation: fadeIn 0.5s ease-in-out;
+    position: relative;
 }
 
 @keyframes fadeIn {
@@ -41,6 +43,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
+/* Campos de Input e Senha */
 .input-group {
     position: relative;
     width: 100%;
@@ -49,6 +52,7 @@ body {
 
 .input-login {
     display: block; width: 100%; padding: 12px;
+    padding-right: 40px; /* Espaço para o olho */
     font-size: 1rem; border-radius: 5px; border: 1px solid #555;
     background: #222; color: #fff; text-align: center;
 }
@@ -70,13 +74,14 @@ body {
     color: #ff4444; font-size: 0.9rem; margin-top: 10px; min-height: 20px; 
 }
 
+/* Botões */
 button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2s; }
 
 .btn-entrar, .btn-main, .start-content button {
     background: var(--gold); color: #000; border: none; padding: 12px 30px;
     font-size: 1.2rem; border-radius: 5px; width: 100%; font-weight: bold; margin-top: 10px;
 }
-.btn-entrar:hover, .btn-main:hover, .start-content button:hover {
+.btn-entrar:hover, .btn-main:hover {
     background: #fff; transform: scale(1.02);
 }
 
@@ -90,6 +95,7 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 }
 .btn-voltar:hover { background: var(--gold) !important; color: #000 !important; }
 
+/* Admin Painel */
 #admin-container { padding: 20px; height: 100vh; overflow-y: auto; background: #111; }
 .admin-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 20px; margin-bottom: 20px; }
 .admin-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
@@ -100,6 +106,7 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 .btn-nav { background: #333; color: #fff; padding: 10px 20px; border: 1px solid #555; border-radius: 5px; text-decoration: none; font-size: 1rem; }
 .btn-nav:hover { background: #555; }
 
+/* Jogo Principal */
 #app-container {
     height: 100vh; width: 100vw;
     background: url('img/background_epico.png') no-repeat center center/cover;
@@ -198,7 +205,8 @@ button { font-family: 'MedievalSharp', cursive; cursor: pointer; transition: 0.2
 .carta {
     width: 140px; height: 210px;
     background-size: contain; background-repeat: no-repeat;
-    background-position: center; border-radius: 10px; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.8));
+    background-position: center;
+    border-radius: 10px; filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.8));
     margin: 0 -30px; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     transform-origin: bottom center; cursor: pointer; position: relative;
 }
