@@ -103,6 +103,7 @@
         function iniciarPainel() {
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
             onValue(jogadoresRef, (snapshot) => {
+                console.log('🔄 Atualizando painel do mestre em tempo real...');
                 const painel = document.getElementById('painel');
                 const dados = snapshot.val();
                 if(!dados) {
@@ -120,11 +121,20 @@
                         p.mao.forEach((c, idx) => {
                             let classes = "mini-carta";
                             let tooltip = c.nome;
-                            if(c.estado === 'curto') { classes += " indisponivel"; tooltip += " (Recarga: Descanso Curto)"; }
-                            if(c.estado === 'longo') { classes += " indisponivel"; tooltip += " (Recarga: Descanso Longo)"; }
+                            let descansoIcon = "";
+                            if(c.estado === 'curto') { 
+                                classes += " indisponivel"; 
+                                tooltip += " (Recarga: Descanso Curto)";
+                                descansoIcon = `<div class="icone-descanso-mini icone-descanso-curto-mini"><img src="img/meia-lua.png" alt="Descanso Curto"></div>`;
+                            }
+                            if(c.estado === 'longo') { 
+                                classes += " indisponivel"; 
+                                tooltip += " (Recarga: Descanso Longo)";
+                                descansoIcon = `<div class="icone-descanso-mini icone-descanso-longo-mini"><img src="img/lua-cheia.png" alt="Descanso Longo"></div>`;
+                            }
                             let tokensHTML = "";
                             if(c.tokens > 0) tokensHTML = `<div class="token-count">${c.tokens}</div>`;
-                            htmlMao += `<div class="${classes}" style="background-image: url('${c.caminho}')" title="${tooltip}">${tokensHTML}</div>`;
+                            htmlMao += `<div class="${classes}" style="background-image: url('${c.caminho}')" title="${tooltip}">${descansoIcon}${tokensHTML}</div>`;
                         });
                     } else { htmlMao = "<span class='status-vazio'>Mão vazia</span>"; }
 
