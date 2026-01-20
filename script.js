@@ -537,9 +537,12 @@ function salvarUsoDeCartaNaNuvem() {
     console.log(`📤 Salvando uso de carta: ${carta.nome} - ${nomeJogador}`);
     
     // Toca o som de uso de carta
-    const soundUseCard = new Audio('audio/use-card.mp3');
-    soundUseCard.volume = 0.5;
-    soundUseCard.play().catch(err => console.warn('Não foi possível tocar o som:', err));
+    const soundUseCard = document.getElementById('use-card-sound');
+    if (soundUseCard) {
+        soundUseCard.volume = 0.4;
+        soundUseCard.currentTime = 0; // Reinicia o áudio
+        soundUseCard.play().catch(err => console.warn('Não foi possível tocar o som:', err));
+    }
     
     // Registra o uso da carta no Firebase
     set(ref(db, 'mesa_rpg/jogadores/' + nomeJogador + '/cartaUsada'), {
