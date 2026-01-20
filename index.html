@@ -9,44 +9,49 @@
 </head>
 <body>
 
-    <div id="start-screen">
+    <div id="login-screen">
         
-        <div class="start-content" id="fase-selecao">
+        <div class="login-box" id="fase-selecao">
             <h1>Grimório Daggerheart</h1>
             <p>Escolha seu destino</p>
             <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
-                <button onclick="irParaLoginJogador()">Sou Jogador</button>
-                <button onclick="irParaMestre()" style="background: #8b0000; color: #fff; border-color: #ff4444;">Sou Narrador</button>
+                <button class="btn-main" onclick="irParaLoginJogador()">Sou Jogador</button>
+                <button class="btn-main" onclick="irParaLoginNarrador()" style="background: #8b0000; color: #fff; border: 2px solid #ff4444;">Sou Narrador</button>
             </div>
         </div>
 
-        <div class="start-content" id="fase-jogador" style="display: none;">
-            <h1>Área do Jogador</h1>
-            <p>Identifique-se, aventureiro</p>
-            <input type="text" id="nome-personagem" placeholder="Nome do Personagem" autocomplete="off"
-                   style="padding: 10px; font-size: 1.2rem; border-radius: 5px; border: none; text-align: center; margin-bottom: 15px; width: 80%;">
+        <div class="login-box" id="fase-jogador" style="display: none;">
+            <h1>Acesso do Jogador</h1>
+            <p>Use o login criado pelo Mestre</p>
+            
+            <input type="email" id="player-email" placeholder="Login (E-mail)" class="input-login">
+            <input type="password" id="player-pass" placeholder="Senha" class="input-login">
+            
+            <div id="error-msg"></div>
+            
+            <button class="btn-entrar" onclick="fazerLoginJogador()">Entrar</button>
+            <button class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
+        </div>
+
+        <div class="login-box" id="fase-personagem" style="display: none;">
+            <h1>Seu Herói</h1>
+            <p>Qual o nome do personagem?</p>
+            <input type="text" id="nome-personagem" placeholder="Nome do Personagem" class="input-login" autocomplete="off">
             <br>
-            <button onclick="iniciarExperiencia()">Entrar na Mesa</button>
-            <br>
-            <button onclick="voltarParaSelecao()" class="btn-voltar">Voltar</button>
+            <button class="btn-entrar" onclick="iniciarExperiencia()">Jogar</button>
         </div>
 
     </div>
 
     <div id="app-container" style="display: none; opacity: 0;">
-        
         <div id="audio-control">
             <button onclick="toggleMusic()" id="btn-music">🔊</button>
             <input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()">
         </div>
-        <audio id="bg-music" loop>
-            <source src="audio/jornada.mp3" type="audio/mpeg">
-        </audio>
-
+        <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio>
         <div id="system-message"></div>
 
         <div id="area-jogo">
-            
             <section id="mesa-area">
                 <div class="grupo-fixo">
                     <div class="titulo-grupo">Identidade</div>
@@ -61,7 +66,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="grupo-fixo destaque-classe">
                     <div class="titulo-grupo">Evolução de Subclasse</div>
                     <div class="slots-row">
@@ -82,7 +86,6 @@
                     </div>
                 </div>
             </section>
-
             <div id="deck-container-wrapper">
                 <div id="deck-area" onclick="abrirGrimorio('Geral')">
                     <div class="pote-glow"></div>
@@ -90,18 +93,12 @@
                     <div class="label-deck">Grimório</div>
                 </div>
             </div>
-
             <section id="reserva-area">
                 <div class="titulo-reserva">Reserva (Inativas)</div>
                 <div id="cartas-reserva"></div>
             </section>
-
         </div> 
-
-        <footer id="mao-area">
-            <div id="cartas-mao"></div>
-        </footer>
-
+        <footer id="mao-area"><div id="cartas-mao"></div></footer>
     </div>
 
     <div id="grimorio-modal" class="modal">
@@ -118,24 +115,20 @@
         <div class="modal-decisao-content">
             <h3>Gerenciar Carta</h3>
             <div class="carta-preview-decisao" id="preview-decisao"></div>
-            
             <div class="grupo-tokens">
                 <span>Tokens:</span>
                 <button class="btn-token" onclick="alterarToken(-1)">-</button>
                 <span id="label-token-qtd">0</span>
                 <button class="btn-token" onclick="alterarToken(1)">+</button>
             </div>
-
             <div class="grupo-tokens">
                 <button class="btn-estado" onclick="definirEstado('curto')">Gastar (Curto)</button>
                 <button class="btn-estado" onclick="definirEstado('longo')">Gastar (Longo)</button>
             </div>
-
             <div class="botoes-decisao">
                 <button class="btn-confirmar" onclick="confirmarEdicao()">OK / Voltar</button>
                 <button class="btn-reserva" onclick="moverParaReserva()">Reserva</button>
                 <button class="btn-deck" onclick="devolverAoDeck()">Devolver ao Deck</button>
-                <button class="btn-cancelar" onclick="fecharDecisao()">Cancelar</button>
             </div>
         </div>
     </div>

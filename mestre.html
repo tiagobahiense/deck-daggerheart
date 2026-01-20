@@ -3,48 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mestre - Daggerheart</title>
+    <title>Tabuleiro - Daggerheart</title>
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         * { user-select: none; -webkit-user-drag: none; box-sizing: border-box; }
         body { background: #111; color: #d4af37; font-family: 'MedievalSharp', cursive; margin: 0; padding: 20px; }
         
-        #login-screen-mestre {
+        #loading-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: url('img/background_epico.png') no-repeat center center/cover;
-            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            background: #000; z-index: 9999; display: flex; justify-content: center; align-items: center;
+            font-size: 2rem; color: #d4af37;
         }
-        .start-content {
-            background: rgba(0, 0, 0, 0.85); padding: 40px;
-            border: 2px solid #d4af37; border-radius: 15px;
-            text-align: center; box-shadow: 0 0 50px rgba(0, 0, 0, 0.8); width: 350px;
-        }
-        .input-login {
-            display: block; width: 90%; margin: 15px auto; padding: 10px;
-            font-size: 1rem; border-radius: 5px; border: none; text-align: center;
-        }
-        .btn-entrar {
-            background: #8b0000; color: #fff; border: 2px solid #ff4444; padding: 10px 30px;
-            font-family: inherit; font-size: 1.2rem; cursor: pointer; border-radius: 5px; margin-top: 10px;
-        }
-        .btn-entrar:hover { filter: brightness(1.2); }
-        
-        .btn-voltar {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid #d4af37 !important;
-            color: #d4af37 !important;
-            margin-top: 15px !important;
-            font-size: 1rem !important;
-            padding: 8px 20px;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-        .btn-voltar:hover {
-            background: #d4af37 !important;
-            color: #000 !important;
-        }
-
-        #app-mestre { display: none; }
 
         h1 { text-align: center; border-bottom: 1px solid #333; padding-bottom: 20px; }
         
@@ -92,35 +61,28 @@
 
         .btn-banir { margin-top: 15px; background-color: #3e0000; color: #ff6666; border: 1px solid #500; padding: 8px; cursor: pointer; font-family: inherit; border-radius: 4px; transition: 0.2s; font-size: 0.8rem; }
         .btn-banir:hover { background-color: #800; color: white; border-color: red; }
+        .btn-nav { position: absolute; top: 20px; right: 20px; background: #333; color: #fff; border: 1px solid #666; padding: 5px 15px; cursor: pointer; border-radius: 5px; text-decoration: none;}
     </style>
 </head>
 <body>
 
-    <div id="login-screen-mestre">
-        <div class="start-content">
-            <h1>Acesso do Narrador</h1>
-            <input type="text" id="mestre-login" placeholder="Login" class="input-login">
-            <input type="password" id="mestre-pass" placeholder="Senha" class="input-login">
-            <button class="btn-entrar" onclick="verificarCredenciais()">Entrar</button>
-            <br>
-            <button onclick="window.location.href='index.html'" class="btn-voltar">Voltar</button>
-        </div>
+    <div id="loading-overlay">Verificando acesso...</div>
+
+    <a href="admin.html" class="btn-nav">Voltar ao Painel Admin</a>
+
+    <h1>Mesa de Jogo</h1>
+    
+    <div id="controles-mestre">
+        <button class="btn-rest curto" onclick="realizarDescanso('curto')">Restaurar Descanso Curto</button>
+        <button class="btn-rest longo" onclick="realizarDescanso('longo')">Restaurar Descanso Longo</button>
     </div>
 
-    <div id="app-mestre">
-        <h1>Visão do Narrador</h1>
-        
-        <div id="controles-mestre">
-            <button class="btn-rest curto" onclick="realizarDescanso('curto')">Restaurar Descanso Curto</button>
-            <button class="btn-rest longo" onclick="realizarDescanso('longo')">Restaurar Descanso Longo</button>
-        </div>
-
-        <div id="painel">Conectando ao Grimório...</div>
-    </div>
+    <div id="painel">Conectando ao Grimório...</div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, remove, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -135,21 +97,19 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('loading-overlay').style.display = 'none';
+                iniciarPainel();
+            } else {
+                window.location.href = "admin.html";
+            }
+        });
 
         document.addEventListener('contextmenu', event => event.preventDefault());
         document.addEventListener('dragstart', event => event.preventDefault());
-
-        window.verificarCredenciais = function() {
-            const l = document.getElementById('mestre-login').value;
-            const s = document.getElementById('mestre-pass').value;
-            
-            if (l === 'tgzinho2207' && s === 'Nicknick@1') {
-                document.getElementById('login-screen-mestre').style.display = 'none';
-                document.getElementById('app-mestre').style.display = 'block';
-            } else {
-                alert("Acesso Negado.");
-            }
-        }
 
         window.removerJogador = function(nome) {
             if(confirm(`Tem certeza que deseja remover ${nome} da mesa?`)) {
@@ -163,11 +123,9 @@
             if(snapshot.exists()) {
                 let carta = snapshot.val();
                 let novoEstado = 'ativo';
-                
                 if(carta.estado === 'ativo' || !carta.estado) novoEstado = 'curto';
                 else if(carta.estado === 'curto') novoEstado = 'longo';
                 else if(carta.estado === 'longo') novoEstado = 'ativo';
-
                 carta.estado = novoEstado;
                 set(playerRef, carta);
             }
@@ -201,76 +159,68 @@
             });
         }
 
-        const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
-
-        onValue(jogadoresRef, (snapshot) => {
-            const painel = document.getElementById('painel');
-            const dados = snapshot.val();
-            
-            if(!dados) { 
-                painel.innerHTML = "<p class='status-vazio'>Nenhum jogador conectado.</p>"; 
-                return; 
-            }
-            
-            painel.innerHTML = ""; 
-            
-            Object.keys(dados).forEach(nome => {
-                const p = dados[nome];
-                const card = document.createElement('div');
-                card.className = 'card-jogador';
-                
-                let htmlMao = "";
-                if(p.mao && p.mao.length > 0) {
-                    p.mao.forEach((c, idx) => {
-                        let classes = "mini-carta";
-                        let tooltip = c.nome;
-                        
-                        if(c.estado === 'curto') { classes += " indisponivel"; tooltip += " (Recarga: Descanso Curto)"; }
-                        if(c.estado === 'longo') { classes += " indisponivel"; tooltip += " (Recarga: Descanso Longo)"; }
-
-                        let tokensHTML = "";
-                        if(c.tokens > 0) tokensHTML = `<div class="token-count">${c.tokens}</div>`;
-
-                        htmlMao += `<div class="${classes}" style="background-image: url('${c.caminho}')" title="${tooltip}" onclick="alternarEstadoCarta('${nome}', ${idx})">${tokensHTML}</div>`;
-                    });
-                } else {
-                    htmlMao = "<span class='status-vazio'>Mão vazia</span>";
+        function iniciarPainel() {
+            const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
+            onValue(jogadoresRef, (snapshot) => {
+                const painel = document.getElementById('painel');
+                const dados = snapshot.val();
+                if(!dados) { 
+                    painel.innerHTML = "<p class='status-vazio'>Nenhum jogador conectado.</p>"; 
+                    return; 
                 }
+                painel.innerHTML = ""; 
+                Object.keys(dados).forEach(nome => {
+                    const p = dados[nome];
+                    const card = document.createElement('div');
+                    card.className = 'card-jogador';
+                    
+                    let htmlMao = "";
+                    if(p.mao && p.mao.length > 0) {
+                        p.mao.forEach((c, idx) => {
+                            let classes = "mini-carta";
+                            let tooltip = c.nome;
+                            if(c.estado === 'curto') { classes += " indisponivel"; tooltip += " (Recarga: Descanso Curto)"; }
+                            if(c.estado === 'longo') { classes += " indisponivel"; tooltip += " (Recarga: Descanso Longo)"; }
+                            let tokensHTML = "";
+                            if(c.tokens > 0) tokensHTML = `<div class="token-count">${c.tokens}</div>`;
+                            htmlMao += `<div class="${classes}" style="background-image: url('${c.caminho}')" title="${tooltip}" onclick="alternarEstadoCarta('${nome}', ${idx})">${tokensHTML}</div>`;
+                        });
+                    } else { htmlMao = "<span class='status-vazio'>Mão vazia</span>"; }
 
-                let htmlSlots = "";
-                if(p.slots) {
-                    const ordem = ['Ancestralidade', 'Comunidade', 'Fundamental', 'Especializacao', 'Maestria'];
-                    ordem.forEach(key => {
-                        if(p.slots[key]) {
-                            htmlSlots += `<div class="mini-carta slot-ativo" style="background-image: url('${p.slots[key].caminho}')" title="${key}: ${p.slots[key].nome}"></div>`;
-                        }
-                    });
-                }
-                if(htmlSlots === "") htmlSlots = "<span class='status-vazio'>Nenhum ativo</span>";
+                    let htmlSlots = "";
+                    if(p.slots) {
+                        const ordem = ['Ancestralidade', 'Comunidade', 'Fundamental', 'Especializacao', 'Maestria'];
+                        ordem.forEach(key => {
+                            if(p.slots[key]) {
+                                htmlSlots += `<div class="mini-carta slot-ativo" style="background-image: url('${p.slots[key].caminho}')" title="${key}: ${p.slots[key].nome}"></div>`;
+                            }
+                        });
+                    }
+                    if(htmlSlots === "") htmlSlots = "<span class='status-vazio'>Nenhum ativo</span>";
 
-                let htmlReserva = "";
-                if(p.reserva && p.reserva.length > 0) {
-                     htmlReserva = `<div class="label">Reserva (${p.reserva.length})</div>`;
-                     let cartasReservaHTML = "";
-                     p.reserva.forEach(c => {
-                         cartasReservaHTML += `<div class="mini-carta carta-reserva-visual" style="background-image: url('${c.caminho}')" title="Reserva: ${c.nome}"></div>`;
-                     });
-                     htmlReserva += `<div class="grid-mini">${cartasReservaHTML}</div>`;
-                }
+                    let htmlReserva = "";
+                    if(p.reserva && p.reserva.length > 0) {
+                        htmlReserva = `<div class="label">Reserva (${p.reserva.length})</div>`;
+                        let cartasReservaHTML = "";
+                        p.reserva.forEach(c => {
+                            cartasReservaHTML += `<div class="mini-carta carta-reserva-visual" style="background-image: url('${c.caminho}')" title="Reserva: ${c.nome}"></div>`;
+                        });
+                        htmlReserva += `<div class="grid-mini">${cartasReservaHTML}</div>`;
+                    }
 
-                card.innerHTML = `
-                    <div class="nome">${nome}</div>
-                    <div class="label">Mão (${p.mao ? p.mao.length : 0})</div>
-                    <div class="grid-mini">${htmlMao}</div>
-                    <div class="label">Mesa (Ativos)</div>
-                    <div class="grid-mini">${htmlSlots}</div>
-                    ${htmlReserva}
-                    <button class="btn-banir" onclick="removerJogador('${nome}')">💀 Remover da Mesa</button>
-                `;
-                
-                painel.appendChild(card);
+                    card.innerHTML = `
+                        <div class="nome">${nome}</div>
+                        <div class="label">Mão (${p.mao ? p.mao.length : 0})</div>
+                        <div class="grid-mini">${htmlMao}</div>
+                        <div class="label">Mesa (Ativos)</div>
+                        <div class="grid-mini">${htmlSlots}</div>
+                        ${htmlReserva}
+                        <button class="btn-banir" onclick="removerJogador('${nome}')">💀 Remover da Mesa</button>
+                    `;
+                    painel.appendChild(card);
+                });
             });
-        });
+        }
     </script>
 </body>
 </html>

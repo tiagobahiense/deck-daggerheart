@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -14,20 +15,17 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 
+let currentUser = null;
 let nomeJogador = "";
 let catalogoCartas = [];
 let maoDoJogador = [];
 let reservaDoJogador = [];
-let slotsFixos = { 
-    'Ancestralidade': null, 'Comunidade': null, 
-    'Fundamental': null, 'Especializacao': null, 'Maestria': null 
-};
-
+let slotsFixos = { 'Ancestralidade': null, 'Comunidade': null, 'Fundamental': null, 'Especializacao': null, 'Maestria': null };
 let cartaEmTransitoIndex = null; 
 let origemTransito = null; 
 let slotDestinoAtual = null;
-
 const LIMITE_MAO = 5;
 const audio = document.getElementById('bg-music');
 
@@ -53,8 +51,8 @@ window.irParaLoginJogador = function() {
     document.getElementById('fase-jogador').style.display = 'block';
 }
 
-window.irParaMestre = function() {
-    window.location.href = 'mestre.html';
+window.irParaLoginNarrador = function() {
+    window.location.href = 'admin.html'; 
 }
 
 window.voltarParaSelecao = function() {
@@ -62,14 +60,38 @@ window.voltarParaSelecao = function() {
     document.getElementById('fase-selecao').style.display = 'block';
 }
 
+window.fazerLoginJogador = function() {
+    const email = document.getElementById('player-email').value;
+    const pass = document.getElementById('player-pass').value;
+    const msg = document.getElementById('error-msg');
+    
+    if(!email || !pass) { msg.innerText = "Preencha tudo."; return; }
+    msg.innerText = "Entrando...";
+
+    signInWithEmailAndPassword(auth, email, pass)
+    .then((userCredential) => {
+        currentUser = userCredential.user;
+        document.getElementById('fase-jogador').style.display = 'none';
+        document.getElementById('fase-personagem').style.display = 'block';
+    })
+    .catch((error) => {
+        msg.innerText = "Login inválido.";
+        console.error(error);
+    });
+}
+
 function salvarNaNuvem() {
-    if (!nomeJogador) return;
+    if (!nomeJogador || !currentUser) return;
+    
     set(ref(db, 'mesa_rpg/jogadores/' + nomeJogador), {
         mao: maoDoJogador,
         reserva: reservaDoJogador,
         slots: slotsFixos,
         ultimoAcesso: Date.now()
-    }).catch((e) => console.error("Erro ao salvar:", e));
+    });
+
+    set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
+    set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
 }
 
 async function carregarEstadoDaNuvem() {
@@ -78,47 +100,37 @@ async function carregarEstadoDaNuvem() {
         const snapshot = await get(child(dbRef, `mesa_rpg/jogadores/${nomeJogador}`));
         if (snapshot.exists()) {
             const dados = snapshot.val();
-            
             maoDoJogador = dados.mao || [];
             reservaDoJogador = dados.reserva || [];
             if (dados.slots) slotsFixos = dados.slots;
-
             renderizar();
-
             Object.keys(slotsFixos).forEach(key => {
                 if (slotsFixos[key]) {
                     const div = document.getElementById(`slot-${key}`);
                     const imgOld = div.querySelector('img');
                     if(imgOld) imgOld.remove();
-                    
                     const img = document.createElement('img');
                     img.src = slotsFixos[key].caminho;
                     div.appendChild(img);
-                    
                     const btn = div.querySelector('.btn-limpar');
                     if(btn) btn.style.display = 'flex';
                 }
             });
         }
-    } catch (error) {
-        console.error("Erro ao recuperar dados:", error);
-    }
+    } catch (error) { console.error("Erro ao recuperar:", error); }
 }
 
 window.iniciarExperiencia = async function() {
     const input = document.getElementById('nome-personagem');
-    if (!input.value.trim()) { 
-        alert("Por favor, identifique seu personagem!"); 
-        return; 
-    }
+    if (!input.value.trim()) { alert("Nome do personagem obrigatório!"); return; }
     nomeJogador = input.value.trim().toUpperCase();
     
-    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
     setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
     
     window.setVolume();
-    audio.play().catch(() => console.log("Áudio aguardando interação."));
+    audio.play().catch(() => console.log("Audio waiting"));
     
     await carregarDados();
     await carregarEstadoDaNuvem();
@@ -126,29 +138,23 @@ window.iniciarExperiencia = async function() {
 
 window.toggleMusic = function() {
     const btn = document.getElementById('btn-music');
-    if (audio.paused) { audio.play(); btn.innerText = "🔊"; } 
-    else { audio.pause(); btn.innerText = "🔇"; }
+    if (audio.paused) { audio.play(); btn.innerText = "🔊"; } else { audio.pause(); btn.innerText = "🔇"; }
 }
-
-window.setVolume = function() {
-    audio.volume = document.getElementById('volume').value;
-}
+window.setVolume = function() { audio.volume = document.getElementById('volume').value; }
 
 async function carregarDados() {
     try {
         const r = await fetch('./lista_cartas.json');
         catalogoCartas = await r.json();
-    } catch (e) { console.error("Erro no JSON", e); }
+    } catch (e) { console.error("JSON Error", e); }
 }
 
 window.abrirGrimorio = function(tipo, slotDestino = null) {
     const modal = document.getElementById('grimorio-modal');
     const grid = document.getElementById('grid-cartas');
     const titulo = document.getElementById('modal-titulo');
-    
     slotDestinoAtual = slotDestino;
     grid.innerHTML = '';
-    
     let lista = [];
     if (tipo === 'Geral') {
         titulo.innerText = "Grimório Principal";
@@ -157,30 +163,23 @@ window.abrirGrimorio = function(tipo, slotDestino = null) {
         titulo.innerText = `Selecionar: ${tipo}`;
         lista = catalogoCartas.filter(c => c.categoria === tipo);
     }
-    
     lista.forEach(carta => {
         const div = document.createElement('div');
         div.className = 'carta-modal lazy-card';
         div.dataset.src = carta.caminho;
-        
         div.onclick = () => selecionarCarta(carta);
         grid.appendChild(div);
-        
         imageObserver.observe(div);
     });
-    
     modal.style.display = 'flex';
 }
 
-window.fecharGrimorio = function() {
-    document.getElementById('grimorio-modal').style.display = 'none';
-}
+window.fecharGrimorio = function() { document.getElementById('grimorio-modal').style.display = 'none'; }
 
 function selecionarCarta(carta) {
     const destino = slotDestinoAtual;
     window.fecharGrimorio();
     slotDestinoAtual = null;
-    
     if (destino) window.preencherSlotFixo(carta, destino);
     else adicionarNaMao(carta);
 }
@@ -188,15 +187,12 @@ function selecionarCarta(carta) {
 window.preencherSlotFixo = function(carta, idSlot) {
     slotsFixos[idSlot] = carta;
     salvarNaNuvem(); 
-    
     const div = document.getElementById(`slot-${idSlot}`);
     const imgOld = div.querySelector('img');
     if(imgOld) imgOld.remove();
-    
     const img = document.createElement('img');
     img.src = carta.caminho;
     div.appendChild(img);
-    
     const btn = div.querySelector('.btn-limpar');
     if(btn) btn.style.display = 'flex';
 }
@@ -205,7 +201,6 @@ window.limparSlot = function(idSlot, evt) {
     if(evt) evt.stopPropagation();
     slotsFixos[idSlot] = null;
     salvarNaNuvem(); 
-    
     const div = document.getElementById(`slot-${idSlot}`);
     const img = div.querySelector('img');
     if(img) img.remove();
@@ -221,7 +216,7 @@ function adicionarNaMao(carta) {
         renderizar();
         salvarNaNuvem(); 
     } else {
-        if(confirm("Sua mão está cheia (5 cartas). Deseja enviar esta carta para a Reserva (Mochila)?")) {
+        if(confirm("Mão cheia. Enviar para a Reserva?")) {
             carta.tokens = 0;
             carta.estado = 'ativo';
             reservaDoJogador.push(carta);
@@ -235,7 +230,6 @@ window.abrirDecisao = function(idx) {
     cartaEmTransitoIndex = idx;
     origemTransito = 'mao';
     const c = maoDoJogador[idx];
-    
     document.getElementById('preview-decisao').style.backgroundImage = `url('${c.caminho}')`;
     document.getElementById('label-token-qtd').innerText = c.tokens || 0;
     document.getElementById('decisao-modal').style.display = 'flex';
@@ -245,11 +239,9 @@ window.alterarToken = function(delta) {
     if(cartaEmTransitoIndex !== null && origemTransito === 'mao') {
         let card = maoDoJogador[cartaEmTransitoIndex];
         if(!card.tokens) card.tokens = 0;
-        
         let novoValor = card.tokens + delta;
         if(novoValor < 0) novoValor = 0;
         if(novoValor > 5) novoValor = 5;
-        
         card.tokens = novoValor;
         document.getElementById('label-token-qtd').innerText = card.tokens;
         renderizar();
@@ -267,9 +259,7 @@ window.definirEstado = function(novoEstado) {
     }
 }
 
-window.confirmarEdicao = function() {
-    window.fecharDecisao();
-}
+window.confirmarEdicao = function() { window.fecharDecisao(); }
 
 window.resgatarReserva = function(idx) {
     if (maoDoJogador.length < LIMITE_MAO) {
@@ -311,39 +301,27 @@ window.fecharDecisao = function() {
 function renderizar() {
     const divMao = document.getElementById('cartas-mao');
     divMao.innerHTML = '';
-    
     maoDoJogador.forEach((c, i) => {
         const el = document.createElement('div');
         el.className = 'carta';
         el.style.backgroundImage = `url('${c.caminho}')`;
-        
         const centro = (maoDoJogador.length - 1) / 2;
         const rotacao = (i - centro) * 4; 
         el.style.transform = `rotate(${rotacao}deg)`;
-        
-        if(c.estado === 'curto') {
-            el.classList.add('indisponivel');
-            el.setAttribute('data-status', 'Indisponível: Descanso Curto');
-        } else if(c.estado === 'longo') {
-            el.classList.add('indisponivel');
-            el.setAttribute('data-status', 'Indisponível: Descanso Longo');
-        }
-
+        if(c.estado === 'curto') { el.classList.add('indisponivel'); el.setAttribute('data-status', 'Indisponível: Descanso Curto'); }
+        else if(c.estado === 'longo') { el.classList.add('indisponivel'); el.setAttribute('data-status', 'Indisponível: Descanso Longo'); }
         if(c.tokens && c.tokens > 0) {
             const badge = document.createElement('div');
             badge.className = `token-badge token-${c.tokens}`;
             badge.innerText = c.tokens;
             el.appendChild(badge);
         }
-
         el.onclick = () => window.abrirDecisao(i);
         divMao.appendChild(el);
     });
-
     const divRes = document.getElementById('cartas-reserva');
     divRes.innerHTML = '';
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0';
-    
     reservaDoJogador.forEach((c, i) => {
         const el = document.createElement('div');
         el.className = 'carta-reserva';
