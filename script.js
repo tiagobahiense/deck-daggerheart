@@ -29,6 +29,7 @@ let slotsFixos = { 'Ancestralidade': null, 'Comunidade': null, 'Fundamental': nu
 let cartaEmTransitoIndex = null;
 let origemTransito = null;
 let slotDestinoAtual = null;
+let cartaDaReservaParaResgatar = null; // Rastreia qual carta da reserva está sendo resgatada
 const LIMITE_MAO = 5;
 
 // Função de debug
@@ -629,15 +630,78 @@ window.confirmarEdicao = function() {
 };
 
 window.resgatarReserva = function(idx) {
+    const cartaDaReserva = reservaDoJogador[idx];
+    
+    // Reseta tokens e estado da carta
+    cartaDaReserva.tokens = 0;
+    cartaDaReserva.estado = 'ativo';
+    
     if (maoDoJogador.length < LIMITE_MAO) {
-        const c = reservaDoJogador[idx];
+        // Há espaço na mão - adiciona normalmente
+        maoDoJogador.push(cartaDaReserva);
         reservaDoJogador.splice(idx, 1);
-        maoDoJogador.push(c);
+        window.fecharReserva();
         renderizar();
         salvarNaNuvem();
     } else {
-        alert("Sua mão está cheia!");
+        // Mão cheia - abre modal de troca
+        cartaDaReservaParaResgatar = { carta: cartaDaReserva, indiceReserva: idx };
+        window.mostrarModalTroca();
     }
+};
+
+window.mostrarModalTroca = function() {
+    const modal = document.getElementById('troca-modal');
+    const grid = document.getElementById('grid-troca');
+    grid.innerHTML = '';
+    
+    maoDoJogador.forEach((carta, idx) => {
+        const div = document.createElement('div');
+        div.className = 'carta-modal lazy-card';
+        div.dataset.src = carta.caminho;
+        div.style.backgroundColor = '#1a1a1a';
+        div.style.cursor = 'pointer';
+        div.style.border = '2px solid #333';
+        div.style.transition = 'all 0.3s';
+        
+        div.onmouseover = () => {
+            div.style.borderColor = 'var(--gold)';
+            div.style.boxShadow = '0 0 15px rgba(212, 175, 55, 0.6)';
+        };
+        div.onmouseout = () => {
+            div.style.borderColor = '#333';
+            div.style.boxShadow = 'none';
+        };
+        
+        div.onclick = () => window.confirmarTroca(idx);
+        grid.appendChild(div);
+        imageObserver.observe(div);
+    });
+    
+    if (modal) modal.style.display = 'flex';
+};
+
+window.confirmarTroca = function(idxMao) {
+    if (!cartaDaReservaParaResgatar) return;
+    
+    const cartaDescartada = maoDoJogador[idxMao];
+    
+    // Troca as cartas
+    maoDoJogador[idxMao] = cartaDaReservaParaResgatar.carta;
+    reservaDoJogador[cartaDaReservaParaResgatar.indiceReserva] = cartaDescartada;
+    
+    // Reseta variáveis
+    cartaDaReservaParaResgatar = null;
+    
+    window.cancelarTroca();
+    renderizar();
+    salvarNaNuvem();
+};
+
+window.cancelarTroca = function() {
+    const modal = document.getElementById('troca-modal');
+    if (modal) modal.style.display = 'none';
+    cartaDaReservaParaResgatar = null;
 };
 
 window.moverParaReserva = function() {

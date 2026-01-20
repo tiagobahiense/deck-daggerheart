@@ -168,6 +168,17 @@
         </div>
     </div>
 
+    <div id="troca-modal" class="modal" style="z-index: 6100;">
+        <div class="modal-decisao-content">
+            <h3>Sua mão está cheia!</h3>
+            <p style="color: #aaa; margin: 10px 0;">Escolha qual carta descartar:</p>
+            <div id="grid-troca" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0; max-height: 300px; overflow-y: auto;"></div>
+            <div class="botoes-decisao">
+                <button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module" src="script.js?v=10.0"></script>
 </body>
 </html>
