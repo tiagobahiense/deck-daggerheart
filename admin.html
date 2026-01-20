@@ -55,7 +55,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -79,7 +79,6 @@
         setPersistence(auth, browserSessionPersistence)
             .then(() => {
                 console.log("Persistência de autenticação configurada com sucesso.");
-                // Escuta o estado de autenticação somente após a persistência estar configurada
                 onAuthStateChanged(auth, user => {
                     const deniedScreen = document.getElementById('access-denied-screen');
                     const debugText = document.getElementById('debug-text');
@@ -168,6 +167,7 @@
                             <li>
                                 ${charName}
                                 <button class="btn-reset-hand" onclick="resetarMao('${charName}')">Resetar Mão</button>
+                                <button class="btn-banir" onclick="removerPerfil('${charName}', '${data.email}')">💀 Remover Perfil</button>
                             </li>
                         `;
                     });
@@ -190,6 +190,29 @@
                 set(ref(db, `mesa_rpg/jogadores/${charName}/mao`), []);
                 set(ref(db, `mesa_rpg/jogadores/${charName}/reserva`), []);
                 alert("Mão resetada.");
+            }
+        }
+
+        window.removerPerfil = function(charName, userEmail) {
+            if(confirm(`Tem certeza que deseja remover o perfil "${charName}" do usuário ${userEmail}?`)) {
+                remove(ref(db, `mesa_rpg/jogadores/${charName}`))
+                    .then(() => {
+                        alert(`Perfil "${charName}" removido com sucesso!`);
+                        // Remove também da lista de characters do usuário
+                        const userRef = ref(db, `mesa_rpg/accounts/${userEmail.replace('.', '_')}`);
+                        get(userRef).then(snapshot => {
+                            if (snapshot.exists()) {
+                                const userData = snapshot.val();
+                                if (userData.characters && userData.characters[charName]) {
+                                    delete userData.characters[charName];
+                                    set(userRef, userData);
+                                }
+                            }
+                        });
+                    })
+                    .catch((error) => {
+                        alert(`Erro ao remover: ${error.message}`);
+                    });
             }
         }
     </script>

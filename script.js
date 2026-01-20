@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set, get, child, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -18,7 +18,7 @@ const db = getDatabase(app);
 const auth = getAuth(app);
 
 // EMAIL OFICIAL DO MESTRE
-const EMAIL_MESTRE = "tgbahiense@gmail.com"; 
+const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
 // 🔧 FUNÇÃO DE DEBUG
 function debug(mensagem, dados = null) {
@@ -31,8 +31,8 @@ let catalogoCartas = [];
 let maoDoJogador = [];
 let reservaDoJogador = [];
 let slotsFixos = { 'Ancestralidade': null, 'Comunidade': null, 'Fundamental': null, 'Especializacao': null, 'Maestria': null };
-let cartaEmTransitoIndex = null; 
-let origemTransito = null; 
+let cartaEmTransitoIndex = null;
+let origemTransito = null;
 let slotDestinoAtual = null;
 const LIMITE_MAO = 5;
 const audio = document.getElementById('bg-music');
@@ -56,7 +56,6 @@ document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('dragstart', event => event.preventDefault());
 
 // --- UTILITÁRIOS ---
-
 window.togglePassword = function(id) {
     const input = document.getElementById(id);
     input.type = input.type === "password" ? "text" : "password";
@@ -79,7 +78,6 @@ window.forcarLogout = function() {
 }
 
 // --- NAVEGAÇÃO SEGURA ---
-
 window.irParaLoginNarrador = function() {
     debug('Abrindo tela de login do narrador');
     document.getElementById('fase-selecao').style.display = 'none';
@@ -93,7 +91,6 @@ window.irParaLoginJogador = function() {
 }
 
 // --- FUNÇÕES DE LOGIN ---
-
 window.fazerLoginNarrador = function() {
     const email = document.getElementById('narrador-email').value.trim().toLowerCase();
     const pass = document.getElementById('narrador-pass').value;
@@ -101,9 +98,9 @@ window.fazerLoginNarrador = function() {
 
     debug('Tentativa de login narrador', { email });
 
-    if(!email || !pass) { 
-        msg.innerText = "Preencha email e senha."; 
-        return; 
+    if(!email || !pass) {
+        msg.innerText = "Preencha email e senha.";
+        return;
     }
 
     msg.innerText = "Autenticando...";
@@ -112,18 +109,17 @@ window.fazerLoginNarrador = function() {
     .then((userCredential) => {
         const emailLogado = userCredential.user.email.toLowerCase().trim();
         const emailMestre = EMAIL_MESTRE.toLowerCase().trim();
-        
-        debug('Login bem-sucedido', { 
-            emailLogado, 
+
+        debug('Login bem-sucedido', {
+            emailLogado,
             emailMestre,
-            saoIguais: emailLogado === emailMestre 
+            saoIguais: emailLogado === emailMestre
         });
-        
+
         if(emailLogado === emailMestre) {
             msg.innerText = "✅ Acesso concedido! Redirecionando...";
             debug('Redirecionando para admin.html');
-            
-            // Aguarda 500ms antes de redirecionar para garantir
+
             setTimeout(() => {
                 window.location.href = 'admin.html';
             }, 500);
@@ -143,7 +139,7 @@ window.fazerLoginJogador = function() {
     const email = document.getElementById('player-email').value.trim().toLowerCase();
     const pass = document.getElementById('player-pass').value;
     const msg = document.getElementById('error-msg-player');
-    
+
     debug('Tentativa de login jogador', { email });
 
     if(email === EMAIL_MESTRE.toLowerCase().trim()) {
@@ -151,9 +147,9 @@ window.fazerLoginJogador = function() {
         return;
     }
 
-    if(!email || !pass) { 
-        msg.innerText = "Preencha email e senha."; 
-        return; 
+    if(!email || !pass) {
+        msg.innerText = "Preencha email e senha.";
+        return;
     }
 
     msg.innerText = "Verificando...";
@@ -172,7 +168,6 @@ window.fazerLoginJogador = function() {
 }
 
 // --- LÓGICA DE JOGO ---
-
 function salvarNaNuvem() {
     if (!nomeJogador || !currentUser) return;
     set(ref(db, 'mesa_rpg/jogadores/' + nomeJogador), {
@@ -214,14 +209,14 @@ async function carregarEstadoDaNuvem() {
 
 window.iniciarExperiencia = async function() {
     const input = document.getElementById('nome-personagem');
-    if (!input.value.trim()) { 
-        alert("Nome do personagem obrigatório!"); 
-        return; 
+    if (!input.value.trim()) {
+        alert("Nome do personagem obrigatório!");
+        return;
     }
     nomeJogador = input.value.trim().toUpperCase();
-    
+
     debug('Iniciando experiência', { nomeJogador });
-    
+
     if(currentUser) {
         set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
         set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
@@ -230,22 +225,22 @@ window.iniciarExperiencia = async function() {
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
     setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
-    
+
     window.setVolume();
     audio.play().catch(() => console.log("Audio waiting"));
-    
+
     await carregarDados();
     await carregarEstadoDaNuvem();
 }
 
 window.toggleMusic = function() {
     const btn = document.getElementById('btn-music');
-    if (audio.paused) { audio.play(); btn.innerText = "🔊"; } 
+    if (audio.paused) { audio.play(); btn.innerText = "🔊"; }
     else { audio.pause(); btn.innerText = "🔇"; }
 }
 
-window.setVolume = function() { 
-    audio.volume = document.getElementById('volume').value; 
+window.setVolume = function() {
+    audio.volume = document.getElementById('volume').value;
 }
 
 async function carregarDados() {
@@ -253,8 +248,8 @@ async function carregarDados() {
         const r = await fetch('./lista_cartas.json');
         catalogoCartas = await r.json();
         debug('Cartas carregadas', { total: catalogoCartas.length });
-    } catch (e) { 
-        console.error("JSON Error", e); 
+    } catch (e) {
+        console.error("JSON Error", e);
     }
 }
 
@@ -283,8 +278,8 @@ window.abrirGrimorio = function(tipo, slotDestino = null) {
     modal.style.display = 'flex';
 }
 
-window.fecharGrimorio = function() { 
-    document.getElementById('grimorio-modal').style.display = 'none'; 
+window.fecharGrimorio = function() {
+    document.getElementById('grimorio-modal').style.display = 'none';
 }
 
 function selecionarCarta(carta) {
@@ -297,7 +292,7 @@ function selecionarCarta(carta) {
 
 window.preencherSlotFixo = function(carta, idSlot) {
     slotsFixos[idSlot] = carta;
-    salvarNaNuvem(); 
+    salvarNaNuvem();
     const div = document.getElementById(`slot-${idSlot}`);
     const imgOld = div.querySelector('img');
     if(imgOld) imgOld.remove();
@@ -311,7 +306,7 @@ window.preencherSlotFixo = function(carta, idSlot) {
 window.limparSlot = function(idSlot, evt) {
     if(evt) evt.stopPropagation();
     slotsFixos[idSlot] = null;
-    salvarNaNuvem(); 
+    salvarNaNuvem();
     const div = document.getElementById(`slot-${idSlot}`);
     const img = div.querySelector('img');
     if(img) img.remove();
@@ -325,14 +320,14 @@ function adicionarNaMao(carta) {
         carta.estado = 'ativo';
         maoDoJogador.push(carta);
         renderizar();
-        salvarNaNuvem(); 
+        salvarNaNuvem();
     } else {
         if(confirm("Mão cheia. Enviar para a Reserva?")) {
             carta.tokens = 0;
             carta.estado = 'ativo';
             reservaDoJogador.push(carta);
             renderizar();
-            salvarNaNuvem(); 
+            salvarNaNuvem();
         }
     }
 }
@@ -378,7 +373,7 @@ window.resgatarReserva = function(idx) {
         reservaDoJogador.splice(idx, 1);
         maoDoJogador.push(c);
         renderizar();
-        salvarNaNuvem(); 
+        salvarNaNuvem();
     } else {
         alert("Sua mão está cheia!");
     }
@@ -391,7 +386,7 @@ window.moverParaReserva = function() {
         reservaDoJogador.push(c);
         window.fecharDecisao();
         renderizar();
-        salvarNaNuvem(); 
+        salvarNaNuvem();
     }
 }
 
@@ -400,7 +395,7 @@ window.devolverAoDeck = function() {
         maoDoJogador.splice(cartaEmTransitoIndex, 1);
         window.fecharDecisao();
         renderizar();
-        salvarNaNuvem(); 
+        salvarNaNuvem();
     }
 }
 
@@ -417,9 +412,9 @@ function renderizar() {
         el.className = 'carta';
         el.style.backgroundImage = `url('${c.caminho}')`;
         const centro = (maoDoJogador.length - 1) / 2;
-        const rotacao = (i - centro) * 4; 
+        const rotacao = (i - centro) * 4;
         el.style.transform = `rotate(${rotacao}deg)`;
-        
+
         if(c.estado === 'curto') {
             el.classList.add('indisponivel');
             el.setAttribute('data-status', 'Indisponível: Descanso Curto');
@@ -442,7 +437,7 @@ function renderizar() {
     const divRes = document.getElementById('cartas-reserva');
     divRes.innerHTML = '';
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0';
-    
+
     reservaDoJogador.forEach((c, i) => {
         const el = document.createElement('div');
         el.className = 'carta-reserva';
