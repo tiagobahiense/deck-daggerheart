@@ -81,6 +81,36 @@ window.fecharDecisao = function() {
     origemTransito = null;
 };
 
+// Funções de navegação entre telas de login
+window.irParaLoginJogador = function() {
+    document.getElementById('fase-selecao').style.display = 'none';
+    document.getElementById('fase-login-jogador').style.display = 'block';
+};
+
+window.irParaLoginNarrador = function() {
+    document.getElementById('fase-selecao').style.display = 'none';
+    document.getElementById('fase-login-narrador').style.display = 'block';
+};
+
+window.voltarParaSelecao = function() {
+    document.getElementById('fase-login-jogador').style.display = 'none';
+    document.getElementById('fase-login-narrador').style.display = 'none';
+    document.getElementById('fase-personagem').style.display = 'none';
+    document.getElementById('fase-selecao').style.display = 'block';
+};
+
+window.forcarLogout = function() {
+    signOut(auth).then(() => {
+        currentUser = null;
+        nomeJogador = "";
+        maoDoJogador = [];
+        reservaDoJogador = [];
+        document.getElementById('login-screen').style.display = 'block';
+        document.getElementById('app-container').style.display = 'none';
+        window.voltarParaSelecao();
+    }).catch((error) => console.error("Erro ao fazer logout:", error));
+};
+
 // Funções de login (mantidas como estavam)
 window.fazerLoginNarrador = function() {
     const email = document.getElementById('narrador-email').value.trim().toLowerCase();
@@ -446,6 +476,25 @@ window.devolverAoDeck = function() {
         renderizar();
         salvarNaNuvem();
     }
+};
+
+// Funções de áudio
+window.toggleMusic = function() {
+    const audio = document.getElementById('bg-music');
+    const btn = document.getElementById('btn-music');
+    if (audio.paused) {
+        audio.play();
+        btn.innerText = '🔊';
+    } else {
+        audio.pause();
+        btn.innerText = '🔇';
+    }
+};
+
+window.setVolume = function() {
+    const audio = document.getElementById('bg-music');
+    const vol = document.getElementById('volume');
+    audio.volume = parseFloat(vol.value);
 };
 
 // Inicialização
