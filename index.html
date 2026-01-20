@@ -18,6 +18,7 @@
                 <button class="btn-main" onclick="irParaLoginJogador()">Sou Jogador</button>
                 <button class="btn-main" onclick="irParaLoginNarrador()" style="background: #8b0000; color: #fff; border: 2px solid #ff4444;">Sou Narrador</button>
             </div>
+            <button onclick="forcarLogout()" style="background: transparent; color: #666; border: none; font-size: 0.8rem; margin-top: 20px;">Forçar Logout (Reset)</button>
         </div>
 
         <div class="login-box" id="fase-login-jogador" style="display: none;">
@@ -62,6 +63,7 @@
             <input type="text" id="nome-personagem" placeholder="Nome do Personagem" class="input-login" autocomplete="off">
             <br>
             <button class="btn-entrar" onclick="iniciarExperiencia()">Jogar</button>
+            <button class="btn-voltar" onclick="voltarParaSelecao()">Cancelar</button>
         </div>
 
     </div>
@@ -156,6 +158,6 @@
         </div>
     </div>
 
-    <script type="module" src="script.js"></script>
+    <script type="module" src="script.js?v=4.0"></script>
 </body>
 </html>

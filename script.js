@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -17,6 +17,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
+// EMAIL OFICIAL DO MESTRE (Verifique se não tem espaços)
 const EMAIL_MESTRE = "tgbahiense@gmail.com"; 
 
 let currentUser = null;
@@ -31,6 +32,7 @@ let slotDestinoAtual = null;
 const LIMITE_MAO = 5;
 const audio = document.getElementById('bg-music');
 
+// --- OBSERVER (LAZY LOAD) ---
 const imageObserver = new IntersectionObserver((entries, observer) => {
     entries.forEach(entry => {
         if (entry.isIntersecting) {
@@ -48,39 +50,64 @@ const imageObserver = new IntersectionObserver((entries, observer) => {
 document.addEventListener('contextmenu', event => event.preventDefault());
 document.addEventListener('dragstart', event => event.preventDefault());
 
+// --- UTILITÁRIOS DE TELA ---
+
 window.togglePassword = function(id) {
     const input = document.getElementById(id);
-    if (input.type === "password") {
-        input.type = "text";
-    } else {
-        input.type = "password";
-    }
-}
-
-window.irParaLoginJogador = function() {
-    document.getElementById('fase-selecao').style.display = 'none';
-    document.getElementById('fase-login-jogador').style.display = 'block';
-}
-
-window.irParaLoginNarrador = function() {
-    document.getElementById('fase-selecao').style.display = 'none';
-    document.getElementById('fase-login-narrador').style.display = 'block';
+    input.type = input.type === "password" ? "text" : "password";
 }
 
 window.voltarParaSelecao = function() {
     document.getElementById('fase-login-jogador').style.display = 'none';
     document.getElementById('fase-login-narrador').style.display = 'none';
+    document.getElementById('fase-personagem').style.display = 'none';
     document.getElementById('fase-selecao').style.display = 'block';
 }
 
-// LOGIN NARRADOR
+window.forcarLogout = function() {
+    signOut(auth).then(() => {
+        alert("Logout realizado. Tente entrar novamente.");
+        location.reload();
+    });
+}
+
+// --- LOGICA DE NAVEGAÇÃO SEGURA (SEM REDIRECT AUTOMÁTICO) ---
+
+// 1. Clicou em "Sou Narrador"
+window.irParaLoginNarrador = function() {
+    // Se já estiver logado como mestre, vai direto
+    if (auth.currentUser && auth.currentUser.email.toLowerCase().trim() === EMAIL_MESTRE.toLowerCase().trim()) {
+        window.location.href = 'admin.html';
+    } else {
+        // Se não, mostra tela de login
+        document.getElementById('fase-selecao').style.display = 'none';
+        document.getElementById('fase-login-narrador').style.display = 'block';
+    }
+}
+
+// 2. Clicou em "Sou Jogador"
+window.irParaLoginJogador = function() {
+    // Se já estiver logado como jogador (não mestre), vai pra personagem
+    if (auth.currentUser && auth.currentUser.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) {
+        currentUser = auth.currentUser;
+        document.getElementById('fase-selecao').style.display = 'none';
+        document.getElementById('fase-personagem').style.display = 'block';
+    } else {
+        // Se não, mostra tela de login
+        document.getElementById('fase-selecao').style.display = 'none';
+        document.getElementById('fase-login-jogador').style.display = 'block';
+    }
+}
+
+// --- FUNÇÕES DE LOGIN (CLIQUE NO BOTÃO) ---
+
 window.fazerLoginNarrador = function() {
     const email = document.getElementById('narrador-email').value;
     const pass = document.getElementById('narrador-pass').value;
     const msg = document.getElementById('error-msg-narrador');
 
     if(!email || !pass) { msg.innerText = "Preencha tudo."; return; }
-    msg.innerText = "Entrando...";
+    msg.innerText = "Verificando...";
 
     signInWithEmailAndPassword(auth, email, pass)
     .then((userCredential) => {
@@ -90,7 +117,8 @@ window.fazerLoginNarrador = function() {
         if(mail === masterMail) {
             window.location.href = 'admin.html';
         } else {
-            msg.innerText = "Este login não é de narrador.";
+            msg.innerText = `Erro: ${mail} não é um Narrador.`;
+            signOut(auth); // Desloga se for o user errado
         }
     })
     .catch((error) => {
@@ -98,7 +126,6 @@ window.fazerLoginNarrador = function() {
     });
 }
 
-// LOGIN JOGADOR
 window.fazerLoginJogador = function() {
     const email = document.getElementById('player-email').value;
     const pass = document.getElementById('player-pass').value;
@@ -114,33 +141,12 @@ window.fazerLoginJogador = function() {
         document.getElementById('fase-personagem').style.display = 'block';
     })
     .catch((error) => {
-        msg.innerText = "Login inválido ou usuário não encontrado.";
+        msg.innerText = "Login inválido.";
         console.error(error);
     });
 }
 
-// INICIAR JOGO APÓS LOGIN E NOME DO PERSONAGEM
-window.iniciarExperiencia = async function() {
-    const input = document.getElementById('nome-personagem');
-    if (!input.value.trim()) { alert("Nome do personagem obrigatório!"); return; }
-    nomeJogador = input.value.trim().toUpperCase();
-    
-    // Salva o vínculo da conta com o personagem
-    if (currentUser) {
-        set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
-        set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
-    }
-
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-container').style.display = 'flex';
-    setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
-    
-    window.setVolume();
-    audio.play().catch(() => console.log("Audio waiting"));
-    
-    await carregarDados();
-    await carregarEstadoDaNuvem();
-}
+// --- SISTEMA DE JOGO ---
 
 function salvarNaNuvem() {
     if (!nomeJogador || !currentUser) return;
@@ -150,6 +156,9 @@ function salvarNaNuvem() {
         slots: slotsFixos,
         ultimoAcesso: Date.now()
     }).catch((e) => console.error("Erro ao salvar:", e));
+
+    set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
+    set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
 }
 
 async function carregarEstadoDaNuvem() {
@@ -176,6 +185,28 @@ async function carregarEstadoDaNuvem() {
             });
         }
     } catch (error) { console.error("Erro ao recuperar:", error); }
+}
+
+window.iniciarExperiencia = async function() {
+    const input = document.getElementById('nome-personagem');
+    if (!input.value.trim()) { alert("Nome do personagem obrigatório!"); return; }
+    nomeJogador = input.value.trim().toUpperCase();
+    
+    // Salva o vinculo
+    if(currentUser) {
+        set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
+        set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
+    }
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-container').style.display = 'flex';
+    setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
+    
+    window.setVolume();
+    audio.play().catch(() => console.log("Audio waiting"));
+    
+    await carregarDados();
+    await carregarEstadoDaNuvem();
 }
 
 window.toggleMusic = function() {
@@ -350,20 +381,30 @@ function renderizar() {
         const centro = (maoDoJogador.length - 1) / 2;
         const rotacao = (i - centro) * 4; 
         el.style.transform = `rotate(${rotacao}deg)`;
-        if(c.estado === 'curto') { el.classList.add('indisponivel'); el.setAttribute('data-status', 'Indisponível: Descanso Curto'); }
-        else if(c.estado === 'longo') { el.classList.add('indisponivel'); el.setAttribute('data-status', 'Indisponível: Descanso Longo'); }
+        
+        if(c.estado === 'curto') {
+            el.classList.add('indisponivel');
+            el.setAttribute('data-status', 'Indisponível: Descanso Curto');
+        } else if(c.estado === 'longo') {
+            el.classList.add('indisponivel');
+            el.setAttribute('data-status', 'Indisponível: Descanso Longo');
+        }
+
         if(c.tokens && c.tokens > 0) {
             const badge = document.createElement('div');
             badge.className = `token-badge token-${c.tokens}`;
             badge.innerText = c.tokens;
             el.appendChild(badge);
         }
+
         el.onclick = () => window.abrirDecisao(i);
         divMao.appendChild(el);
     });
+
     const divRes = document.getElementById('cartas-reserva');
     divRes.innerHTML = '';
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0';
+    
     reservaDoJogador.forEach((c, i) => {
         const el = document.createElement('div');
         el.className = 'carta-reserva';
