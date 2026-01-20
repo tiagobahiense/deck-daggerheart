@@ -642,6 +642,181 @@ button {
     0%, 100% { opacity: 0.6; }
     50% { opacity: 0.8; }
 }
+
+/* --- MODAL DE DECISÃO DE CARTAS --- */
+.modal-decisao-content {
+    width: 400px;
+    max-width: 90%;
+    background: var(--modal-bg);
+    border: 2px solid var(--gold);
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 0 50px var(--gold);
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-decisao-content h3 {
+    margin: 0 0 10px 0;
+    color: var(--gold);
+    text-align: center;
+    font-size: 1.5rem;
+    border-bottom: 2px solid var(--gold);
+    padding-bottom: 10px;
+}
+
+.carta-preview-decisao {
+    width: 100%;
+    height: 250px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: #000;
+    border: 2px solid #333;
+    border-radius: 10px;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+}
+
+.grupo-tokens {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    flex-wrap: wrap;
+}
+
+.grupo-tokens span {
+    color: #aaa;
+    font-size: 0.9rem;
+    min-width: 50px;
+}
+
+#label-token-qtd {
+    color: var(--gold);
+    font-size: 1.5rem;
+    font-weight: bold;
+    min-width: 30px;
+    text-align: center;
+}
+
+.btn-token {
+    width: 40px;
+    height: 40px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-token:hover {
+    background: #f0c965;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.6);
+}
+
+.btn-token:active {
+    transform: scale(0.95);
+}
+
+.btn-estado {
+    flex: 1;
+    min-width: 150px;
+    padding: 10px 15px;
+    background: #4a4a4a;
+    color: #fff;
+    border: 1px solid #666;
+    border-radius: 8px;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-estado:hover {
+    background: #5a5a5a;
+    border-color: var(--gold);
+    color: var(--gold);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+}
+
+.btn-estado:active {
+    background: #3a3a3a;
+}
+
+.botoes-decisao {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #333;
+}
+
+.btn-confirmar {
+    padding: 12px;
+    background: var(--gold);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-confirmar:hover {
+    background: #f0c965;
+    box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+    transform: scale(1.02);
+}
+
+.btn-confirmar:active {
+    transform: scale(0.98);
+}
+
+.btn-reserva {
+    padding: 10px;
+    background: #333366;
+    color: #88aaff;
+    border: 1px solid #4455aa;
+    border-radius: 8px;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-reserva:hover {
+    background: #444477;
+    border-color: #66aaff;
+    box-shadow: 0 0 15px rgba(102, 170, 255, 0.4);
+}
+
+.btn-deck {
+    padding: 10px;
+    background: #663333;
+    color: #ff8888;
+    border: 1px solid #aa4444;
+    border-radius: 8px;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-deck:hover {
+    background: #774444;
+    border-color: #ff6666;
+    box-shadow: 0 0 15px rgba(255, 102, 102, 0.4);
+}
 }
 .modal-header {
     display: flex;
