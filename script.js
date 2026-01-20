@@ -71,29 +71,23 @@ window.forcarLogout = function() {
     });
 }
 
-// --- NAVEGAÇÃO SEGURA (NÃO REDIRECIONA AUTOMÁTICO PARA EVITAR LOOP) ---
+// --- NAVEGAÇÃO SEGURA (NÃO REDIRECIONA AUTOMÁTICO) ---
 
-// 1. Clicou em "Sou Narrador"
 window.irParaLoginNarrador = function() {
-    // Se já estiver logado como mestre, vai direto
     if (auth.currentUser && auth.currentUser.email.toLowerCase().trim() === EMAIL_MESTRE.toLowerCase().trim()) {
         window.location.href = 'admin.html';
     } else {
-        // Se não, pede login
         document.getElementById('fase-selecao').style.display = 'none';
         document.getElementById('fase-login-narrador').style.display = 'block';
     }
 }
 
-// 2. Clicou em "Sou Jogador"
 window.irParaLoginJogador = function() {
-    // Se já estiver logado como jogador (não mestre), vai pra personagem
     if (auth.currentUser && auth.currentUser.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) {
         currentUser = auth.currentUser;
         document.getElementById('fase-selecao').style.display = 'none';
         document.getElementById('fase-personagem').style.display = 'block';
     } else {
-        // Se não, pede login
         document.getElementById('fase-selecao').style.display = 'none';
         document.getElementById('fase-login-jogador').style.display = 'block';
     }
@@ -127,10 +121,16 @@ window.fazerLoginNarrador = function() {
 }
 
 window.fazerLoginJogador = function() {
-    const email = document.getElementById('player-email').value;
+    const email = document.getElementById('player-email').value.trim().toLowerCase();
     const pass = document.getElementById('player-pass').value;
     const msg = document.getElementById('error-msg-player');
     
+    // SEGURANÇA: MESTRE NÃO ENTRA COMO JOGADOR
+    if(email === EMAIL_MESTRE.toLowerCase().trim()) {
+        msg.innerText = "Erro: O Mestre não pode logar como jogador.";
+        return;
+    }
+
     if(!email || !pass) { msg.innerText = "Preencha tudo."; return; }
     msg.innerText = "Verificando...";
 

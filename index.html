@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grimório Daggerheart</title>
-    <link rel="stylesheet" href="style.css?v=5.0">
+    <link rel="stylesheet" href="style.css?v=7.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -15,10 +15,10 @@
             <h1>Grimório Daggerheart</h1>
             <p>Escolha seu destino</p>
             <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
-                <button class="btn-main" onclick="irParaLoginJogador()">Sou Jogador</button>
-                <button class="btn-main" onclick="irParaLoginNarrador()" style="background: #8b0000; color: #fff; border: 2px solid #ff4444;">Sou Narrador</button>
+                <button type="button" class="btn-main" onclick="irParaLoginJogador()">Sou Jogador</button>
+                <button type="button" class="btn-main" onclick="irParaLoginNarrador()" style="background: #8b0000; color: #fff; border: 2px solid #ff4444;">Sou Narrador</button>
             </div>
-            <button onclick="forcarLogout()" style="background: transparent; color: #666; border: none; font-size: 0.8rem; margin-top: 20px;">Forçar Logout (Reset)</button>
+            <button type="button" onclick="forcarLogout()" style="background: transparent; color: #666; border: none; font-size: 0.8rem; margin-top: 20px;">Forçar Logout (Reset)</button>
         </div>
 
         <div class="login-box" id="fase-login-jogador" style="display: none;">
@@ -35,8 +35,8 @@
             
             <div id="error-msg-player"></div>
             
-            <button class="btn-entrar" onclick="fazerLoginJogador()">Entrar</button>
-            <button class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
+            <button type="button" class="btn-entrar" onclick="fazerLoginJogador()">Entrar</button>
+            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
         </div>
 
         <div class="login-box" id="fase-login-narrador" style="display: none;">
@@ -53,8 +53,8 @@
             
             <div id="error-msg-narrador"></div>
             
-            <button class="btn-entrar" onclick="fazerLoginNarrador()">Acessar Admin</button>
-            <button class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
+            <button type="button" class="btn-entrar" onclick="fazerLoginNarrador()">Acessar Admin</button>
+            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
         </div>
 
         <div class="login-box" id="fase-personagem" style="display: none;">
@@ -62,8 +62,8 @@
             <p>Qual o nome do personagem?</p>
             <input type="text" id="nome-personagem" placeholder="Nome do Personagem" class="input-login" autocomplete="off">
             <br>
-            <button class="btn-entrar" onclick="iniciarExperiencia()">Jogar</button>
-            <button class="btn-voltar" onclick="voltarParaSelecao()">Cancelar</button>
+            <button type="button" class="btn-entrar" onclick="iniciarExperiencia()">Jogar</button>
+            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Cancelar</button>
         </div>
 
     </div>
@@ -158,6 +158,6 @@
         </div>
     </div>
 
-    <script type="module" src="script.js?v=5.0"></script>
+    <script type="module" src="script.js?v=7.0"></script>
 </body>
 </html>
