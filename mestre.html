@@ -95,6 +95,29 @@
                 filter: drop-shadow(0 0 50px rgba(0, 255, 0, 0.5));
             }
         }
+
+        @keyframes mini-carta-usar {
+            0% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 0px rgba(0, 255, 0, 0));
+            }
+            30% {
+                transform: scale(1.15);
+                filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.8));
+            }
+            50% {
+                transform: scale(1.2);
+                filter: drop-shadow(0 0 25px rgba(0, 255, 0, 1));
+            }
+            70% {
+                transform: scale(1.15);
+                filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.8));
+            }
+            100% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 0px rgba(0, 255, 0, 0));
+            }
+        }
     </style>
 </head>
 <body>
@@ -102,7 +125,6 @@
         <div>
             <button class="btn-rest curto" onclick="realizarDescanso('curto')">Restaurar Descanso Curto</button>
             <button class="btn-rest longo" onclick="realizarDescanso('longo')">Restaurar Descanso Longo</button>
-            <button class="btn-rest curto" onclick="testearAnimacao()" style="background: #4CAF50;">Testar Animação</button>
         </div>
         <button class="btn-nav-mestre" onclick="window.location.href='admin.html'">Ir para o Painel Admin</button>
     </div>
@@ -250,64 +272,66 @@
                     card.innerHTML = `
                         <div class="nome">${nome}</div>
                         <div class="label">Mão (${p.mao ? p.mao.length : 0})</div>
-                        <div class="grid-mini">${htmlMao}</div>
+                        <div class="grid-mao" data-jogador="${nome}">${htmlMao}</div>
                         <div class="label">Mesa (Ativos)</div>
                         <div class="grid-mini">${htmlSlots}</div>
                         ${htmlReserva}
                     `;
                     painel.appendChild(card);
+                    
+                    // Configurar listener para cartas usadas deste jogador
+                    configurarListenerCartaUsada(nome);
                 });
-            });
-
-            // Listener ÚNICO para cartas usadas (fora do loop)
-            const cartasUsadasRef = ref(db, 'mesa_rpg/jogadores');
-            onValue(cartasUsadasRef, (snapshot) => {
-                const dados = snapshot.val();
-                if(dados) {
-                    Object.keys(dados).forEach(nome => {
-                        const cartaUsada = dados[nome].cartaUsada;
-                        if(cartaUsada) {
-                            console.log(`🎯 Carta usada detectada por ${nome}:`, cartaUsada);
-                            mostrarAnimacaoCartaUsada(cartaUsada.caminho);
-                        }
-                    });
-                }
-            }, (error) => {
-                console.error('Erro ao monitorar cartas usadas:', error);
             });
         }
 
-        function mostrarAnimacaoCartaUsada(caminhoImagem) {
-            console.log('🎬 Iniciando animação de carta usada:', caminhoImagem);
-            const cartaAnimada = document.getElementById('carta-usada-animada');
+        function configurarListenerCartaUsada(nomeJogador) {
+            const cartaUsadaRef = ref(db, `mesa_rpg/jogadores/${nomeJogador}/cartaUsada`);
+            onValue(cartaUsadaRef, (snapshot) => {
+                if(snapshot.exists()) {
+                    const cartaUsada = snapshot.val();
+                    console.log(`🎯 Carta usada detectada por ${nomeJogador}:`, cartaUsada);
+                    animarCartaEspecifica(nomeJogador, cartaUsada);
+                }
+            });
+        }
 
-            if(!cartaAnimada) {
-                console.error('❌ Container de animação não encontrado!');
+        function animarCartaEspecifica(nomeJogador, cartaUsada) {
+            // Encontra o grid de mão do jogador
+            const gridMao = document.querySelector(`[data-jogador="${nomeJogador}"]`);
+            if(!gridMao) {
+                console.warn(`Grid de mão não encontrado para ${nomeJogador}`);
                 return;
             }
 
-            cartaAnimada.style.backgroundImage = `url('${caminhoImagem}')`;
-            cartaAnimada.style.display = 'block';
+            // Procura pela carta que foi usada
+            const cartas = gridMao.querySelectorAll('.mini-carta');
+            let cartaEncontrada = null;
 
-            // Posiciona no centro da tela
-            cartaAnimada.style.left = (window.innerWidth / 2 - 100) + 'px';
-            cartaAnimada.style.top = (window.innerHeight / 2 - 150) + 'px';
+            for(let carta of cartas) {
+                const bgImage = carta.style.backgroundImage;
+                // Compara se a imagem de fundo contém o mesmo caminho
+                if(bgImage && bgImage.includes(cartaUsada.caminho.split('/').pop())) {
+                    cartaEncontrada = carta;
+                    break;
+                }
+            }
 
-            cartaAnimada.classList.remove('ativa');
-            void cartaAnimada.offsetWidth;
-            cartaAnimada.classList.add('ativa');
-
-            console.log('✅ Animação iniciada');
-
-            setTimeout(() => {
-                cartaAnimada.style.display = 'none';
-                cartaAnimada.classList.remove('ativa');
-            }, 2500);
-        }
-
-        // Função para teste rápido da animação
-        window.testearAnimacao = function() {
-            mostrarAnimacaoCartaUsada("img/carta-teste.png");
+            if(cartaEncontrada) {
+                console.log('✨ Animando carta específica em', nomeJogador);
+                // Remove animação anterior se existir
+                cartaEncontrada.style.animation = 'none';
+                void cartaEncontrada.offsetWidth; // Force reflow
+                // Aplica nova animação
+                cartaEncontrada.style.animation = 'mini-carta-usar 0.8s ease-out';
+                
+                // Remove animação após terminar
+                setTimeout(() => {
+                    cartaEncontrada.style.animation = 'none';
+                }, 800);
+            } else {
+                console.warn('Carta específica não encontrada na mão de', nomeJogador);
+            }
         }
     </script>
 </body>
