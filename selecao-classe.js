@@ -1,6 +1,8 @@
 /**
  * SISTEMA DE SELEÇÃO DE CLASSES - Daggerheart
- * Versão Otimizada: Preload de Imagens + Transição Direta sem Reload
+ * Correções: 
+ * 1. Preload de imagens (sem delay na troca)
+ * 2. Transição direta para a mesa (sem reload/login)
  */
 
 // CONFIGURAÇÃO DAS CLASSES
@@ -70,7 +72,8 @@ const CLASSES = [
 
 let indiceAtual = 0;
 let paginaPdfAtual = 0;
-let imagensPrecarregadas = []; // Cache para evitar delay
+// Array para guardar as imagens pré-carregadas na memória
+let imagensPrecarregadas = []; 
 
 // ================================================================
 // FUNÇÃO INICIALIZADORA
@@ -78,45 +81,50 @@ let imagensPrecarregadas = []; // Cache para evitar delay
 window.inicializarSelecaoClasse = function() {
     console.log("⚔️ Inicializando Seleção de Classe...");
     
-    // 1. Esconde login e app
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-container').style.display = 'none';
+    // 1. Esconde telas anteriores
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app-container');
     
-    // 2. Mostra modal
+    if (loginScreen) loginScreen.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'none';
+    
+    // 2. Mostra modal de seleção
     const modal = document.getElementById('classe-selection-modal');
     if (modal) {
         modal.style.display = 'flex';
         modal.classList.add('ativo');
     }
     
-    // 3. Precarrega imagens para evitar delay (A CORREÇÃO DO CARROSSEL ESTÁ AQUI)
+    // 3. PRELOAD: Carrega todas as imagens de perfil agora
     precarregarImagens();
 
-    // 4. Renderiza inicial
+    // 4. Renderiza a primeira classe
     gerarDots();
     atualizarInterfaceClasse();
 
-    // 5. Teclado
+    // 5. Ativa controles de teclado
     document.addEventListener('keydown', controleTeclado);
 };
 
-// Função para baixar todas as imagens de perfil em cache
+// Função mágica para evitar delay no carrossel
 function precarregarImagens() {
-    console.log("🔄 Precarregando imagens de perfil...");
+    console.log("🔄 Iniciando preload das imagens de perfil...");
     CLASSES.forEach(cls => {
         const img = new Image();
         img.src = cls.perfil;
+        // Armazena no array global para o Garbage Collector não limpar
         imagensPrecarregadas.push(img);
     });
 }
 
 // ================================================================
-// LÓGICA DO CARROSSEL
+// LÓGICA DO CARROSSEL (PERFIL)
 // ================================================================
 
 window.mudarClasse = function(direcao) {
     indiceAtual += direcao;
     
+    // Loop infinito do carrossel
     if (indiceAtual < 0) {
         indiceAtual = CLASSES.length - 1;
     } else if (indiceAtual >= CLASSES.length) {
@@ -135,29 +143,35 @@ window.irParaClasse = function(index) {
 
 function atualizarInterfaceClasse() {
     const classe = CLASSES[indiceAtual];
+    
     const imgPerfil = document.getElementById('img-classe-perfil');
     const lblNome = document.getElementById('nome-classe-selecao');
     const btnNome = document.getElementById('btn-nome-classe');
     
     if (!imgPerfil) return;
 
-    // Fade Out (Suave)
+    // 1. Inicia o Fade Out (Desaparece suavemente)
     imgPerfil.style.opacity = 0;
     lblNome.style.opacity = 0;
+    if (btnNome) btnNome.style.opacity = 0;
     
-    // Troca rápida (agora segura por causa do preload)
+    // 2. Aguarda um pouquinho (150ms) para a animação do CSS acontecer
     setTimeout(() => {
+        // 3. Troca o conteúdo (A imagem já está em cache graças ao preload)
         imgPerfil.src = classe.perfil;
         lblNome.innerText = classe.nome;
-        if (btnNome) btnNome.innerText = classe.nome;
+        if (btnNome) {
+            btnNome.innerText = classe.nome;
+            btnNome.style.opacity = 1;
+        }
         
-        // Atualiza Dots
+        // Atualiza os pontos de navegação
         document.querySelectorAll('.dot').forEach((d, i) => {
             if (i === indiceAtual) d.classList.add('active');
             else d.classList.remove('active');
         });
         
-        // Fade In
+        // 4. Inicia o Fade In (Aparece suavemente)
         imgPerfil.style.opacity = 1;
         lblNome.style.opacity = 1;
     }, 150);
@@ -180,6 +194,7 @@ function controleTeclado(e) {
     const modalSelecao = document.getElementById('classe-selection-modal');
     const modalDetalhes = document.getElementById('modal-detalhes-classe');
 
+    // Se estiver lendo o PDF
     if (modalDetalhes && modalDetalhes.style.display === 'flex') {
         if (e.key === 'ArrowLeft') window.mudarPaginaPDF(-1);
         if (e.key === 'ArrowRight') window.mudarPaginaPDF(1);
@@ -188,6 +203,7 @@ function controleTeclado(e) {
         return;
     }
 
+    // Se estiver no carrossel
     if (modalSelecao && modalSelecao.style.display !== 'none') {
         if (e.key === 'ArrowLeft') window.mudarClasse(-1);
         if (e.key === 'ArrowRight') window.mudarClasse(1);
@@ -196,7 +212,7 @@ function controleTeclado(e) {
 }
 
 // ================================================================
-// LÓGICA DE DETALHES (PDF)
+// LÓGICA DE DETALHES (PDF MULTIPAGINA)
 // ================================================================
 
 window.verDetalhesClasse = function() {
@@ -205,8 +221,10 @@ window.verDetalhesClasse = function() {
     
     if (!modalDetalhes) return;
     
+    // Reseta para a primeira página ao abrir
     paginaPdfAtual = 0;
     atualizarImagemPDF();
+    
     modalDetalhes.style.display = 'flex';
 };
 
@@ -236,6 +254,7 @@ function atualizarImagemPDF() {
     
     if (contador) contador.innerText = `Página ${paginaPdfAtual + 1} de ${totalPaginas}`;
     
+    // Esconde botões se não houver páginas anteriores/próximas
     if (btnPrev) btnPrev.style.visibility = paginaPdfAtual === 0 ? 'hidden' : 'visible';
     if (btnNext) btnNext.style.visibility = paginaPdfAtual === totalPaginas - 1 ? 'hidden' : 'visible';
 }
@@ -250,7 +269,7 @@ window.confirmarSelecaoClasseDeDentro = function() {
 };
 
 // ================================================================
-// SALVAMENTO E TRANSIÇÃO DIRETA (CORREÇÃO DO LOGIN)
+// SALVAMENTO E TRANSIÇÃO DIRETA (A MÁGICA ACONTECE AQUI)
 // ================================================================
 
 window.confirmarSelecaoClasse = async function() {
@@ -260,11 +279,12 @@ window.confirmarSelecaoClasse = async function() {
         return;
     }
     
+    // Remove listener para evitar conflitos de teclas na mesa
     document.removeEventListener('keydown', controleTeclado);
 
     if (window.nomeJogador && window.db) {
         try {
-            // 1. Salvar no Banco de Dados
+            // 1. Salvar no Firebase
             const caminho = `mesa_rpg/jogadores/${window.nomeJogador}/slots/Fundamental`;
             const dadosClasse = {
                 categoria: "Classes",
@@ -276,9 +296,9 @@ window.confirmarSelecaoClasse = async function() {
             await window.set(window.ref(window.db, caminho), dadosClasse);
             localStorage.setItem('profissaoSelecionada', classeSelecionada.nome);
             
-            console.log("✅ Classe salva e confirmada. Iniciando transição...");
+            console.log("✅ Classe salva e confirmada. Iniciando transição direta...");
 
-            // 2. TRANSIÇÃO DIRETA (Sem reload)
+            // 2. TRANSIÇÃO DIRETA PARA A MESA (Sem Recarregar)
             
             // a) Esconde o modal de seleção
             const modal = document.getElementById('classe-selection-modal');
@@ -287,29 +307,35 @@ window.confirmarSelecaoClasse = async function() {
                 modal.classList.remove('ativo');
             }
 
-            // b) Prepara a Mesa de Jogo
+            // b) Mostra a Mesa de Jogo (App Container)
             const appContainer = document.getElementById('app-container');
             if (appContainer) {
                 appContainer.style.display = 'flex';
-                // Pequeno delay para animação de fade-in
-                setTimeout(() => appContainer.style.opacity = '1', 100);
+                // Delay minúsculo para permitir a animação CSS de opacity
+                setTimeout(() => appContainer.style.opacity = '1', 50);
             }
 
-            // c) Inicializa as mecânicas do jogo (importante!)
-            if (window.monitorarEstadoEmTempoReal) window.monitorarEstadoEmTempoReal();
-            if (window.renderizar) window.renderizar();
+            // c) Inicializa as mecânicas do jogo
+            // Chama as funções globais do script.js para conectar ao Firebase em tempo real
+            if (typeof window.monitorarEstadoEmTempoReal === 'function') {
+                window.monitorarEstadoEmTempoReal();
+            }
+            if (typeof window.renderizar === 'function') {
+                window.renderizar();
+            }
             
-            // d) Toca a música ambiente (se disponível e não estiver tocando)
+            // d) Toca a música e configura o botão de som
             const audio = document.getElementById('bg-music');
             if (audio && audio.paused) {
                 audio.volume = 0.05;
-                audio.play().catch(e => console.log("Autoplay bloqueado pelo navegador, aguardando clique."));
+                // Autoplay pode ser bloqueado, tratamos o erro silenciosamente
+                audio.play().catch(e => console.log("Áudio: Autoplay requer interação prévia."));
+                
                 const btnMusic = document.getElementById('btn-music');
                 if(btnMusic) btnMusic.innerText = '🔊';
             }
 
-            // Opcional: Feedback visual rápido
-            // alert(`Bem-vindo, ${classeSelecionada.nome}!`); // Removido para não travar a fluidez
+            // Sucesso! Sem reload.
 
         } catch (error) {
             console.error("❌ Erro ao salvar:", error);
@@ -317,11 +343,11 @@ window.confirmarSelecaoClasse = async function() {
         }
     } else {
         alert("Erro crítico de sessão. Tente logar novamente.");
-        window.location.reload(); // Só recarrega em caso de erro grave
+        window.location.reload(); // Só recarrega em caso de falha crítica
     }
 };
 
-// Função auxiliar
+// Função auxiliar para compatibilidade
 window.obterProfissaoSelecionada = function() {
     return localStorage.getItem('profissaoSelecionada');
 };
