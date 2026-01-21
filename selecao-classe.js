@@ -1,296 +1,295 @@
-// Sistema de Seleção de Classe com Carrossel - Imagens do PDF
+/**
+ * SISTEMA DE SELEÇÃO DE CLASSES - Daggerheart
+ * Novo Visual: Carrossel de Perfil -> Detalhes em PDF (Múltiplas Páginas)
+ */
 
-const profissaoPrincipal = {
-    'Guardião': { cor: 'rgb(0, 200, 255)', rgb: [0, 200, 255] },
-    'Bardo': { cor: 'rgb(200, 0, 255)', rgb: [200, 0, 255] },
-    'Mago': { cor: 'rgb(100, 200, 255)', rgb: [100, 200, 255] },
-    'Feiticeiro': { cor: 'rgb(150, 0, 200)', rgb: [150, 0, 200] },
-    'Guerreiro': { cor: 'rgb(255, 100, 0)', rgb: [255, 100, 0] },
-    'Ladino': { cor: 'rgb(100, 200, 0)', rgb: [100, 200, 0] },
-    'Serafim': { cor: 'rgb(255, 215, 0)', rgb: [255, 215, 0] },
-    'Druida': { cor: 'rgb(0, 255, 100)', rgb: [0, 255, 100] },
-    'Patrulheiro': { cor: 'rgb(255, 200, 0)', rgb: [255, 200, 0] }
-};
+// CONFIGURAÇÃO DAS CLASSES E IMAGENS
+// Baseado na estrutura de arquivos enviada
+const CLASSES = [
+    { 
+        id: 'Bardo', 
+        nome: 'Bardo', 
+        perfil: 'img/classes-perfil/bardoperfil.png', 
+        pdf: ['img/classes-pdf/bardo1.jpg', 'img/classes-pdf/bardo2.jpg']
+    },
+    { 
+        id: 'Druida', 
+        nome: 'Druida', 
+        perfil: 'img/classes-perfil/druidaperfil.png', 
+        pdf: [
+            'img/classes-pdf/druida1.jpg', 'img/classes-pdf/druida2.jpg', 
+            'img/classes-pdf/druida3.jpg', 'img/classes-pdf/druida4.jpg', 
+            'img/classes-pdf/druida5.jpg', 'img/classes-pdf/druida6.jpg'
+        ]
+    },
+    { 
+        id: 'Feiticeiro', 
+        nome: 'Feiticeiro', 
+        perfil: 'img/classes-perfil/feiticeiroperfil.png', 
+        pdf: ['img/classes-pdf/feiticeiro1.jpg', 'img/classes-pdf/feiticeiro2.jpg']
+    },
+    { 
+        id: 'Guardiao', 
+        nome: 'Guardião', 
+        perfil: 'img/classes-perfil/guardiaoperfil.png', 
+        pdf: ['img/classes-pdf/guardiao1.jpg', 'img/classes-pdf/guardiao2.jpg']
+    },
+    { 
+        id: 'Guerreiro', 
+        nome: 'Guerreiro', 
+        perfil: 'img/classes-perfil/guerreiroperfil.png', 
+        pdf: ['img/classes-pdf/guerreiro1.jpg', 'img/classes-pdf/guerreiro2.jpg']
+    },
+    { 
+        id: 'Ladino', 
+        nome: 'Ladino', 
+        perfil: 'img/classes-perfil/ladinoperfil.png', 
+        pdf: ['img/classes-pdf/ladino1.jpg', 'img/classes-pdf/ladino2.jpg']
+    },
+    { 
+        id: 'Mago', 
+        nome: 'Mago', 
+        perfil: 'img/classes-perfil/magoperfil.png', 
+        pdf: ['img/classes-pdf/mago1.jpg', 'img/classes-pdf/mago2.jpg']
+    },
+    { 
+        id: 'Patrulheiro', 
+        nome: 'Patrulheiro', 
+        perfil: 'img/classes-perfil/patrulheiroperfil.png', 
+        pdf: [
+            'img/classes-pdf/patrulheiro1.jpg', 'img/classes-pdf/patrulheiro2.jpg', 
+            'img/classes-pdf/patrulheiro3.jpg', 'img/classes-pdf/patrulheiro4.jpg'
+        ]
+    },
+    { 
+        id: 'Serafim', 
+        nome: 'Serafim', 
+        perfil: 'img/classes-perfil/serafimperfil.png', 
+        pdf: ['img/classes-pdf/serafim1.jpg', 'img/classes-pdf/serafim2.jpg']
+    }
+];
 
-// Imagens do PDF de classes agrupadas por profissão
-const classesImagensPorProfissao = {
-    'Guardião': ['guardiao1', 'guardiao2'],
-    'Bardo': ['bardo1', 'bardo2'],
-    'Mago': ['mago1', 'mago2'],
-    'Feiticeiro': ['feiticeiro1', 'feiticeiro2'],
-    'Guerreiro': ['guerreiro1', 'guerreiro2'],
-    'Ladino': ['ladino1', 'ladino2'],
-    'Serafim': ['serafim1', 'serafim2'],
-    'Druida': ['druida1', 'druida2', 'druida3', 'druida4', 'druida5', 'druida6'],
-    'Patrulheiro': ['patrulheiro1', 'patrulheiro2', 'patrulheiro3', 'patrulheiro4']
-};
+let indiceAtual = 0;
+let paginaPdfAtual = 0; // Controla qual página do PDF está sendo vista
 
-// Lista de profissões em ordem
-const listaProfissoes = ['Guardião', 'Bardo', 'Mago', 'Feiticeiro', 'Guerreiro', 'Ladino', 'Serafim', 'Druida', 'Patrulheiro'];
-
-let classeSelectionState = {
-    profissaoAtualSelecionada: null,
-    indiceClasseAtual: 0,           // Índice da profissão atual (0-8)
-    indicePaginaAtual: 0,            // Índice da página/imagem dentro da profissão
-    totalClasses: 9,
-    imagensAtualProfissao: [],       // Array de nomes de imagens para a profissão atual
-    paginasCarregadas: {}
-};
-
-// Inicializar modal de seleção de classe
+// ================================================================
+// FUNÇÃO INICIALIZADORA
+// ================================================================
 window.inicializarSelecaoClasse = function() {
-    const modal = document.getElementById('classe-selection-modal');
-    if (!modal) {
-        console.error('Modal de seleção de classe não encontrado!');
-        return;
-    }
-
-    classeSelectionState.indiceClasseAtual = 0;
-    classeSelectionState.indicePaginaAtual = 0;
-
-    // Adicionar event listeners
-    document.addEventListener('keydown', window.tratarTeclasSelecaoClasse);
-
-    // Inicializar carrossel
-    window.atualizarCarrosselClasse();
+    console.log("⚔️ Inicializando Nova Interface de Seleção de Classe...");
     
-    // Mostrar modal
-    modal.classList.add('ativo');
-};
-
-// Função central de atualização do carrossel
-window.atualizarCarrosselClasse = function() {
-    const profissaoAtual = listaProfissoes[classeSelectionState.indiceClasseAtual];
+    // 1. Esconde a tela de login e app
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app-container');
     
-    // Carregar imagens da profissão atual
-    classeSelectionState.imagensAtualProfissao = classesImagensPorProfissao[profissaoAtual];
+    if (loginScreen) loginScreen.style.display = 'none';
+    if (appContainer) appContainer.style.display = 'none';
     
-    // Atualizar informações
-    window.atualizarInfoClasse();
-    
-    // Atualizar imagem
-    window.atualizarImagemClasse();
-    
-    // Atualizar indicadores (dots)
-    window.atualizarIndicadoresClasse();
-};
-
-// Atualizar informações do carrossel
-window.atualizarInfoClasse = function() {
-    const profissaoAtual = listaProfissoes[classeSelectionState.indiceClasseAtual];
-    const totalPaginas = classeSelectionState.imagensAtualProfissao.length;
-    
-    const titulo = document.querySelector('.slide-info-title');
-    const subtitulo = document.querySelector('.slide-info-subtitle');
-    
-    if (titulo) {
-        titulo.textContent = profissaoAtual.toUpperCase();
-    }
-    
-    if (subtitulo) {
-        subtitulo.textContent = `${classeSelectionState.indicePaginaAtual + 1} de ${totalPaginas}`;
-    }
-};
-
-// Atualizar imagem do carrossel
-window.atualizarImagemClasse = function() {
-    const profissaoAtual = listaProfissoes[classeSelectionState.indiceClasseAtual];
-    const imagemAtual = classeSelectionState.imagensAtualProfissao[classeSelectionState.indicePaginaAtual];
-    
-    if (!imagemAtual) return;
-
-    const caminhoImagem = `img/classes-pdf/${imagemAtual}.jpg`;
-    const imgElement = document.querySelector('.slide-imagem-classe');
-    
-    if (imgElement) {
-        imgElement.src = caminhoImagem;
-        imgElement.alt = `${profissaoAtual} - ${imagemAtual}`;
-        
-        // Configurar preview overlay
-        const previewOverlay = document.getElementById('preview-classe-overlay');
-        const previewImg = document.getElementById('preview-classe-img');
-        if (previewOverlay && previewImg) {
-            previewImg.src = caminhoImagem;
-            
-            // Atualizar preview ao passar mouse
-            imgElement.onmouseenter = () => {
-                previewOverlay.style.display = 'flex';
-            };
-            imgElement.onmouseleave = () => {
-                previewOverlay.style.display = 'none';
-            };
-        }
-    }
-
-    // Atualizar cor do botão de confirmação
-    const btnConfirmar = document.querySelector('.btn-confirmar-classe');
-    if (btnConfirmar) {
-        btnConfirmar.style.backgroundColor = profissaoPrincipal[profissaoAtual].cor;
-        btnConfirmar.style.color = profissaoAtual === 'Serafim' ? '#000' : '#fff';
-    }
-};
-
-// Próxima página (próxima imagem da mesma profissão)
-window.proximaPaginaClasse = function() {
-    const totalPaginas = classeSelectionState.imagensAtualProfissao.length;
-    classeSelectionState.indicePaginaAtual = (classeSelectionState.indicePaginaAtual + 1) % totalPaginas;
-    window.atualizarCarrosselClasse();
-};
-
-// Página anterior (imagem anterior da mesma profissão)
-window.paginaAnteriorClasse = function() {
-    const totalPaginas = classeSelectionState.imagensAtualProfissao.length;
-    classeSelectionState.indicePaginaAtual = (classeSelectionState.indicePaginaAtual - 1 + totalPaginas) % totalPaginas;
-    window.atualizarCarrosselClasse();
-};
-
-// Próxima classe (próxima profissão)
-window.proximaClasse = function() {
-    classeSelectionState.indiceClasseAtual = (classeSelectionState.indiceClasseAtual + 1) % classeSelectionState.totalClasses;
-    classeSelectionState.indicePaginaAtual = 0; // Resetar página ao trocar profissão
-    window.atualizarCarrosselClasse();
-};
-
-// Classe anterior (profissão anterior)
-window.classeAnterior = function() {
-    classeSelectionState.indiceClasseAtual = (classeSelectionState.indiceClasseAtual - 1 + classeSelectionState.totalClasses) % classeSelectionState.totalClasses;
-    classeSelectionState.indicePaginaAtual = 0; // Resetar página ao trocar profissão
-    window.atualizarCarrosselClasse();
-};
-
-// Ir para uma classe específica
-window.irParaClasse = function(indice) {
-    if (indice >= 0 && indice < classeSelectionState.totalClasses) {
-        classeSelectionState.indiceClasseAtual = indice;
-        classeSelectionState.indicePaginaAtual = 0;
-        window.atualizarCarrosselClasse();
-    }
-};
-
-// Atualizar indicadores (dots)
-window.atualizarIndicadoresClasse = function() {
-    const container = document.querySelector('.carousel-indicators');
-    if (!container) return;
-
-    // Limpar indicadores existentes
-    container.innerHTML = '';
-
-    // Criar novo dot para cada profissão
-    for (let i = 0; i < classeSelectionState.totalClasses; i++) {
-        const dot = document.createElement('div');
-        dot.className = 'indicator-dot';
-        if (i === classeSelectionState.indiceClasseAtual) {
-            dot.classList.add('ativo');
-        }
-        dot.addEventListener('click', () => window.irParaClasse(i));
-        container.appendChild(dot);
-    }
-};
-
-// Confirmar seleção de classe
-window.confirmarSelecaoClasse = async function() {
-    const profissaoSelecionada = listaProfissoes[classeSelectionState.indiceClasseAtual];
-    
-    // Salvar profissão selecionada
-    classeSelectionState.profissaoAtualSelecionada = profissaoSelecionada;
-    localStorage.setItem('profissaoSelecionada', profissaoSelecionada);
-    
-    // Salvar profissão no Firebase (no slot Fundamental)
-    if (typeof window.nomeJogador !== 'undefined' && window.nomeJogador) {
-        try {
-            // Usa o db global do script.js
-            if (typeof window.db !== 'undefined' && typeof window.ref !== 'undefined' && typeof window.set !== 'undefined') {
-                const slotRef = window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}/slots/Fundamental`);
-                
-                // Verifica se já tem slot Fundamental
-                const { get } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
-                const slotSnap = await get(slotRef);
-                
-                // Se não tem slot ou não tem profissão, cria/atualiza
-                if (!slotSnap.exists() || !slotSnap.val().profissao) {
-                    await window.set(slotRef, { profissao: profissaoSelecionada });
-                    console.log(`✅ Profissão ${profissaoSelecionada} salva para ${window.nomeJogador}`);
-                }
-            } else {
-                console.warn("⚠️ Firebase não disponível globalmente para salvar profissão");
-            }
-        } catch (error) {
-            console.error("❌ Erro ao salvar profissão no Firebase:", error);
-        }
-    }
-    
-    // Fechar modal
+    // 2. Mostra o modal de seleção
     const modal = document.getElementById('classe-selection-modal');
     if (modal) {
-        modal.classList.remove('ativo');
+        modal.style.display = 'flex';
+        modal.classList.add('ativo');
     }
+    
+    // 3. Inicializa
+    gerarDots();
+    atualizarInterfaceClasse();
 
-    // Ativar profissão (effects, aura, etc)
-    if (window.ativarProfissao) {
-        window.ativarProfissao(profissaoSelecionada);
-    }
-
-    // Renderizar tabuleiro principal
-    if (window.renderizar) {
-        window.renderizar();
-    }
-
-    // Remover listener de teclado
-    document.removeEventListener('keydown', window.tratarTeclasSelecaoClasse);
+    // 4. Teclado
+    document.addEventListener('keydown', controleTeclado);
 };
 
-// Tratar teclas no carrossel
-window.tratarTeclasSelecaoClasse = function(evento) {
-    const modal = document.getElementById('classe-selection-modal');
-    if (!modal || !modal.classList.contains('ativo')) {
+// ================================================================
+// LÓGICA DO CARROSSEL (PERFIL)
+// ================================================================
+
+window.mudarClasse = function(direcao) {
+    indiceAtual += direcao;
+    
+    if (indiceAtual < 0) {
+        indiceAtual = CLASSES.length - 1;
+    } else if (indiceAtual >= CLASSES.length) {
+        indiceAtual = 0;
+    }
+    
+    atualizarInterfaceClasse();
+};
+
+window.irParaClasse = function(index) {
+    if (index >= 0 && index < CLASSES.length) {
+        indiceAtual = index;
+        atualizarInterfaceClasse();
+    }
+};
+
+function atualizarInterfaceClasse() {
+    const classe = CLASSES[indiceAtual];
+    const imgPerfil = document.getElementById('img-classe-perfil');
+    const lblNome = document.getElementById('nome-classe-selecao');
+    const btnNome = document.getElementById('btn-nome-classe');
+    
+    if (!imgPerfil) return;
+
+    imgPerfil.style.opacity = 0.5;
+    
+    setTimeout(() => {
+        imgPerfil.src = classe.perfil;
+        lblNome.innerText = classe.nome;
+        if (btnNome) btnNome.innerText = classe.nome;
+        
+        document.querySelectorAll('.dot').forEach((d, i) => {
+            if (i === indiceAtual) d.classList.add('active');
+            else d.classList.remove('active');
+        });
+        
+        imgPerfil.style.opacity = 1;
+    }, 150);
+}
+
+function gerarDots() {
+    const container = document.getElementById('carousel-dots');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    CLASSES.forEach((_, index) => {
+        const dot = document.createElement('div');
+        dot.className = 'dot';
+        dot.onclick = () => window.irParaClasse(index);
+        container.appendChild(dot);
+    });
+}
+
+function controleTeclado(e) {
+    const modalSelecao = document.getElementById('classe-selection-modal');
+    const modalDetalhes = document.getElementById('modal-detalhes-classe');
+
+    // Se modal de detalhes está aberto
+    if (modalDetalhes && modalDetalhes.style.display === 'flex') {
+        if (e.key === 'ArrowLeft') window.mudarPaginaPDF(-1);
+        if (e.key === 'ArrowRight') window.mudarPaginaPDF(1);
+        if (e.key === 'Escape') window.fecharDetalhesClasse();
+        if (e.key === 'Enter') window.confirmarSelecaoClasseDeDentro();
         return;
     }
 
-    switch(evento.key) {
-        case 'ArrowLeft':
-            evento.preventDefault();
-            window.paginaAnteriorClasse();
-            break;
-        case 'ArrowRight':
-            evento.preventDefault();
-            window.proximaPaginaClasse();
-            break;
-        case 'ArrowUp':
-            evento.preventDefault();
-            window.classeAnterior();
-            break;
-        case 'ArrowDown':
-            evento.preventDefault();
-            window.proximaClasse();
-            break;
-        case 'Enter':
-            evento.preventDefault();
-            window.confirmarSelecaoClasse();
-            break;
-        case 'Escape':
-            evento.preventDefault();
-            if (modal) {
-                modal.classList.remove('ativo');
-            }
-            document.removeEventListener('keydown', window.tratarTeclasSelecaoClasse);
-            break;
+    // Se apenas o carrossel está aberto
+    if (modalSelecao && modalSelecao.style.display !== 'none') {
+        if (e.key === 'ArrowLeft') window.mudarClasse(-1);
+        if (e.key === 'ArrowRight') window.mudarClasse(1);
+        if (e.key === 'Enter') window.verDetalhesClasse();
+    }
+}
+
+// ================================================================
+// LÓGICA DE DETALHES (PDF COM MÚLTIPLAS PÁGINAS)
+// ================================================================
+
+window.verDetalhesClasse = function() {
+    const classe = CLASSES[indiceAtual];
+    const modalDetalhes = document.getElementById('modal-detalhes-classe');
+    
+    if (!modalDetalhes) return;
+    
+    // Reseta para a primeira página
+    paginaPdfAtual = 0;
+    
+    console.log(`🔍 Abrindo detalhes: ${classe.nome}`);
+    
+    atualizarImagemPDF();
+    modalDetalhes.style.display = 'flex';
+};
+
+window.mudarPaginaPDF = function(direcao) {
+    const classe = CLASSES[indiceAtual];
+    const totalPaginas = classe.pdf.length;
+    
+    paginaPdfAtual += direcao;
+    
+    // Limites
+    if (paginaPdfAtual < 0) paginaPdfAtual = 0;
+    if (paginaPdfAtual >= totalPaginas) paginaPdfAtual = totalPaginas - 1;
+    
+    atualizarImagemPDF();
+};
+
+function atualizarImagemPDF() {
+    const classe = CLASSES[indiceAtual];
+    const imgPdf = document.getElementById('img-classe-pdf');
+    const contador = document.getElementById('pdf-page-counter');
+    const btnPrev = document.getElementById('btn-pdf-prev');
+    const btnNext = document.getElementById('btn-pdf-next');
+    
+    if (!imgPdf) return;
+
+    const totalPaginas = classe.pdf.length;
+    
+    // Atualiza Imagem
+    imgPdf.src = classe.pdf[paginaPdfAtual];
+    
+    // Atualiza Contador
+    if (contador) {
+        contador.innerText = `Página ${paginaPdfAtual + 1} de ${totalPaginas}`;
+    }
+    
+    // Mostra/Esconde botões dependendo da página
+    if (btnPrev) btnPrev.style.visibility = paginaPdfAtual === 0 ? 'hidden' : 'visible';
+    if (btnNext) btnNext.style.visibility = paginaPdfAtual === totalPaginas - 1 ? 'hidden' : 'visible';
+}
+
+window.fecharDetalhesClasse = function() {
+    document.getElementById('modal-detalhes-classe').style.display = 'none';
+};
+
+window.confirmarSelecaoClasseDeDentro = function() {
+    window.fecharDetalhesClasse();
+    window.confirmarSelecaoClasse();
+};
+
+// ================================================================
+// SALVAMENTO FINAL
+// ================================================================
+
+window.confirmarSelecaoClasse = async function() {
+    const classeSelecionada = CLASSES[indiceAtual];
+    
+    if (!confirm(`Confirmar o destino: ${classeSelecionada.nome.toUpperCase()}?`)) {
+        return;
+    }
+    
+    document.removeEventListener('keydown', controleTeclado);
+
+    if (window.nomeJogador && window.db) {
+        try {
+            const caminho = `mesa_rpg/jogadores/${window.nomeJogador}/slots/Fundamental`;
+            
+            const dadosClasse = {
+                categoria: "Classes",
+                profissao: classeSelecionada.nome,
+                nivel: 1,
+                caminho_perfil: classeSelecionada.perfil 
+            };
+            
+            await window.set(window.ref(window.db, caminho), dadosClasse);
+            localStorage.setItem('profissaoSelecionada', classeSelecionada.nome);
+            
+            const modal = document.getElementById('classe-selection-modal');
+            if (modal) modal.style.display = 'none';
+            
+            alert(`Bem-vindo, ${classeSelecionada.nome}! A página será recarregada.`);
+            window.location.reload(); 
+            
+        } catch (error) {
+            console.error("❌ Erro ao salvar:", error);
+            alert("Erro ao salvar: " + error.message);
+        }
+    } else {
+        alert("Erro de sessão. Tente logar novamente.");
+        window.location.reload();
     }
 };
 
-// Resetar seleção de classe
-window.resetarSelecaoClasse = function() {
-    classeSelectionState.profissaoAtualSelecionada = null;
-    classeSelectionState.indiceClasseAtual = 0;
-    classeSelectionState.indicePaginaAtual = 0;
-    localStorage.removeItem('profissaoSelecionada');
-};
-
-// Obter profissão selecionada
+// Função auxiliar
 window.obterProfissaoSelecionada = function() {
-    return classeSelectionState.profissaoAtualSelecionada || localStorage.getItem('profissaoSelecionada');
-};
-
-// Obter cor da profissão
-window.obterCorProfissao = function(profissao) {
-    return profissaoPrincipal[profissao]?.cor || null;
+    return localStorage.getItem('profissaoSelecionada');
 };

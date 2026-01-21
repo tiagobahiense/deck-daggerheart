@@ -7,7 +7,7 @@
     <link rel="icon" type="image/png" href="img/favicon.png" />
     <link rel="stylesheet" href="style.css?v=10.1">
     <link rel="stylesheet" href="profissao.css?v=1.0">
-    <link rel="stylesheet" href="selecao-classe.css?v=1.0">
+    <link rel="stylesheet" href="selecao-classe.css?v=3.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -76,36 +76,66 @@
 
     </div>
 
-    <!-- Modal de Seleção de Classe -->
-    <div id="classe-selection-modal">
-        <div class="classe-carousel-container">
-            <div class="slide-info">
-                <h3 class="slide-info-title">GUARDIÃO</h3>
-                <p class="slide-info-subtitle">1 de 3</p>
+    <div id="classe-selection-modal" class="modal-selecao">
+        <div class="classe-carousel-wrapper">
+            
+            <div class="selecao-header">
+                <h2>Escolha sua Classe</h2>
+                <p>Clique na imagem para ler as habilidades</p>
             </div>
-            
-            <img class="slide-imagem-classe" src="" alt="Classe" id="imagem-classe-principal">
-            <div id="preview-classe-overlay"><img id="preview-classe-img" src="" alt=""></div>
-            
-            <button class="carousel-nav carousel-nav-prev" onclick="window.paginaAnteriorClasse()">❮</button>
-            <button class="carousel-nav carousel-nav-next" onclick="window.proximaPaginaClasse()">❯</button>
-            
-            <button class="carousel-nav-classe carousel-nav-classe-prev" onclick="window.classeAnterior()" style="left: 20px;">⬅ Classe</button>
-            <button class="carousel-nav-classe carousel-nav-classe-next" onclick="window.proximaClasse()" style="right: 20px;">Classe ➡</button>
-            
-            <button class="btn-confirmar-classe" onclick="window.confirmarSelecaoClasse()">✓ Confirmar Classe</button>
-            
-            <div class="carousel-indicators"></div>
+
+            <div class="carousel-main">
+                <button class="nav-btn prev" onclick="window.mudarClasse(-1)">❮</button>
+                
+                <div class="card-display" onclick="window.verDetalhesClasse()">
+                    <div class="card-glow"></div>
+                    <img id="img-classe-perfil" src="" alt="Imagem da Classe" class="img-perfil-animada">
+                    <div class="card-label">
+                        <span id="nome-classe-selecao">CLASSE</span>
+                    </div>
+                    <div class="click-hint">🔍 Clique para ver Habilidades</div>
+                </div>
+
+                <button class="nav-btn next" onclick="window.mudarClasse(1)">❯</button>
+            </div>
+
+            <div class="selecao-footer">
+                <div class="carousel-dots" id="carousel-dots"></div>
+                <button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasse()">
+                    ✓ Confirmar <span id="btn-nome-classe">Classe</span>
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Preview overlays para hover -->
+    <div id="modal-detalhes-classe" class="modal" style="z-index: 7000;">
+        <div class="modal-detalhes-content">
+            <button class="close-detalhes" onclick="window.fecharDetalhesClasse()">X</button>
+            
+            <div class="pdf-wrapper">
+                <button class="nav-pdf-btn prev" id="btn-pdf-prev" onclick="window.mudarPaginaPDF(-1)">❮</button>
+                
+                <div class="pdf-container">
+                    <img id="img-classe-pdf" src="" alt="Detalhes da Classe">
+                </div>
+
+                <button class="nav-pdf-btn next" id="btn-pdf-next" onclick="window.mudarPaginaPDF(1)">❯</button>
+            </div>
+
+            <div class="detalhes-footer">
+                <div class="page-counter" id="pdf-page-counter">Página 1 de 2</div>
+                <button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasseDeDentro()">
+                    Escolher esta Classe
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div id="hover-preview" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 525px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(255, 215, 0, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
     <div id="hover-preview-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 525px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
     <div id="hover-preview-slot" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 600px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
 
     <div id="app-container" style="display: none; opacity: 0;">
-        <!-- Efeitos de Profissão -->
         <div id="aura-profissao"></div>
         <div id="particulas-profissao"></div>
 
@@ -166,7 +196,6 @@
         </div> 
         <footer id="mao-area"><div id="cartas-mao"></div></footer>
         
-        <!-- Container para animação de uso de carta -->
         <div id="carta-tabuleiro-animada" class="carta-tabuleiro-animada"></div>
     </div>
 
@@ -227,6 +256,6 @@
 
     <script type="module" src="script.js?v=10.0"></script>
     <script src="profissao.js?v=1.0"></script>
-    <script src="selecao-classe.js?v=1.0"></script>
+    <script src="selecao-classe.js?v=3.0"></script>
 </body>
 </html>
