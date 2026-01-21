@@ -1,5 +1,5 @@
 /* =========================================================
-   ESTILOS DA FICHA - MODO PRANCHETA (FINAL v1.5)
+   ESTILOS DA FICHA - MODO PRANCHETA (FINAL v2.0)
    ========================================================= */
 
    #sheet-modal {
@@ -53,7 +53,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    pointer-events: none;
+    /* Removido pointer-events: none para permitir arrastar os wrappers */
 }
 
 /* --- BARRA DE FERRAMENTAS --- */
@@ -126,16 +126,26 @@
 
 /* --- ELEMENTOS DO JOGADOR --- */
 
-/* Wrapper Genérico para facilitar o hover */
+/* Wrapper Genérico */
 .element-wrapper {
     position: absolute;
-    pointer-events: auto; /* Reativa o clique nos elementos */
-    padding: 5px; 
-    margin: -5px; 
+    padding: 2px;
     z-index: 100;
+    cursor: grab; /* Mãozinha para indicar que pode mover */
 }
 
-/* Caixa de Seleção Temporária (enquanto arrasta) */
+.element-wrapper:active {
+    cursor: grabbing;
+}
+
+/* Estado Selecionado (Borda Dourada) */
+.element-wrapper.selected {
+    border: 2px dashed var(--gold);
+    background: rgba(212, 175, 55, 0.1);
+    z-index: 1000; /* Traz para frente */
+}
+
+/* Caixa de Seleção Temporária (Drag to Create) */
 .temp-box {
     position: absolute;
     border: 1px dashed blue;
@@ -149,64 +159,65 @@
     width: 100%;
     height: 100%;
     background: transparent;
-    border: 1px dashed transparent; 
+    border: none;
     color: #000;
     font-family: 'Courier New', monospace;
-    font-weight: bold;
-    font-size: 1.4vh; 
+    font-weight: 900; /* Mais negrito */
     line-height: 1.1;
     padding: 2px;
     resize: none; 
     overflow: hidden;
     outline: none;
-}
-
-.element-wrapper:hover .user-textarea, 
-.user-textarea:focus {
-    border: 1px dashed rgba(0, 0, 255, 0.5);
-    background: rgba(255, 255, 0, 0.1);
+    cursor: text;
 }
 
 /* MARCADOR (BOLINHA) */
 .user-marker {
-    width: 1.6vh;
-    height: 1.6vh;
+    width: 100%;
+    height: 100%;
     background-color: #000;
     border-radius: 50%;
-    cursor: pointer;
     box-shadow: 0 0 1px #fff;
-    margin: auto; 
+    pointer-events: none; /* Deixa o clique ir pro wrapper */
 }
 
-.element-wrapper:hover .user-marker {
-    background-color: #333;
-    transform: scale(1.2);
-}
-
-/* BOTÃO DE DELETAR */
-.delete-handle {
+/* --- MENU DE CONTEXTO (BOTOES DE EDITAR) --- */
+.element-context-menu {
     position: absolute;
-    top: -12px;
-    right: -12px;
-    background: red;
-    color: white;
-    border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 12px;
-    font-weight: bold;
-    cursor: pointer;
-    display: none; 
-    align-items: center;
-    justify-content: center;
-    z-index: 200;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    border: 1px solid white;
+    top: -40px; /* Acima do elemento */
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    border: 1px solid #fff;
+    border-radius: 5px;
+    display: none; /* Escondido por padrão */
+    gap: 5px;
+    padding: 3px;
+    z-index: 2000;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    white-space: nowrap;
 }
 
-.element-wrapper:hover .delete-handle {
+/* Mostra o menu quando o elemento tem a classe .selected */
+.element-wrapper.selected .element-context-menu {
     display: flex;
 }
+
+.ctx-btn {
+    background: #555;
+    color: #fff;
+    border: none;
+    border-radius: 3px;
+    width: 25px;
+    height: 25px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.ctx-btn:hover { background: var(--gold); color: #000; }
+.ctx-btn.del:hover { background: #ff4444; color: #fff; }
 
 /* Footer */
 .sheet-footer {
