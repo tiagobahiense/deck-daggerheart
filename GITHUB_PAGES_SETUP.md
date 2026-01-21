@@ -9,7 +9,7 @@
 
 ## Como Configurar:
 
-### Opção 1: Via GitHub Settings (Mais Fácil)
+### ⚠️ IMPORTANTE: Configuração no GitHub Settings
 
 1. **Acesse o repositório no GitHub:**
    - https://github.com/tiagobahiense/deck-daggerheart
@@ -20,15 +20,17 @@
 3. **Vá em Pages:**
    - No menu lateral esquerdo, clique em **Pages**
 
-4. **Configure a Source:**
-   - **Source**: Selecione **"Deploy from a branch"**
-   - **Branch**: Selecione **"main"**
-   - **Folder**: Selecione **"/ (root)"**
+4. **Configure a Source (CRUCIAL):**
+   - **Source**: Selecione **"GitHub Actions"** (NÃO "Deploy from a branch")
    - Clique em **Save**
 
 5. **Aguarde alguns minutos:**
-   - GitHub vai fazer o build
+   - GitHub Actions vai fazer o build automaticamente
    - Você receberá uma URL: `https://tiagobahiense.github.io/deck-daggerheart/`
+
+### ⚠️ Se não aparecer a opção "GitHub Actions":
+- Verifique se você tem permissões de admin no repositório
+- Tente fazer um push novo após configurar
 
 ### Opção 2: Via GitHub Actions (Automático)
 
