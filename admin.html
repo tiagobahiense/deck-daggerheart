@@ -208,9 +208,15 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        
         // Auth secundário para criar usuários sem derrubar a sessão do Mestre
-        const secondaryApp = initializeApp(firebaseConfig, "secondary");
+        // IMPORTANTE: Usa um nome único para isolar completamente do auth principal
+        const secondaryApp = initializeApp(firebaseConfig, "secondary-auth-creator");
         const secondaryAuth = getAuth(secondaryApp);
+        
+        // Garante que o secondaryAuth nunca faça login automático
+        // Configura persistência como 'none' para não salvar sessão
+        setPersistence(secondaryAuth, 'none').catch(() => {});
 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
@@ -331,34 +337,53 @@
                             createUserWithEmailAndPassword(secondaryAuth, email, pass)
                             .then((cred) => {
                                 const uid = cred.user.uid;
-                                // Salva no Realtime Database (pode usar db do auth principal)
+                                console.log("✅ Usuário criado no Firebase Auth:", uid);
+                                
+                                // Salva no Realtime Database ANTES de fazer logout
                                 return set(ref(db, `mesa_rpg/accounts/${uid}`), {
                                     email: email,
                                     characters: {},
                                     status: 'active'
                                 }).then(() => {
-                                    // Faz logout do secondaryAuth imediatamente
-                                    return signOut(secondaryAuth).catch(() => {});
+                                    console.log("✅ Dados salvos no Realtime Database");
+                                    
+                                    // Faz logout do secondaryAuth IMEDIATAMENTE após salvar
+                                    // Usa um pequeno delay para garantir que o set foi concluído
+                                    return new Promise((resolve) => {
+                                        setTimeout(() => {
+                                            signOut(secondaryAuth)
+                                                .then(() => {
+                                                    console.log("✅ Logout do secondaryAuth concluído");
+                                                    resolve();
+                                                })
+                                                .catch((err) => {
+                                                    console.warn("⚠️ Erro ao fazer logout do secondaryAuth:", err);
+                                                    resolve(); // Continua mesmo se der erro
+                                                });
+                                        }, 100);
+                                    });
                                 }).then(() => {
-                                    // Desmarca flag após um pequeno delay para permitir que onAuthStateChanged se estabilize
-                                    setTimeout(() => {
-                                        isCreatingUser = false;
-                                        
-                                        // Verifica se o auth principal ainda está como mestre
-                                        const currentAuthUser = auth.currentUser;
-                                        if (!currentAuthUser || currentAuthUser.email !== EMAIL_MESTRE) {
-                                            console.warn("⚠️ Sessão do mestre foi afetada! Recarregando página...");
-                                            alert("⚠️ A sessão foi afetada. A página será recarregada.\n\nPor favor, faça login novamente como mestre.");
-                                            window.location.reload();
-                                            return;
-                                        }
-                                        
-                                        // Tudo OK, continua normalmente
-                                        alert("✅ Usuário criado: " + email);
-                                        document.getElementById('new-user-email').value = "";
-                                        document.getElementById('new-user-pass').value = "";
-                                        carregarUsuarios();
-                                    }, 500);
+                                    // Aguarda um pouco mais para garantir que tudo se estabilizou
+                                    return new Promise((resolve) => setTimeout(resolve, 300));
+                                }).then(() => {
+                                    // Desmarca flag
+                                    isCreatingUser = false;
+                                    
+                                    // Verifica se o auth principal ainda está como mestre
+                                    const currentAuthUser = auth.currentUser;
+                                    if (!currentAuthUser || currentAuthUser.email !== EMAIL_MESTRE) {
+                                        console.error("❌ Sessão do mestre foi afetada!");
+                                        alert("⚠️ A sessão foi afetada. A página será recarregada.\n\nPor favor, faça login novamente como mestre.");
+                                        window.location.reload();
+                                        return;
+                                    }
+                                    
+                                    console.log("✅ Sessão do mestre intacta!");
+                                    // Tudo OK, continua normalmente
+                                    alert("✅ Usuário criado: " + email);
+                                    document.getElementById('new-user-email').value = "";
+                                    document.getElementById('new-user-pass').value = "";
+                                    carregarUsuarios();
                                 });
                             })
                             .catch((error) => {

@@ -1,0 +1,60 @@
+===========================================
+REGRAS DO FIREBASE REALTIME DATABASE
+===========================================
+
+Cole estas regras no Firebase Console:
+Realtime Database > Rules > Editar
+
+===========================================
+
+{
+  "rules": {
+    "mesa_rpg": {
+      "jogadores": {
+        "$nomeJogador": {
+          ".read": "auth != null",
+          ".write": "auth != null"
+        }
+      },
+      "accounts": {
+        ".read": "auth != null && auth.token.email.matches(/tgbahiense@gmail.com/i)",
+        "$uid": {
+          ".read": "auth != null && (auth.uid == $uid || auth.token.email.matches(/tgbahiense@gmail.com/i))",
+          ".write": "auth != null && (auth.uid == $uid || auth.token.email.matches(/tgbahiense@gmail.com/i))",
+          "characters": {
+            ".read": "auth != null && (auth.uid == $uid || auth.token.email.matches(/tgbahiense@gmail.com/i))",
+            ".write": "auth != null && (auth.uid == $uid || auth.token.email.matches(/tgbahiense@gmail.com/i))"
+          }
+        }
+      }
+    }
+  }
+}
+
+===========================================
+EXPLICAÇÃO DAS REGRAS:
+===========================================
+
+1. /mesa_rpg/jogadores/$nomeJogador
+   - Qualquer usuário autenticado pode ler/escrever
+   - Permite que jogadores salvem seus dados
+
+2. /mesa_rpg/accounts
+   - Apenas o mestre (tgbahiense@gmail.com) pode ler tudo
+   - Cada usuário pode ler/escrever apenas sua própria conta ($uid)
+
+3. /mesa_rpg/accounts/$uid/characters
+   - Cada usuário pode gerenciar apenas seus próprios personagens
+   - O mestre pode acessar tudo
+
+===========================================
+COMO APLICAR:
+===========================================
+
+1. Acesse: https://console.firebase.google.com/
+2. Selecione o projeto: deck-daggerheart
+3. Vá em: Realtime Database > Rules
+4. Cole as regras acima
+5. Clique em "Publicar"
+
+===========================================
