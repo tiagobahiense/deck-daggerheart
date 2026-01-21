@@ -6,6 +6,7 @@
     <title>Grimório Daggerheart</title>
     <link rel="icon" type="image/png" href="img/favicon.png" />
     <link rel="stylesheet" href="style.css?v=10.0">
+    <link rel="stylesheet" href="profissao.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -70,6 +71,10 @@
     </div>
 
     <div id="app-container" style="display: none; opacity: 0;">
+        <!-- Efeitos de Profissão -->
+        <div id="aura-profissao"></div>
+        <div id="particulas-profissao"></div>
+
         <div id="audio-control">
             <button onclick="toggleMusic()" id="btn-music">🔊</button>
             <input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()">
@@ -187,5 +192,6 @@
     </div>
 
     <script type="module" src="script.js?v=10.0"></script>
+    <script src="profissao.js?v=1.0"></script>
 </body>
 </html>

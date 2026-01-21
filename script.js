@@ -424,6 +424,11 @@ function renderizar() {
         
         divRes.appendChild(container);
     }
+    
+    // Monitora mudanças na classe fundamental para ativar profissão
+    if (typeof window.monitorarClasseFundamental === 'function') {
+        window.monitorarClasseFundamental();
+    }
 }
 
 // Função para iniciar a experiência do jogador

@@ -1,0 +1,416 @@
+[
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Anão.jpg",
+        "nome": "Ancestralidade - Anão",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Clank.jpg",
+        "nome": "Ancestralidade - Clank",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Drakona.jpg",
+        "nome": "Ancestralidade - Drakona",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Elfo.jpg",
+        "nome": "Ancestralidade - Elfo",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Fada.jpg",
+        "nome": "Ancestralidade - Fada",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Fauno.jpg",
+        "nome": "Ancestralidade - Fauno",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Firbolg.jpg",
+        "nome": "Ancestralidade - Firbolg",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Fungril.jpg",
+        "nome": "Ancestralidade - Fungril",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Galapa.jpg",
+        "nome": "Ancestralidade - Galapa",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Gigante.jpg",
+        "nome": "Ancestralidade - Gigante",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Goblin.jpg",
+        "nome": "Ancestralidade - Goblin",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Humano.jpg",
+        "nome": "Ancestralidade - Humano",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Infernis.jpg",
+        "nome": "Ancestralidade - Infernis",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Katari.jpg",
+        "nome": "Ancestralidade - Katari",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Orc.jpg",
+        "nome": "Ancestralidade - Orc",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Pequenino.jpg",
+        "nome": "Ancestralidade - Pequenino",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Quacho.jpg",
+        "nome": "Ancestralidade - Quacho",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Ancestralidade/Ancestralidade - Símio.jpg",
+        "nome": "Ancestralidade - Símio",
+        "categoria": "Ancestralidade"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Baluarte.jpg",
+        "nome": "Especialização - Baluarte",
+        "categoria": "Classes",
+        "profissao": "Guardião"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Beletrista.jpg",
+        "nome": "Especialização - Beletrista",
+        "categoria": "Classes",
+        "profissao": "Bardo"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Discípulo da Guerra.jpg",
+        "nome": "Especialização - Discípulo da Guerra",
+        "categoria": "Classes",
+        "profissao": "Mago"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Discípulo do conhecimento.jpg",
+        "nome": "Especialização - Discípulo do conhecimento",
+        "categoria": "Classes",
+        "profissao": "Mago"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Elementalista.jpg",
+        "nome": "Especialização - Elementalista",
+        "categoria": "Classes",
+        "profissao": "Feiticeiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Escolhido da bravura.jpg",
+        "nome": "Especialização - Escolhido da bravura",
+        "categoria": "Classes",
+        "profissao": "Guerreiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Escolhido da Matança.jpg",
+        "nome": "Especialização - Escolhido da Matança",
+        "categoria": "Classes",
+        "profissao": "Guerreiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Gatuno.jpg",
+        "nome": "Especialização - Gatuno",
+        "categoria": "Classes",
+        "profissao": "Ladino"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Mafioso.jpg",
+        "nome": "Especialização - Mafioso",
+        "categoria": "Classes",
+        "profissao": "Ladino"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Portador Divino.jpg",
+        "nome": "Especialização - Portador Divino",
+        "categoria": "Classes",
+        "profissao": "Serafim"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Primordialista.jpg",
+        "nome": "Especialização - Primordialista",
+        "categoria": "Classes",
+        "profissao": "Feiticeiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Protetor da Renovação.jpg",
+        "nome": "Especialização - Protetor da Renovação",
+        "categoria": "Classes",
+        "profissao": "Druida"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Protetor dos elementos.jpg",
+        "nome": "Especialização - Protetor dos elementos",
+        "categoria": "Classes",
+        "profissao": "Druida"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - rastreador.jpg",
+        "nome": "Especialização - rastreador",
+        "categoria": "Classes",
+        "profissao": "Patrulheiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Sentinela Alada.jpg",
+        "nome": "Especialização - Sentinela Alada",
+        "categoria": "Classes",
+        "profissao": "Serafim"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Treinador.jpg",
+        "nome": "Especialização - Treinador",
+        "categoria": "Classes",
+        "profissao": "Patrulheiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - Trovador.jpg",
+        "nome": "Especialização - Trovador",
+        "categoria": "Classes",
+        "profissao": "Bardo"
+    },
+    {
+        "caminho": "img/cartas/Classes/Especialização - VinGador.jpg",
+        "nome": "Especialização - VinGador",
+        "categoria": "Classes",
+        "profissao": "Guardião"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Baluarte.jpg",
+        "nome": "Fundamental - Baluarte",
+        "categoria": "Classes",
+        "profissao": "Guardião"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Beletrista.jpg",
+        "nome": "Fundamental - Beletrista",
+        "categoria": "Classes",
+        "profissao": "Bardo"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Discípulo da Guerra.jpg",
+        "nome": "Fundamental - Discípulo da Guerra",
+        "categoria": "Classes",
+        "profissao": "Mago"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Discípulo do conhecimento.jpg",
+        "nome": "Fundamental - Discípulo do conhecimento",
+        "categoria": "Classes",
+        "profissao": "Mago"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Elementalista.jpg",
+        "nome": "Fundamental - Elementalista",
+        "categoria": "Classes",
+        "profissao": "Feiticeiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Escolhido da bravura.jpg",
+        "nome": "Fundamental - Escolhido da bravura",
+        "categoria": "Classes",
+        "profissao": "Guerreiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Escolhido da Matança.jpg",
+        "nome": "Fundamental - Escolhido da Matança",
+        "categoria": "Classes",
+        "profissao": "Guerreiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Gatuno.jpg",
+        "nome": "Fundamental - Gatuno",
+        "categoria": "Classes",
+        "profissao": "Ladino"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Mafioso.jpg",
+        "nome": "Fundamental - Mafioso",
+        "categoria": "Classes",
+        "profissao": "Ladino"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Portador Divino.jpg",
+        "nome": "Fundamental - Portador Divino",
+        "categoria": "Classes",
+        "profissao": "Serafim"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Primordialista.jpg",
+        "nome": "Fundamental - Primordialista",
+        "categoria": "Classes",
+        "profissao": "Feiticeiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Protetor da Renovação.jpg",
+        "nome": "Fundamental - Protetor da Renovação",
+        "categoria": "Classes",
+        "profissao": "Druida"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Protetor dos elementos.jpg",
+        "nome": "Fundamental - Protetor dos elementos",
+        "categoria": "Classes",
+        "profissao": "Druida"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - rastreador.jpg",
+        "nome": "Fundamental - rastreador",
+        "categoria": "Classes",
+        "profissao": "Patrulheiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Sentinela Alada.jpg",
+        "nome": "Fundamental - Sentinela Alada",
+        "categoria": "Classes",
+        "profissao": "Serafim"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Treinador.jpg",
+        "nome": "Fundamental - Treinador",
+        "categoria": "Classes",
+        "profissao": "Patrulheiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - Trovador.jpg",
+        "nome": "Fundamental - Trovador",
+        "categoria": "Classes",
+        "profissao": "Bardo"
+    },
+    {
+        "caminho": "img/cartas/Classes/Fundamental - VinGador.jpg",
+        "nome": "Fundamental - VinGador",
+        "categoria": "Classes",
+        "profissao": "Guardião"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Baluarte.jpg",
+        "nome": "Maestria - Baluarte",
+        "categoria": "Classes",
+        "profissao": "Guardião"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Beletrista.jpg",
+        "nome": "Maestria - Beletrista",
+        "categoria": "Classes",
+        "profissao": "Bardo"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Discípulo da Guerra.jpg",
+        "nome": "Maestria - Discípulo da Guerra",
+        "categoria": "Classes",
+        "profissao": "Mago"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Discípulo do conhecimento.jpg",
+        "nome": "Maestria - Discípulo do conhecimento",
+        "categoria": "Classes",
+        "profissao": "Mago"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Elementalista.jpg",
+        "nome": "Maestria - Elementalista",
+        "categoria": "Classes",
+        "profissao": "Feiticeiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Escolhido da bravura.jpg",
+        "nome": "Maestria - Escolhido da bravura",
+        "categoria": "Classes",
+        "profissao": "Guerreiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Escolhido da Matança.jpg",
+        "nome": "Maestria - Escolhido da Matança",
+        "categoria": "Classes",
+        "profissao": "Guerreiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Gatuno.jpg",
+        "nome": "Maestria - Gatuno",
+        "categoria": "Classes",
+        "profissao": "Ladino"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Mafioso.jpg",
+        "nome": "Maestria - Mafioso",
+        "categoria": "Classes",
+        "profissao": "Ladino"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Portador Divino.jpg",
+        "nome": "Maestria - Portador Divino",
+        "categoria": "Classes",
+        "profissao": "Serafim"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Primordialista.jpg",
+        "nome": "Maestria - Primordialista",
+        "categoria": "Classes",
+        "profissao": "Feiticeiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Protetor da Renovação.jpg",
+        "nome": "Maestria - Protetor da Renovação",
+        "categoria": "Classes",
+        "profissao": "Druida"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Protetor dos elementos.jpg",
+        "nome": "Maestria - Protetor dos elementos",
+        "categoria": "Classes",
+        "profissao": "Druida"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - rastreador.jpg",
+        "nome": "Maestria - rastreador",
+        "categoria": "Classes",
+        "profissao": "Patrulheiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Sentinela Alada.jpg",
+        "nome": "Maestria - Sentinela Alada",
+        "categoria": "Classes",
+        "profissao": "Serafim"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Treinador.jpg",
+        "nome": "Maestria - Treinador",
+        "categoria": "Classes",
+        "profissao": "Patrulheiro"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - Trovador.jpg",
+        "nome": "Maestria - Trovador",
+        "categoria": "Classes",
+        "profissao": "Bardo"
+    },
+    {
+        "caminho": "img/cartas/Classes/Maestria - VinGador.jpg",
+        "nome": "Maestria - VinGador",
+        "categoria": "Classes",
+        "profissao": "Guardião"
+    }
+]
