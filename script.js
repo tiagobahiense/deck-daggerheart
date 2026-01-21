@@ -35,10 +35,6 @@ window.set = set;
 window.get = get;
 
 // Configuração global
-// ... (restante do código original)
-
-
-// Configuração global
 const EMAIL_MESTRE = "tgbahiense@gmail.com";
 let currentUser = null;
 let nomeJogador = "";
@@ -389,7 +385,70 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
     modal.style.display = 'flex';
 };
 
-// Função para renderizar as cartas na mão do jogador (corrigida)
+// === CORREÇÃO IMPORTANTE AQUI: NOVA FUNÇÃO renderizarSlots ===
+// Essa função desenha as imagens nos slots (Ancestralidade, Classe, etc)
+// Sem ela, o "vigia" do profissao.js não acha a imagem e desliga a aura.
+function renderizarSlots() {
+    if (!slotsFixos) return;
+
+    Object.keys(slotsFixos).forEach(idSlot => {
+        const carta = slotsFixos[idSlot];
+        const div = document.getElementById(`slot-${idSlot}`);
+        
+        if (div) {
+            // Limpa conteúdo anterior para evitar duplicação
+            div.innerHTML = ''; 
+            
+            // Recria o label padrão
+            const label = document.createElement('span');
+            label.className = 'label-slot';
+            label.innerText = idSlot; 
+            div.appendChild(label);
+
+            // Se for slot de classe, recoloca o nível
+            if (['Fundamental', 'Especializacao', 'Maestria'].includes(idSlot)) {
+                const nivelSpan = document.createElement('span');
+                nivelSpan.className = 'nivel-req';
+                nivelSpan.innerText = idSlot === 'Fundamental' ? 'Nível 1' : 'Avanço';
+                div.appendChild(nivelSpan);
+            }
+
+            // Recria botão limpar
+            const btnLimpar = document.createElement('button');
+            btnLimpar.className = 'btn-limpar';
+            btnLimpar.innerText = '×';
+            btnLimpar.onclick = (e) => window.limparSlot(idSlot, e);
+            div.appendChild(btnLimpar);
+
+            // Se tem carta, renderiza a imagem
+            if (carta) {
+                const img = document.createElement('img');
+                // Tenta pegar o caminho da carta. Se não tiver, tenta o caminho_perfil (salvo no selecao-classe.js)
+                img.src = carta.caminho || carta.caminho_perfil || '';
+                
+                // Configura hover preview
+                img.onmouseenter = function() {
+                    const preview = document.getElementById('hover-preview-slot');
+                    if (preview && img.src) {
+                        preview.style.display = 'block';
+                        preview.style.backgroundImage = `url('${img.src}')`;
+                    }
+                };
+                img.onmouseleave = function() {
+                    const preview = document.getElementById('hover-preview-slot');
+                    if (preview) preview.style.display = 'none';
+                };
+                
+                div.appendChild(img);
+                btnLimpar.style.display = 'flex';
+            } else {
+                btnLimpar.style.display = 'none';
+            }
+        }
+    });
+}
+
+// Função para renderizar as cartas na mão do jogador (ATUALIZADA)
 function renderizar() {
     const divMao = document.getElementById('cartas-mao');
     const divRes = document.getElementById('cartas-reserva');
@@ -398,6 +457,10 @@ function renderizar() {
         debug("Elementos não encontrados para renderização");
         return;
     }
+
+    // === CHAMA A NOVA FUNÇÃO PARA DESENHAR A CLASSE NA TELA ===
+    renderizarSlots(); 
+    // ==========================================================
 
     // Renderiza mão do jogador
     divMao.innerHTML = '';
@@ -521,6 +584,9 @@ function renderizar() {
     }
 }
 
+// Expor renderizar globalmente para ser usada por outros scripts
+window.renderizar = renderizar;
+
 // Função para carregar lista de personagens
 async function carregarListaPersonagens() {
     if (!currentUser) return;
@@ -630,7 +696,8 @@ window.selecionarPersonagem = async function(charName) {
         }
         
         monitorarEstadoEmTempoReal();
-        renderizar();
+        // AQUI ESTÁ A GARANTIA: Renderiza tudo, incluindo a imagem da classe nos slots
+        renderizar(); 
     } catch (error) {
         console.error("Erro ao verificar classe do personagem:", error);
         alert("Erro ao carregar personagem: " + error.message);
@@ -745,7 +812,9 @@ function adicionarNaMao(carta) {
     salvarNaNuvem();
 }
 
-// Função para salvar na nuvem
+// Função para salvar na nuvem (Exposta para outros scripts)
+window.salvarNaNuvem = salvarNaNuvem;
+
 function salvarNaNuvem() {
     if (!nomeJogador || !currentUser) {
         console.warn("⚠️ Tentativa de salvar sem nomeJogador ou currentUser:", { nomeJogador, currentUser: !!currentUser });
@@ -817,43 +886,14 @@ function salvarUsoDeCartaNaNuvem() {
 window.preencherSlotFixo = function(carta, idSlot) {
     slotsFixos[idSlot] = carta;
     salvarNaNuvem();
-    const div = document.getElementById(`slot-${idSlot}`);
-    if (div) {
-        const imgOld = div.querySelector('img');
-        if (imgOld) imgOld.remove();
-        const img = document.createElement('img');
-        img.src = carta.caminho;
-        
-        // Hover preview para slots
-        img.onmouseenter = function() {
-            const preview = document.getElementById('hover-preview-slot');
-            if (preview) {
-                preview.style.display = 'block';
-                preview.style.backgroundImage = `url('${carta.caminho}')`;
-            }
-        };
-        img.onmouseleave = function() {
-            const preview = document.getElementById('hover-preview-slot');
-            if (preview) preview.style.display = 'none';
-        };
-        
-        div.appendChild(img);
-        const btn = div.querySelector('.btn-limpar');
-        if (btn) btn.style.display = 'flex';
-    }
+    renderizar(); // Atualizado para chamar renderizarSlots internamente
 };
 
 window.limparSlot = function(idSlot, evt) {
     if (evt) evt.stopPropagation();
     slotsFixos[idSlot] = null;
     salvarNaNuvem();
-    const div = document.getElementById(`slot-${idSlot}`);
-    if (div) {
-        const img = div.querySelector('img');
-        if (img) img.remove();
-        const btn = div.querySelector('.btn-limpar');
-        if (btn) btn.style.display = 'none';
-    }
+    renderizar(); // Atualizado para chamar renderizarSlots internamente
 };
 
 // Funções de decisão de cartas
