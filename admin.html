@@ -192,7 +192,8 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, fetchSignInMethodsForEmail, updatePassword, sendPasswordResetEmail, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        // ADICIONADO: inMemoryPersistence na importação abaixo
+        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, inMemoryPersistence, setPersistence, fetchSignInMethodsForEmail, updatePassword, sendPasswordResetEmail, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -210,25 +211,24 @@
         const db = getDatabase(app);
         
         // Auth secundário para criar usuários sem derrubar a sessão do Mestre
-        // IMPORTANTE: Usa um nome único para isolar completamente do auth principal
         const secondaryApp = initializeApp(firebaseConfig, "secondary-auth-creator");
         const secondaryAuth = getAuth(secondaryApp);
         
-        // Garante que o secondaryAuth nunca faça login automático
-        // Configura persistência como 'none' para não salvar sessão
-        setPersistence(secondaryAuth, 'none').catch(() => {});
+        // CORREÇÃO: Usar inMemoryPersistence em vez de string 'none'
+        // Isso impede o erro de "Internal Assertion Failed"
+        setPersistence(secondaryAuth, inMemoryPersistence).catch((error) => {
+            console.error("Erro ao definir persistência do auth secundário:", error);
+        });
 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
-        // Configura persistência do login (v10.1 - correção concorrência auth)
+        // Configura persistência do login principal
         setPersistence(auth, browserSessionPersistence)
             .then(() => {
                 console.log("Persistência de autenticação configurada com sucesso.");
-                // Flag para evitar múltiplas verificações durante criação de usuário
                 let isCreatingUser = false;
                 
                 onAuthStateChanged(auth, user => {
-                    // Ignora mudanças durante a criação de usuário (previne falsos positivos)
                     if (isCreatingUser) {
                         console.log("⏳ Mudança de auth ignorada (criação de usuário em progresso)");
                         return;
@@ -283,7 +283,6 @@
             });
         }
 
-        // Variável para guardar o estado do mestre antes de criar usuário
         let mestreSessionBackup = null;
 
         window.criarUsuario = function() {
@@ -292,7 +291,6 @@
 
             if(!email || !pass) return alert("Preencha tudo");
 
-            // Guarda o estado atual do mestre ANTES de criar
             const currentUser = auth.currentUser;
             if (!currentUser || currentUser.email !== EMAIL_MESTRE) {
                 alert("⚠️ Você não está logado como mestre!");
@@ -300,7 +298,6 @@
             }
             mestreSessionBackup = { email: currentUser.email, uid: currentUser.uid };
 
-            // Verifica se o e-mail já existe no Realtime Database como inativo
             get(ref(db, 'mesa_rpg/accounts_inactive')).then(snapshot => {
                 if (snapshot.exists()) {
                     const inactiveAccounts = snapshot.val();
@@ -310,7 +307,6 @@
                     }
                 }
 
-                // Verifica se o e-mail já existe no Firebase Auth
                 fetchSignInMethodsForEmail(auth, email)
                     .then((signInMethods) => {
                         if (signInMethods.length > 0) {
@@ -318,7 +314,6 @@
                             return;
                         }
 
-                        // Verifica também se já existe no Realtime Database
                         get(ref(db, 'mesa_rpg/accounts')).then(accountsSnap => {
                             if (accountsSnap.exists()) {
                                 const accounts = accountsSnap.val();
@@ -329,17 +324,14 @@
                                 }
                             }
 
-                            // Marca que estamos criando usuário (evita falsos positivos no onAuthStateChanged)
+                            // Marca que estamos criando usuário
                             isCreatingUser = true;
                             
-                            // IMPORTANTE: Usa secondaryAuth para criar usuário, NÃO o auth principal do mestre
-                            // Isso evita que a sessão do mestre seja derrubada
                             createUserWithEmailAndPassword(secondaryAuth, email, pass)
                             .then((cred) => {
                                 const uid = cred.user.uid;
                                 console.log("✅ Usuário criado no Firebase Auth:", uid);
                                 
-                                // Salva no Realtime Database ANTES de fazer logout
                                 return set(ref(db, `mesa_rpg/accounts/${uid}`), {
                                     email: email,
                                     characters: {},
@@ -347,8 +339,6 @@
                                 }).then(() => {
                                     console.log("✅ Dados salvos no Realtime Database");
                                     
-                                    // Faz logout do secondaryAuth IMEDIATAMENTE após salvar
-                                    // Usa um pequeno delay para garantir que o set foi concluído
                                     return new Promise((resolve) => {
                                         setTimeout(() => {
                                             signOut(secondaryAuth)
@@ -358,18 +348,15 @@
                                                 })
                                                 .catch((err) => {
                                                     console.warn("⚠️ Erro ao fazer logout do secondaryAuth:", err);
-                                                    resolve(); // Continua mesmo se der erro
+                                                    resolve();
                                                 });
                                         }, 100);
                                     });
                                 }).then(() => {
-                                    // Aguarda um pouco mais para garantir que tudo se estabilizou
                                     return new Promise((resolve) => setTimeout(resolve, 300));
                                 }).then(() => {
-                                    // Desmarca flag
                                     isCreatingUser = false;
                                     
-                                    // Verifica se o auth principal ainda está como mestre
                                     const currentAuthUser = auth.currentUser;
                                     if (!currentAuthUser || currentAuthUser.email !== EMAIL_MESTRE) {
                                         console.error("❌ Sessão do mestre foi afetada!");
@@ -379,7 +366,6 @@
                                     }
                                     
                                     console.log("✅ Sessão do mestre intacta!");
-                                    // Tudo OK, continua normalmente
                                     alert("✅ Usuário criado: " + email);
                                     document.getElementById('new-user-email').value = "";
                                     document.getElementById('new-user-pass').value = "";
@@ -387,14 +373,10 @@
                                 });
                             })
                             .catch((error) => {
-                                // Limpa qualquer sessão residual do secondaryAuth
                                 signOut(secondaryAuth).catch(() => {});
-                                
-                                // Desmarca flag
                                 setTimeout(() => {
                                     isCreatingUser = false;
                                     
-                                    // Verifica se o auth principal ainda está OK
                                     const currentAuthUser = auth.currentUser;
                                     if (!currentAuthUser || currentAuthUser.email !== EMAIL_MESTRE) {
                                         console.warn("⚠️ Sessão do mestre foi afetada após erro!");
@@ -434,14 +416,13 @@
                 snapshot.forEach(childSnap => {
                     const uid = childSnap.key;
                     const data = childSnap.val();
-                    if (data.status === 'inactive') return; // Não mostra contas inativas
+                    if (data.status === 'inactive') return; 
 
                     const chars = data.characters ? Object.keys(data.characters) : [];
                     const charCount = chars.length;
                     const charLimit = 3;
                     const isAtLimit = charCount >= charLimit;
 
-                    // Buscar classes de todos os personagens
                     const buscarClasse = async (charName) => {
                         try {
                             const charSlotRef = ref(db, `mesa_rpg/jogadores/${charName}/slots/Fundamental`);
@@ -456,7 +437,6 @@
                         return '';
                     };
                     
-                    // Construir HTML dos personagens com suas classes
                     let countColor = charCount >= 3 ? '#ff6b6b' : charCount >= 2 ? '#ffa94d' : '#4CAF50';
                     Promise.all(chars.map(async charName => {
                         const classeTag = await buscarClasse(charName);
@@ -544,14 +524,12 @@
 
         window.removerConta = function(uid, email) {
             if (confirm(`Tem certeza que deseja desativar a conta "${email}" e DELETAR PERMANENTEMENTE TODOS os seus personagens?`)) {
-                // Primeiro, remove todos os personagens da conta
                 get(ref(db, `mesa_rpg/accounts/${uid}/characters`))
                     .then(snapshot => {
                         if (snapshot.exists()) {
                             const chars = snapshot.val();
                             const promises = [];
                             Object.keys(chars).forEach(charName => {
-                                // Remove completamente o personagem do banco de dados
                                 promises.push(remove(ref(db, `mesa_rpg/jogadores/${charName}`)));
                             });
                             return Promise.all(promises);
@@ -559,11 +537,9 @@
                         return Promise.resolve();
                     })
                     .then(() => {
-                        // Remove a lista de personagens da conta
                         return remove(ref(db, `mesa_rpg/accounts/${uid}/characters`));
                     })
                     .then(() => {
-                        // Marca a conta como inativa no Realtime Database
                         return update(ref(db, `mesa_rpg/accounts/${uid}`), { status: 'inactive' });
                     })
                     .then(() => {
@@ -582,11 +558,9 @@
             if (confirm(`Tem certeza que deseja reativar a conta "${email}"? A conta volta zerada, sem personagem.`)) {
                 update(ref(db, `mesa_rpg/accounts/${uid}`), { status: 'active' })
                     .then(() => {
-                        // Limpa a lista de personagens (conta volta zerada)
                         return remove(ref(db, `mesa_rpg/accounts/${uid}/characters`));
                     })
                     .then(() => {
-                        // Remove da lista de inativos (se existir)
                         return remove(ref(db, `mesa_rpg/accounts_inactive/${email}`));
                     })
                     .then(() => {
@@ -603,7 +577,6 @@
 
         window.abrirTrocarSenha = function(uid, email) {
             if (confirm(`Deseja enviar um link de redefinição de senha para ${email}?\n\nUm email será enviado com as instruções para trocar a senha.`)) {
-                // Envia um email de reset de senha para a conta especificada
                 sendPasswordResetEmail(auth, email)
                     .then(() => {
                         alert(`✅ Email de redefinição de senha foi enviado para ${email}!\n\nO usuário pode clicar no link do email para criar uma nova senha.`);
@@ -653,11 +626,9 @@
                     return;
                 }
 
-                // Tenta re-autenticar com a senha atual para validá-la
                 const email = user.email;
                 const credential = await signInWithEmailAndPassword(auth, email, senhaAtual);
                 
-                // Se conseguiu fazer login, temos a permissão para trocar a senha
                 await updatePassword(user, senhaNova);
                 
                 alert('✅ Senha alterada com sucesso!');
@@ -674,7 +645,6 @@
             }
         };
 
-        // Fechar modal ao clicar fora
         document.getElementById('modal-trocar-senha').addEventListener('click', function(e) {
             if(e.target === this) {
                 fecharModalTrocarSenha();
@@ -706,7 +676,6 @@
         };
     </script>
 
-    <!-- MODAL TROCAR SENHA -->
     <div id="modal-trocar-senha">
         <div class="modal-senha-content">
             <button id="btn-fechar-modal-senha" onclick="fecharModalTrocarSenha()">×</button>
