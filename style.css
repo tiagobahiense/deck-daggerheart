@@ -6,7 +6,7 @@
     --resting-gray: brightness(0.8) saturate(0.5);
 }
 
-/* --- RESETS GERAIS --- */
+/* --- RESETS GERAIS --- **/
 * {
     box-sizing: border-box;
     user-select: none;
