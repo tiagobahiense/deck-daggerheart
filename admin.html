@@ -208,6 +208,9 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
+        // Auth secundário para criar usuários sem derrubar a sessão do Mestre
+        const secondaryApp = initializeApp(firebaseConfig, "secondary");
+        const secondaryAuth = getAuth(secondaryApp);
 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
@@ -289,8 +292,8 @@
                             return;
                         }
 
-                        // Se não existir, cria a conta
-                        createUserWithEmailAndPassword(auth, email, pass)
+                        // Se não existir, cria a conta (em auth secundário)
+                        createUserWithEmailAndPassword(secondaryAuth, email, pass)
                             .then((cred) => {
                                 const uid = cred.user.uid;
                                 set(ref(db, `mesa_rpg/accounts/${uid}`), {
@@ -298,6 +301,8 @@
                                     characters: {},
                                     status: 'active'
                                 });
+                                // Evita trocar a sessão do mestre: desloga do auth secundário
+                                signOut(secondaryAuth).catch(() => {});
                                 alert("✅ Usuário criado: " + email);
                                 document.getElementById('new-user-email').value = "";
                                 document.getElementById('new-user-pass').value = "";

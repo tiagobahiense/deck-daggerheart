@@ -434,6 +434,32 @@
                                 set(ref(db, `mesa_rpg/jogadores/${nome}/mao`), player.mao);
                             }
                         }
+
+                        // Também limpar descanso em slots (identidade/classe) e reserva, senão o jogador não atualiza o ícone
+                        if (player.slots) {
+                            let mudouSlots = false;
+                            Object.keys(player.slots).forEach(k => {
+                                const carta = player.slots[k];
+                                if (!carta) return;
+                                if (tipo === 'curto' && carta.estado === 'curto') { carta.estado = 'ativo'; mudouSlots = true; }
+                                if (tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) { carta.estado = 'ativo'; mudouSlots = true; }
+                            });
+                            if (mudouSlots) {
+                                set(ref(db, `mesa_rpg/jogadores/${nome}/slots`), player.slots);
+                            }
+                        }
+
+                        if (player.reserva && Array.isArray(player.reserva)) {
+                            let mudouRes = false;
+                            player.reserva.forEach(carta => {
+                                if (!carta) return;
+                                if (tipo === 'curto' && carta.estado === 'curto') { carta.estado = 'ativo'; mudouRes = true; }
+                                if (tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) { carta.estado = 'ativo'; mudouRes = true; }
+                            });
+                            if (mudouRes) {
+                                set(ref(db, `mesa_rpg/jogadores/${nome}/reserva`), player.reserva);
+                            }
+                        }
                     });
                     console.log('✨ Descanso restaurado para todos!');
                 }
@@ -460,17 +486,23 @@
 
         function iniciarPainel() {
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
-            onValue(jogadoresRef, (snapshot) => {
-                console.log('🔄 Atualizando painel do mestre em tempo real...');
+            const accountsRef = ref(db, 'mesa_rpg/accounts');
+
+            let nomesDePersonagens = new Set();
+            let cacheJogadores = {};
+
+            function render() {
+                console.log('🔄 Render mestre (accounts + jogadores)...');
                 const painel = document.getElementById('painel');
-                const dados = snapshot.val();
-                if(!dados) {
-                    painel.innerHTML = "<p class='status-vazio'>Nenhum jogador conectado.</p>";
+                const nomes = Array.from(nomesDePersonagens);
+                if (nomes.length === 0) {
+                    painel.innerHTML = "<p class='status-vazio'>Nenhum personagem cadastrado.</p>";
                     return;
                 }
+
                 painel.innerHTML = "";
-                Object.keys(dados).forEach(nome => {
-                    const p = dados[nome];
+                nomes.sort().forEach(nome => {
+                    const p = cacheJogadores[nome] || {};
                     const card = document.createElement('div');
                     card.className = 'card-jogador';
 
@@ -534,6 +566,30 @@
                     `;
                     painel.appendChild(card);
                 });
+            }
+
+            // 1) Lista de personagens (contas)
+            onValue(accountsRef, (snap) => {
+                const setNomes = new Set();
+                if (snap.exists()) {
+                    snap.forEach(childSnap => {
+                        const data = childSnap.val();
+                        if (!data || data.status === 'inactive') return;
+                        if (data.characters) {
+                            Object.keys(data.characters).forEach(n => setNomes.add(String(n).toUpperCase()));
+                        }
+                    });
+                }
+                nomesDePersonagens = setNomes;
+                render();
+            });
+
+            // 2) Estado em tempo real (jogadores)
+            onValue(jogadoresRef, (snapshot) => {
+                cacheJogadores = snapshot.exists() ? (snapshot.val() || {}) : {};
+                // garante que nomes presentes em jogadores também apareçam
+                Object.keys(cacheJogadores || {}).forEach(n => nomesDePersonagens.add(String(n).toUpperCase()));
+                render();
             });
         }
 

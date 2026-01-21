@@ -22,7 +22,8 @@ const auth = getAuth(app);
 const EMAIL_MESTRE = "tgbahiense@gmail.com";
 let currentUser = null;
 let nomeJogador = "";
-let catalogoCartas = [];
+let catalogoCartas = []; // lista_cartas.json (geral/ancestralidade/comunidade/etc)
+let catalogoCartasClasses = []; // lista_cartas_v2.json (apenas classes com profissao)
 let maoDoJogador = [];
 let reservaDoJogador = [];
 let slotsFixos = { 'Ancestralidade': null, 'Comunidade': null, 'Fundamental': null, 'Especializacao': null, 'Maestria': null };
@@ -265,12 +266,21 @@ window.fazerLoginJogador = function() {
 // Função para carregar as cartas do JSON
 async function carregarDados() {
     try {
-        const response = await fetch('./lista_cartas.json');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        catalogoCartas = await response.json();
-        debug('Cartas carregadas com sucesso', { total: catalogoCartas.length });
+        const [respGeral, respClasses] = await Promise.all([
+            fetch('./lista_cartas.json'),
+            fetch('./lista_cartas_v2.json')
+        ]);
+
+        if (!respGeral.ok) throw new Error(`HTTP error! status: ${respGeral.status} (lista_cartas.json)`);
+        if (!respClasses.ok) throw new Error(`HTTP error! status: ${respClasses.status} (lista_cartas_v2.json)`);
+
+        catalogoCartas = await respGeral.json();
+
+        // No v2 existe também ancestralidade/comunidade, mas aqui usamos só o que for Classes + profissao
+        const v2 = await respClasses.json();
+        catalogoCartasClasses = Array.isArray(v2) ? v2.filter(c => c && c.categoria === 'Classes' && c.profissao) : [];
+
+        debug('Cartas carregadas com sucesso', { geral: catalogoCartas.length, classes: catalogoCartasClasses.length });
         return catalogoCartas;
     } catch (error) {
         console.error("Erro ao carregar cartas:", error);
@@ -289,7 +299,7 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
     grid.innerHTML = '';
 
     // Garante que as cartas estão carregadas
-    if (catalogoCartas.length === 0) {
+    if (catalogoCartas.length === 0 || catalogoCartasClasses.length === 0) {
         await carregarDados();
     }
 
@@ -298,14 +308,21 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
         titulo.innerText = "Grimório Principal";
         lista = catalogoCartas.filter(c => !['Classes','Ancestralidade','Comunidade'].includes(c.categoria));
     } else if (tipo === 'Classes') {
-        // NOVO: Filtrar por profissão selecionada
+        // Classes vêm do lista_cartas_v2.json (híbrido)
         const profissaoSelecionada = window.obterProfissaoSelecionada?.();
         if (profissaoSelecionada) {
             titulo.innerText = `Cartas de ${profissaoSelecionada}`;
-            lista = catalogoCartas.filter(c => c.categoria === 'Classes' && c.profissao === profissaoSelecionada);
+            lista = catalogoCartasClasses.filter(c => c.categoria === 'Classes' && c.profissao === profissaoSelecionada);
         } else {
             titulo.innerText = "Selecionar: Classes";
-            lista = catalogoCartas.filter(c => c.categoria === 'Classes');
+            lista = catalogoCartasClasses.slice();
+        }
+
+        // Se estiver preenchendo um slot específico (Fundamental/Especializacao/Maestria),
+        // filtra pelos “prefixos” do nome/caminho.
+        if (slotDestinoAtual && ['Fundamental', 'Especializacao', 'Maestria'].includes(slotDestinoAtual)) {
+            const prefixo = `${slotDestinoAtual} -`;
+            lista = lista.filter(c => (c.nome && c.nome.startsWith(prefixo)) || (c.caminho && c.caminho.includes(`/Classes/${prefixo}`)));
         }
     } else {
         titulo.innerText = `Selecionar: ${tipo}`;
