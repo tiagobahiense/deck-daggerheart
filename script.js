@@ -601,9 +601,9 @@ window.criarNovoPersonagem = async function() {
         return;
     }
     
-            const novoNome = input.value.trim().toUpperCase();
-            
-            if (currentUser) {
+    const novoNome = input.value.trim().toUpperCase();
+    
+    if (currentUser) {
         try {
             const accountRef = ref(db, `mesa_rpg/accounts/${currentUser.uid}`);
             const snapshot = await get(accountRef);
@@ -640,33 +640,6 @@ window.iniciarExperiencia = async function() {
     // Redireciona para criar novo personagem
     window.criarNovoPersonagem();
 }
-
-    if (currentUser) {
-        try {
-            // Verifica quantos personagens já existem
-            const accountRef = ref(db, `mesa_rpg/accounts/${currentUser.uid}`);
-            const snapshot = await get(accountRef);
-            
-            if (snapshot.exists()) {
-                const accountData = snapshot.val();
-                const existingChars = accountData.characters ? Object.keys(accountData.characters) : [];
-                
-                // Se já tem 3 personagens, impede criação de novo
-                if (existingChars.length >= 3) {
-                    alert("⚠️ LIMITE ATINGIDO!\n\nVocê já possui 3 personagens no máximo permitido.\n\nPeça ao Narrador para deletar um personagem antes de criar outro.");
-                    return;
-                }
-            }
-            
-            // Se passou na validação, cria o personagem
-            await set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
-            await set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
-        } catch (error) {
-            alert("Erro ao verificar limite de personagens: " + error.message);
-            return;
-        }
-    }
-
 
 // Função para carregar o estado da nuvem
 async function carregarEstadoDaNuvem() {
