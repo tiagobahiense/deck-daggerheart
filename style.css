@@ -1139,10 +1139,8 @@ button {
     flex-shrink: 0;
 }
 .mini-carta:hover {
-    transform: scale(5.5);
-    z-index: 100;
-    border-color: gold;
-    box-shadow: 0 0 20px #000;
+    border-color: var(--gold);
+    filter: brightness(1.2);
 }
 .mini-carta:hover::after {
     content: attr(title);

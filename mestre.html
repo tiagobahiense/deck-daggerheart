@@ -83,6 +83,25 @@
             gap: 2px;
         }
 
+        #preview-carta-mestre {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 280px;
+            height: 420px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 3px solid var(--gold);
+            border-radius: 8px;
+            z-index: 2000;
+            background-color: #000;
+            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            pointer-events: none;
+        }
+
         #controles-mestre {
             display: flex;
             justify-content: space-between;
@@ -91,6 +110,8 @@
             background: rgba(0, 0, 0, 0.5);
             border-bottom: 1px solid var(--gold);
             gap: 10px;
+            position: relative;
+            z-index: 100;
         }
 
         #controles-mestre > div {
@@ -318,6 +339,8 @@
     </style>
 </head>
 <body>
+    <div id="preview-carta-mestre"></div>
+
     <div id="controles-mestre">
         <div>
             <button class="btn-rest curto" onclick="realizarDescanso('curto')">Descanso Curto</button>
@@ -794,6 +817,29 @@
         document.getElementById('modal-escudo').addEventListener('click', function(e) {
             if(e.target === this) {
                 fecharEscudo();
+            }
+        });
+
+        // Preview de Cartas no Hover
+        document.addEventListener('mouseover', (e) => {
+            const carta = e.target.closest('.mini-carta');
+            if (carta && !carta.classList.contains('status-vazio')) {
+                const preview = document.getElementById('preview-carta-mestre');
+                if (preview && carta.style.backgroundImage) {
+                    preview.style.backgroundImage = carta.style.backgroundImage;
+                    preview.title = carta.title || 'Carta';
+                    preview.style.display = 'flex';
+                }
+            }
+        });
+
+        document.addEventListener('mouseout', (e) => {
+            const carta = e.target.closest('.mini-carta');
+            if (carta) {
+                const preview = document.getElementById('preview-carta-mestre');
+                if (preview) {
+                    preview.style.display = 'none';
+                }
             }
         });
     </script>
