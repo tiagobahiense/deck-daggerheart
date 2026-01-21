@@ -220,7 +220,7 @@
 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
-        // Configura persistência do login
+        // Configura persistência do login (v10.1 - correção concorrência auth)
         setPersistence(auth, browserSessionPersistence)
             .then(() => {
                 console.log("Persistência de autenticação configurada com sucesso.");
