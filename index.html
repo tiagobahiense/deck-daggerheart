@@ -133,21 +133,16 @@
     </div>
 
     <div id="sheet-modal" class="modal">
-        <div class="sheet-toolbar">
-            <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Ferramenta de Texto (T)">
-                T
-            </button>
-            <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador (Bolinha)">
-                ●
-            </button>
-            <div style="height: 1px; background: #444; margin: 5px 0;"></div>
-            <button class="tool-btn" onclick="limparPaginaAtual()" title="Limpar Página" style="color: #ff6666;">
-                🗑️
-            </button>
-        </div>
-
         <div class="sheet-content">
-            <button class="close-btn" onclick="fecharFicha()" style="position: absolute; top: 10px; right: 10px; z-index: 9999;">X</button>
+            
+            <div class="sheet-toolbar">
+                <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Ferramenta de Texto">T</button>
+                <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador (Bolinha)">●</button>
+                <div style="width: 80%; height: 1px; background: #444; margin: 5px 0;"></div>
+                <button class="tool-btn" onclick="limparPaginaAtual()" title="Limpar Página" style="color: #ff6666;">🗑️</button>
+            </div>
+
+            <button class="btn-close-sheet" onclick="fecharFicha()" title="Fechar Ficha">X</button>
             
             <div class="sheet-container" id="sheet-container" onmousedown="cliqueNaFicha(event)">
                 <img id="sheet-bg" src="" alt="Ficha">

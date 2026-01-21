@@ -1,5 +1,5 @@
 /* =========================================================
-   ESTILOS DA FICHA - MODO PRANCHETA DIGITAL
+   ESTILOS DA FICHA - MODO PRANCHETA DIGITAL (CORRIGIDO)
    ========================================================= */
 
    #sheet-modal {
@@ -8,6 +8,11 @@
     background: rgba(0, 0, 0, 0.95);
     align-items: center;
     justify-content: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
 }
 
 .sheet-content {
@@ -21,15 +26,18 @@
     flex-direction: column;
     position: relative;
     box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    /* REMOVIDO O OVERFLOW: HIDDEN QUE CORTAVA OS BOTÕES */
+    overflow: visible; 
 }
 
 .sheet-container {
     position: relative;
     width: 100%;
     flex-grow: 1;
-    overflow: hidden;
+    overflow: hidden; /* AQUI mantemos hidden para a imagem não vazar */
     background: #fff;
-    cursor: crosshair; /* Cursor de "mira" para indicar edição */
+    cursor: crosshair;
+    border-radius: 4px 4px 0 0;
 }
 
 #sheet-bg {
@@ -54,42 +62,35 @@
     position: absolute;
     top: 20px;
     left: -60px; /* Fica fora da folha, na esquerda */
+    width: 50px;
     background: #222;
     border: 2px solid var(--gold);
     border-radius: 8px;
-    padding: 10px;
+    padding: 10px 5px;
     display: flex;
     flex-direction: column;
     gap: 10px;
-    z-index: 9000;
+    z-index: 9005; /* Acima da ficha */
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-}
-
-/* Ajuste para telas pequenas: barra vai para o topo */
-@media (max-width: 1100px) {
-    .sheet-toolbar {
-        top: 10px;
-        left: 10px;
-        flex-direction: row;
-    }
+    align-items: center;
 }
 
 .tool-btn {
     background: #444;
     color: #fff;
     border: 1px solid #666;
-    width: 40px;
-    height: 40px;
+    width: 35px;
+    height: 35px;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.tool-btn:hover { background: #555; }
+.tool-btn:hover { background: #666; }
 
 .tool-btn.active {
     background: var(--gold);
@@ -99,39 +100,64 @@
     transform: scale(1.1);
 }
 
-/* --- ELEMENTOS DINÂMICOS (CRIADOS PELO JOGADOR) --- */
-
-/* Caixa de Texto */
-.user-input {
+/* --- NOVO BOTÃO DE FECHAR (NA LATERAL) --- */
+.btn-close-sheet {
     position: absolute;
+    top: -2px; /* Alinhado com a borda */
+    right: -50px; /* Joga para a direita fora da ficha */
+    width: 40px;
+    height: 40px;
+    background: #8b0000;
+    color: #fff;
+    border: 2px solid #fff;
+    border-radius: 5px;
+    font-weight: bold;
+    font-size: 1.2rem;
+    cursor: pointer;
+    z-index: 9010;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.btn-close-sheet:hover {
+    background: #ff0000;
+    transform: scale(1.1);
+}
+
+/* --- ELEMENTOS DINÂMICOS --- */
+
+.user-input-wrapper, .user-marker-wrapper {
+    position: absolute;
+    z-index: 100;
+}
+
+.user-input {
     background: transparent;
-    border: 1px dashed transparent; /* Invisível até passar o mouse */
+    border: 1px solid transparent; 
     color: #000;
-    font-family: 'Courier New', monospace; /* Fonte estilo máquina de escrever */
+    font-family: 'Courier New', monospace;
     font-weight: bold;
     font-size: 1.6vh;
     padding: 2px 5px;
     min-width: 30px;
     outline: none;
-    z-index: 10;
     transition: border 0.2s, background 0.2s;
 }
 
 .user-input:hover, .user-input:focus {
-    border: 1px dashed rgba(0, 0, 255, 0.5);
-    background: rgba(255, 255, 0, 0.15); /* Leve amarelo ao focar */
+    border: 1px dashed blue;
+    background: rgba(255, 255, 0, 0.2);
 }
 
-/* Marcador (Bolinha/X) */
 .user-marker {
-    position: absolute;
     width: 2.2vh;
     height: 2.2vh;
     background-color: #000;
     border-radius: 50%;
-    transform: translate(-50%, -50%); /* Centraliza no clique */
+    transform: translate(-50%, -50%);
     cursor: pointer;
-    z-index: 10;
     box-shadow: 0 0 2px #fff;
 }
 
@@ -153,16 +179,16 @@
     font-size: 12px;
     font-weight: bold;
     cursor: pointer;
-    display: none; /* Escondido por padrão */
+    display: none;
     align-items: center;
     justify-content: center;
-    z-index: 20;
+    z-index: 200;
     box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .user-input-wrapper:hover .delete-handle,
 .user-marker-wrapper:hover .delete-handle {
-    display: flex; /* Aparece ao passar o mouse */
+    display: flex;
 }
 
 /* Footer Navegação */
@@ -186,7 +212,23 @@
     font-family: 'MedievalSharp', cursive;
     border-radius: 4px;
 }
-.nav-simple-btn:hover { 
-    border-color: var(--gold); 
-    color: var(--gold); 
+.nav-simple-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Ajuste Responsivo para telas pequenas */
+@media (max-width: 1200px) {
+    .sheet-toolbar {
+        top: -60px; /* Move para cima da ficha */
+        left: 0;
+        width: 100%;
+        height: 50px;
+        flex-direction: row;
+        justify-content: center;
+    }
+    .btn-close-sheet {
+        top: -60px;
+        right: 0;
+    }
+    .sheet-content {
+        margin-top: 60px; /* Dá espaço para a barra */
+    }
 }
