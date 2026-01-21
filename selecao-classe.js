@@ -105,6 +105,21 @@ window.atualizarImagemClasse = function() {
     if (imgElement) {
         imgElement.src = caminhoImagem;
         imgElement.alt = `${profissaoAtual} - ${imagemAtual}`;
+        
+        // Configurar preview overlay
+        const previewOverlay = document.getElementById('preview-classe-overlay');
+        const previewImg = document.getElementById('preview-classe-img');
+        if (previewOverlay && previewImg) {
+            previewImg.src = caminhoImagem;
+            
+            // Atualizar preview ao passar mouse
+            imgElement.onmouseenter = () => {
+                previewOverlay.style.display = 'flex';
+            };
+            imgElement.onmouseleave = () => {
+                previewOverlay.style.display = 'none';
+            };
+        }
     }
 
     // Atualizar cor do botão de confirmação
@@ -173,12 +188,29 @@ window.atualizarIndicadoresClasse = function() {
 };
 
 // Confirmar seleção de classe
-window.confirmarSelecaoClasse = function() {
+window.confirmarSelecaoClasse = async function() {
     const profissaoSelecionada = listaProfissoes[classeSelectionState.indiceClasseAtual];
     
     // Salvar profissão selecionada
     classeSelectionState.profissaoAtualSelecionada = profissaoSelecionada;
     localStorage.setItem('profissaoSelecionada', profissaoSelecionada);
+    
+    // Salvar profissão no Firebase (no slot Fundamental se não existir)
+    if (typeof window.nomeJogador !== 'undefined' && window.nomeJogador) {
+        try {
+            const { getDatabase, ref, get, set } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+            const db = getDatabase();
+            const slotRef = ref(db, `mesa_rpg/jogadores/${window.nomeJogador}/slots/Fundamental`);
+            const slotSnap = await get(slotRef);
+            
+            if (!slotSnap.exists() || !slotSnap.val().profissao) {
+                // Salvar apenas a profissão no slot Fundamental para referência
+                await set(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}/profissao`), profissaoSelecionada);
+            }
+        } catch (error) {
+            console.error("Erro ao salvar profissão no Firebase:", error);
+        }
+    }
     
     // Fechar modal
     const modal = document.getElementById('classe-selection-modal');

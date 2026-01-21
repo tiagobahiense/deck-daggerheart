@@ -61,12 +61,17 @@
         </div>
 
         <div class="login-box" id="fase-personagem" style="display: none;">
-            <h1>Seu Herói</h1>
-            <p>Qual o nome do personagem?</p>
-            <input type="text" id="nome-personagem" placeholder="Nome do Personagem" class="input-login" autocomplete="off">
-            <br>
-            <button type="button" class="btn-entrar" onclick="iniciarExperiencia()">Jogar</button>
-            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Cancelar</button>
+            <h1>Seus Personagens</h1>
+            <p>Escolha um personagem existente ou crie um novo</p>
+            <div id="lista-personagens" style="margin: 20px 0; min-height: 100px;">
+                <p style="color: #888; text-align: center;">Carregando...</p>
+            </div>
+            <div style="border-top: 1px solid #444; padding-top: 15px; margin-top: 15px;">
+                <p style="margin-bottom: 10px; color: #aaa; font-size: 0.9rem;">Criar novo personagem:</p>
+                <input type="text" id="nome-personagem" placeholder="Nome do Novo Personagem" class="input-login" autocomplete="off" style="margin-bottom: 10px;">
+                <button type="button" class="btn-entrar" onclick="criarNovoPersonagem()">Criar e Jogar</button>
+            </div>
+            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()" style="margin-top: 15px;">Cancelar</button>
         </div>
 
     </div>
@@ -79,7 +84,8 @@
                 <p class="slide-info-subtitle">1 de 3</p>
             </div>
             
-            <img class="slide-imagem-classe" src="" alt="Classe">
+            <img class="slide-imagem-classe" src="" alt="Classe" id="imagem-classe-principal">
+            <div id="preview-classe-overlay"><img id="preview-classe-img" src="" alt=""></div>
             
             <button class="carousel-nav carousel-nav-prev" onclick="window.paginaAnteriorClasse()">❮</button>
             <button class="carousel-nav carousel-nav-next" onclick="window.proximaPaginaClasse()">❯</button>
@@ -92,6 +98,11 @@
             <div class="carousel-indicators"></div>
         </div>
     </div>
+
+    <!-- Preview overlays para hover -->
+    <div id="hover-preview" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 525px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(255, 215, 0, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
+    <div id="hover-preview-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 525px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
+    <div id="hover-preview-slot" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 600px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
 
     <div id="app-container" style="display: none; opacity: 0;">
         <!-- Efeitos de Profissão -->

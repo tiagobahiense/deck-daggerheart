@@ -254,6 +254,7 @@ window.fazerLoginJogador = function() {
             }
             document.getElementById('fase-login-jogador').style.display = 'none';
             document.getElementById('fase-personagem').style.display = 'block';
+            carregarListaPersonagens();
         });
     })
     .catch((error) => {
@@ -321,6 +322,20 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
             div.className = 'carta-modal lazy-card';
             div.dataset.src = carta.caminho;
             div.style.backgroundColor = '#1a1a1a';
+            
+            // Hover preview para cartas modais
+            div.onmouseenter = function() {
+                const preview = document.getElementById('hover-preview-modal');
+                if (preview) {
+                    preview.style.display = 'block';
+                    preview.style.backgroundImage = `url('${carta.caminho}')`;
+                }
+            };
+            div.onmouseleave = function() {
+                const preview = document.getElementById('hover-preview-modal');
+                if (preview) preview.style.display = 'none';
+            };
+            
             div.onclick = () => selecionarCarta(carta);
             grid.appendChild(div);
             imageObserver.observe(div);
@@ -375,6 +390,19 @@ function renderizar() {
             el.appendChild(badge);
         }
 
+        // Hover preview para cartas na mão
+        el.onmouseenter = function() {
+            const preview = document.getElementById('hover-preview');
+            if (preview && carta.caminho) {
+                preview.style.display = 'block';
+                preview.style.backgroundImage = `url('${carta.caminho}')`;
+            }
+        };
+        el.onmouseleave = function() {
+            const preview = document.getElementById('hover-preview');
+            if (preview) preview.style.display = 'none';
+        };
+        
         el.onclick = () => {
             if (typeof window.abrirDecisao === 'function') {
                 window.abrirDecisao(i);
@@ -449,14 +477,169 @@ function renderizar() {
     }
 }
 
-// Função para iniciar a experiência do jogador
-window.iniciarExperiencia = async function() {
+// Função para carregar lista de personagens
+async function carregarListaPersonagens() {
+    if (!currentUser) return;
+    
+    const listaDiv = document.getElementById('lista-personagens');
+    try {
+        const accountRef = ref(db, `mesa_rpg/accounts/${currentUser.uid}`);
+        const snapshot = await get(accountRef);
+        
+        if (snapshot.exists()) {
+            const accountData = snapshot.val();
+            const characters = accountData.characters ? Object.keys(accountData.characters) : [];
+            
+            if (characters.length === 0) {
+                listaDiv.innerHTML = '<p style="color: #888; text-align: center; font-style: italic;">Você ainda não tem personagens criados.</p>';
+                return;
+            }
+            
+            let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
+            
+            for (const charName of characters) {
+                // Buscar classe do personagem
+                const charDataRef = ref(db, `mesa_rpg/jogadores/${charName}/slots/Fundamental`);
+                const charDataSnap = await get(charDataRef);
+                let classeTag = '';
+                if (charDataSnap.exists() && charDataSnap.val().profissao) {
+                    const profissao = charDataSnap.val().profissao;
+                    classeTag = `<span style="background: rgba(212, 175, 55, 0.3); color: var(--gold); padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; border: 1px solid rgba(212, 175, 55, 0.6); font-weight: bold;">${profissao}</span>`;
+                }
+                
+                html += `
+                    <button type="button" class="btn-personagem" onclick="selecionarPersonagem('${charName}')" style="
+                        width: 100%;
+                        padding: 15px;
+                        background: rgba(212, 175, 55, 0.1);
+                        border: 2px solid rgba(212, 175, 55, 0.3);
+                        border-radius: 8px;
+                        color: #fff;
+                        font-size: 1.1rem;
+                        cursor: pointer;
+                        text-align: left;
+                        transition: all 0.3s;
+                        font-family: 'MedievalSharp', cursive;
+                    ">
+                        ${charName}${classeTag}
+                    </button>
+                `;
+            }
+            
+            html += '</div>';
+            listaDiv.innerHTML = html;
+        } else {
+            listaDiv.innerHTML = '<p style="color: #888; text-align: center; font-style: italic;">Você ainda não tem personagens criados.</p>';
+        }
+    } catch (error) {
+        console.error("Erro ao carregar personagens:", error);
+        listaDiv.innerHTML = '<p style="color: #ff6666; text-align: center;">Erro ao carregar personagens.</p>';
+    }
+}
+
+// Função para selecionar personagem existente
+window.selecionarPersonagem = async function(charName) {
+    nomeJogador = charName.toUpperCase();
+    if (typeof window !== 'undefined') {
+        window.nomeJogador = nomeJogador; // Expor globalmente
+    }
+    
+    // Verifica se já tem classe salva
+    try {
+        const charDataRef = ref(db, `mesa_rpg/jogadores/${nomeJogador}/slots/Fundamental`);
+        const charDataSnap = await get(charDataRef);
+        
+        const temClasse = charDataSnap.exists() && charDataSnap.val().profissao;
+        
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app-container').style.display = 'flex';
+        setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
+        
+        const audio = document.getElementById('bg-music');
+        if (audio) {
+            audio.volume = 0.05;
+            audio.play().catch(err => console.warn('Não foi possível iniciar a música:', err));
+            document.getElementById('btn-music').innerText = '🔊';
+        }
+        
+        await carregarDados();
+        await carregarEstadoDaNuvem();
+        
+        if (temClasse) {
+            // Personagem já tem classe - não mostrar modal, apenas ativar
+            const profissaoExistente = charDataSnap.val().profissao;
+            debug(`Personagem já possui classe: ${profissaoExistente}. Não mostrando modal de seleção.`);
+            
+            localStorage.setItem('profissaoSelecionada', profissaoExistente);
+            
+            if (typeof window.ativarProfissao === 'function') {
+                window.ativarProfissao(profissaoExistente);
+            }
+        } else {
+            // Personagem novo - mostrar modal de seleção
+            debug('Personagem novo detectado. Mostrando modal de seleção de classe.');
+            setTimeout(() => { 
+                if (typeof window.inicializarSelecaoClasse === 'function') {
+                    window.inicializarSelecaoClasse(); 
+                }
+            }, 300);
+        }
+        
+        monitorarEstadoEmTempoReal();
+        renderizar();
+    } catch (error) {
+        console.error("Erro ao verificar classe do personagem:", error);
+        alert("Erro ao carregar personagem: " + error.message);
+    }
+}
+
+// Função para criar novo personagem
+window.criarNovoPersonagem = async function() {
     const input = document.getElementById('nome-personagem');
     if (!input.value.trim()) {
         alert("Nome do personagem obrigatório!");
         return;
     }
-    nomeJogador = input.value.trim().toUpperCase();
+    
+            const novoNome = input.value.trim().toUpperCase();
+            
+            if (currentUser) {
+        try {
+            const accountRef = ref(db, `mesa_rpg/accounts/${currentUser.uid}`);
+            const snapshot = await get(accountRef);
+            
+            if (snapshot.exists()) {
+                const accountData = snapshot.val();
+                const existingChars = accountData.characters ? Object.keys(accountData.characters) : [];
+                
+                if (existingChars.includes(novoNome)) {
+                    alert("Este personagem já existe! Escolha outro nome ou selecione o personagem existente.");
+                    return;
+                }
+                
+                if (existingChars.length >= 3) {
+                    alert("⚠️ LIMITE ATINGIDO!\n\nVocê já possui 3 personagens no máximo permitido.\n\nPeça ao Narrador para deletar um personagem antes de criar outro.");
+                    return;
+                }
+            }
+            
+            await set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
+            await set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${novoNome}`), true);
+            
+            // Usar o novo personagem
+            await window.selecionarPersonagem(novoNome);
+        } catch (error) {
+            alert("Erro ao criar personagem: " + error.message);
+            return;
+        }
+    }
+}
+
+// Função para iniciar a experiência do jogador (mantida para compatibilidade)
+window.iniciarExperiencia = async function() {
+    // Redireciona para criar novo personagem
+    window.criarNovoPersonagem();
+}
 
     if (currentUser) {
         try {
@@ -484,30 +667,6 @@ window.iniciarExperiencia = async function() {
         }
     }
 
-    document.getElementById('login-screen').style.display = 'none';
-    document.getElementById('app-container').style.display = 'flex';
-    
-    // Mostrar modal de seleção de classe
-    setTimeout(() => {
-        if (typeof window.inicializarSelecaoClasse === 'function') {
-            window.inicializarSelecaoClasse();
-        }
-    }, 300);
-    setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
-
-    // Iniciar música de fundo
-    const audio = document.getElementById('bg-music');
-    if (audio) {
-        audio.volume = 0.05;
-        audio.play().catch(err => console.warn('Não foi possível iniciar a música:', err));
-        document.getElementById('btn-music').innerText = '🔊';
-    }
-
-    await carregarDados();
-    await carregarEstadoDaNuvem();
-    monitorarEstadoEmTempoReal();
-    renderizar();
-};
 
 // Função para carregar o estado da nuvem
 async function carregarEstadoDaNuvem() {
@@ -639,6 +798,20 @@ window.preencherSlotFixo = function(carta, idSlot) {
         if (imgOld) imgOld.remove();
         const img = document.createElement('img');
         img.src = carta.caminho;
+        
+        // Hover preview para slots
+        img.onmouseenter = function() {
+            const preview = document.getElementById('hover-preview-slot');
+            if (preview) {
+                preview.style.display = 'block';
+                preview.style.backgroundImage = `url('${carta.caminho}')`;
+            }
+        };
+        img.onmouseleave = function() {
+            const preview = document.getElementById('hover-preview-slot');
+            if (preview) preview.style.display = 'none';
+        };
+        
         div.appendChild(img);
         const btn = div.querySelector('.btn-limpar');
         if (btn) btn.style.display = 'flex';

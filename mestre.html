@@ -517,8 +517,15 @@
                         htmlReserva += `<div class="grid-mini">${cartasReservaHTML}</div>`;
                     }
 
+                    // Buscar classe do personagem
+                    let classeTag = '';
+                    if(p.slots && p.slots.Fundamental && p.slots.Fundamental.profissao) {
+                        const profissao = p.slots.Fundamental.profissao;
+                        classeTag = `<span style="background: rgba(212, 175, 55, 0.3); color: #d4af37; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; border: 1px solid rgba(212, 175, 55, 0.6); font-weight: bold;">${profissao}</span>`;
+                    }
+                    
                     card.innerHTML = `
-                        <div class="nome">${nome}</div>
+                        <div class="nome">${nome}${classeTag}</div>
                         <div class="label">Mão (${p.mao ? p.mao.length : 0})</div>
                         <div class="grid-mini" data-jogador="${nome}">${htmlMao}</div>
                         <div class="label">Mesa (Ativos)</div>
