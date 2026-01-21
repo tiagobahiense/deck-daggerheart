@@ -26,6 +26,114 @@
         .reactivate-btn:hover {
             background: #3cb371 !important;
         }
+
+        /* MODAL TROCAR SENHA */
+        #modal-trocar-senha {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 5000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #modal-trocar-senha.ativo {
+            display: flex;
+        }
+
+        .modal-senha-content {
+            background: rgba(20, 20, 20, 0.95);
+            border: 2px solid var(--gold);
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 400px;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+            position: relative;
+        }
+
+        .modal-senha-content h2 {
+            color: var(--gold);
+            margin-top: 0;
+            text-align: center;
+        }
+
+        .modal-senha-content .input-group {
+            margin: 15px 0;
+        }
+
+        .modal-senha-content input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--gold);
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.5);
+            color: #fff;
+            box-sizing: border-box;
+        }
+
+        .modal-senha-content input::placeholder {
+            color: #999;
+        }
+
+        .modal-senha-content .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-senha-content button {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid var(--gold);
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+        .modal-senha-content .btn-confirmar {
+            background: #4CAF50;
+            color: #fff;
+        }
+
+        .modal-senha-content .btn-confirmar:hover {
+            background: #45a049;
+        }
+
+        .modal-senha-content .btn-cancelar {
+            background: #f44336;
+            color: #fff;
+        }
+
+        .modal-senha-content .btn-cancelar:hover {
+            background: #da190b;
+        }
+
+        #btn-fechar-modal-senha {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: var(--gold);
+            color: #000;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #btn-fechar-modal-senha:hover {
+            background: #ffff99;
+        }
     </style>
 </head>
 <body>
@@ -44,6 +152,7 @@
             <h1>Gestão da Mesa</h1>
             <div>
                 <button class="btn-nav" onclick="window.location.href='mestre.html'">Ir para o Tabuleiro</button>
+                <button class="btn-nav" onclick="abrirModalTrocarSenha()" style="background: #4CAF50;">🔐 Trocar Minha Senha</button>
                 <button class="btn-nav" onclick="fazerLogout()">Sair</button>
             </div>
         </div>
@@ -82,7 +191,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, fetchSignInMethodsForEmail, updatePassword, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, setPersistence, fetchSignInMethodsForEmail, updatePassword, sendPasswordResetEmail, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -372,6 +481,95 @@
                     });
             }
         };
+
+        window.abrirModalTrocarSenha = function() {
+            document.getElementById('modal-trocar-senha').classList.add('ativo');
+        };
+
+        window.fecharModalTrocarSenha = function() {
+            document.getElementById('modal-trocar-senha').classList.remove('ativo');
+            document.getElementById('senha-atual').value = '';
+            document.getElementById('senha-nova').value = '';
+            document.getElementById('senha-nova-confirmacao').value = '';
+        };
+
+        window.confirmarTrocarSenha = async function() {
+            const senhaAtual = document.getElementById('senha-atual').value;
+            const senhaNova = document.getElementById('senha-nova').value;
+            const senhaConfirmacao = document.getElementById('senha-nova-confirmacao').value;
+
+            if (!senhaAtual || !senhaNova || !senhaConfirmacao) {
+                alert('❌ Preencha todos os campos!');
+                return;
+            }
+
+            if (senhaNova !== senhaConfirmacao) {
+                alert('❌ As novas senhas não conferem!');
+                return;
+            }
+
+            if (senhaNova.length < 6) {
+                alert('❌ A nova senha deve ter no mínimo 6 caracteres!');
+                return;
+            }
+
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('❌ Você não está autenticado!');
+                    return;
+                }
+
+                // Tenta re-autenticar com a senha atual para validá-la
+                const email = user.email;
+                const credential = await signInWithEmailAndPassword(auth, email, senhaAtual);
+                
+                // Se conseguiu fazer login, temos a permissão para trocar a senha
+                await updatePassword(user, senhaNova);
+                
+                alert('✅ Senha alterada com sucesso!');
+                fecharModalTrocarSenha();
+            } catch (error) {
+                if (error.code === 'auth/wrong-password') {
+                    alert('❌ Senha atual incorreta!');
+                } else if (error.code === 'auth/user-mismatch') {
+                    alert('❌ Erro de autenticação. Tente fazer logout e login novamente.');
+                } else {
+                    alert(`❌ Erro: ${error.message}`);
+                }
+                console.error("Erro detalhado:", error);
+            }
+        };
+
+        // Fechar modal ao clicar fora
+        document.getElementById('modal-trocar-senha').addEventListener('click', function(e) {
+            if(e.target === this) {
+                fecharModalTrocarSenha();
+            }
+        });
     </script>
+
+    <!-- MODAL TROCAR SENHA -->
+    <div id="modal-trocar-senha">
+        <div class="modal-senha-content">
+            <button id="btn-fechar-modal-senha" onclick="fecharModalTrocarSenha()">×</button>
+            <h2>🔐 Trocar Minha Senha</h2>
+            
+            <div class="input-group">
+                <input type="password" id="senha-atual" placeholder="Senha Atual" class="input-login">
+            </div>
+            <div class="input-group">
+                <input type="password" id="senha-nova" placeholder="Nova Senha" class="input-login">
+            </div>
+            <div class="input-group">
+                <input type="password" id="senha-nova-confirmacao" placeholder="Confirmar Nova Senha" class="input-login">
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-confirmar" onclick="confirmarTrocarSenha()">✅ Confirmar</button>
+                <button class="btn-cancelar" onclick="fecharModalTrocarSenha()">❌ Cancelar</button>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
