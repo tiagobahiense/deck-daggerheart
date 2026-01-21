@@ -9,12 +9,16 @@ const profissaoConfig = {
     'Ladino': { classe: 'ladino', cor: 'rgb(100, 200, 0)' },
     'Serafim': { classe: 'serafim', cor: 'rgb(255, 215, 0)' },
     'Druida': { classe: 'druida', cor: 'rgb(0, 255, 100)' },
-    'Patrulheiro': { classe: 'patrulheiro', cor: 'rgb(255, 200, 0)' }
+    'Patrulheiro': { classe: 'patrulheiro', cor: 'rgb(255, 200, 0)' },
+    
+    // --- ADICIONE SUA NOVA CLASSE AQUI ---
+    // O nome (chave) deve ser IDÊNTICO ao "nome" no selecao-classe.js
+    // Exemplo: se lá está 'Barbaro', aqui deve ser 'Barbaro'
+    'SuaNovaClasse': { classe: 'suanovaclasse', cor: 'rgb(255, 255, 255)' } 
 };
 
 let profissaoAtiva = null;
 let particulasAnimadas = [];
-let cartasDisponiveis = [];
 
 // Detecta quando a classe fundamental é preenchida
 window.monitorarClasseFundamental = function() {
@@ -46,7 +50,6 @@ window.monitorarClasseFundamental = function() {
 
 // Procura a profissão pelo nome da carta
 function procurarProfissaoPorNome(nomeCarta) {
-    // Tenta carregar a lista de cartas
     fetch('lista_cartas.json')
         .then(res => res.json())
         .then(cartas => {
@@ -62,12 +65,19 @@ function procurarProfissaoPorNome(nomeCarta) {
 
 // Ativa os efeitos visuais da profissão
 function ativarProfissao(profissao) {
+    // Normaliza para evitar erros de maiuscula/minuscula se necessário, mas ideal é manter padrão
+    if (!profissao) return;
+    
     if (profissaoAtiva === profissao) return; // Já ativa
 
-    profissaoAtiva = profissao;
     const config = profissaoConfig[profissao];
 
-    if (!config) return;
+    if (!config) {
+        console.warn(`⚠️ Configuração de profissão não encontrada para: "${profissao}". Verifique o profissao.js`);
+        return;
+    }
+
+    profissaoAtiva = profissao;
 
     // Aplica a classe CSS na aura
     const aura = document.getElementById('aura-profissao');
@@ -99,21 +109,24 @@ function iniciarParticulasProfissao(config) {
     container.innerHTML = '';
     particulasAnimadas = [];
 
-    // Cria 20-30 partículas
+    // Cria 20-30 partículas iniciais
     const numPartículas = 20 + Math.random() * 10;
     for (let i = 0; i < numPartículas; i++) {
-        setTimeout(() => criarPartícula(container, config, i), i * 100);
+        setTimeout(() => criarPartícula(container, config), i * 50);
     }
 
-    // Cria novas partículas continuamente
-    setInterval(() => {
+    // Loop para criar novas partículas continuamente
+    // Usamos uma variável global para poder parar o intervalo se necessário (opcional)
+    if (window.intervaloParticulas) clearInterval(window.intervaloParticulas);
+    
+    window.intervaloParticulas = setInterval(() => {
         if (profissaoAtiva && container) {
-            criarPartícula(container, config, Math.random());
+            criarPartícula(container, config);
         }
-    }, 2000);
+    }, 500); // Cria a cada meio segundo para manter fluxo
 }
 
-function criarPartícula(container, config, index) {
+function criarPartícula(container, config) {
     const particula = document.createElement('div');
     particula.className = `particula ${config.classe}`;
 
@@ -124,7 +137,7 @@ function criarPartícula(container, config, index) {
 
     // Posição inicial aleatória
     const x = Math.random() * window.innerWidth;
-    const y = window.innerHeight + 50;
+    const y = window.innerHeight + 50; // Começa um pouco abaixo da tela
 
     particula.style.left = x + 'px';
     particula.style.top = y + 'px';
@@ -139,7 +152,7 @@ function criarPartícula(container, config, index) {
 
     container.appendChild(particula);
 
-    // Remove depois que a animação termina
+    // Remove depois que a animação termina para não pesar a memória
     setTimeout(() => {
         particula.remove();
     }, duration * 1000);
@@ -159,10 +172,11 @@ function desativarProfissao() {
     if (container) {
         container.innerHTML = '';
     }
+    
+    if (window.intervaloParticulas) clearInterval(window.intervaloParticulas);
 
     console.log('✨ Profissão desativada');
 }
 
 // Expor como function global
 window.desativarProfissao = desativarProfissao;
-

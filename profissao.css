@@ -8,7 +8,7 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 0;
+    z-index: 1; /* Acima do fundo, abaixo da UI */
 }
 
 /* Aura nas bordas */
@@ -19,23 +19,22 @@
     width: 100%;
     height: 100%;
     pointer-events: none;
-    z-index: 0;
+    z-index: 1;
     border-radius: 0;
     box-shadow: inset 0 0 80px rgba(0, 0, 0, 0.3);
-    transition: box-shadow 0.5s ease;
+    transition: box-shadow 1s ease;
 }
 
 .profissao-aura-ativa {
-    animation: pulso-aura 4s ease-in-out infinite;
+    /* Animação genérica, as cores vêm das classes específicas */
 }
+
+/* --- ESTILOS POR CLASSE --- */
 
 /* GUARDIÃO - Ciano/Azul */
 .guardiao-aura {
-    box-shadow: 
-        inset 0 0 60px rgba(0, 200, 255, 0.4),
-        inset 0 0 30px rgba(0, 150, 200, 0.3) !important;
+    animation: pulso-guardiao 4s ease-in-out infinite;
 }
-
 @keyframes pulso-guardiao {
     0%, 100% { box-shadow: inset 0 0 60px rgba(0, 200, 255, 0.4), inset 0 0 30px rgba(0, 150, 200, 0.3); }
     50% { box-shadow: inset 0 0 100px rgba(0, 200, 255, 0.6), inset 0 0 50px rgba(0, 150, 200, 0.4); }
@@ -43,11 +42,8 @@
 
 /* BARDO - Roxo/Magenta */
 .bardo-aura {
-    box-shadow: 
-        inset 0 0 60px rgba(200, 0, 255, 0.4),
-        inset 0 0 30px rgba(150, 0, 200, 0.3) !important;
+    animation: pulso-bardo 4s ease-in-out infinite;
 }
-
 @keyframes pulso-bardo {
     0%, 100% { box-shadow: inset 0 0 60px rgba(200, 0, 255, 0.4), inset 0 0 30px rgba(150, 0, 200, 0.3); }
     50% { box-shadow: inset 0 0 100px rgba(200, 0, 255, 0.6), inset 0 0 50px rgba(150, 0, 200, 0.4); }
@@ -55,11 +51,8 @@
 
 /* MAGO - Azul Claro/Branco */
 .mago-aura {
-    box-shadow: 
-        inset 0 0 60px rgba(100, 200, 255, 0.4),
-        inset 0 0 30px rgba(50, 150, 255, 0.3) !important;
+    animation: pulso-mago 4s ease-in-out infinite;
 }
-
 @keyframes pulso-mago {
     0%, 100% { box-shadow: inset 0 0 60px rgba(100, 200, 255, 0.4), inset 0 0 30px rgba(50, 150, 255, 0.3); }
     50% { box-shadow: inset 0 0 100px rgba(100, 200, 255, 0.6), inset 0 0 50px rgba(50, 150, 255, 0.4); }
@@ -67,11 +60,8 @@
 
 /* FEITICEIRO - Roxo Escuro/Verde */
 .feiticeiro-aura {
-    box-shadow: 
-        inset 0 0 60px rgba(150, 0, 200, 0.4),
-        inset 0 0 30px rgba(100, 150, 0, 0.2) !important;
+    animation: pulso-feiticeiro 4s ease-in-out infinite;
 }
-
 @keyframes pulso-feiticeiro {
     0%, 100% { box-shadow: inset 0 0 60px rgba(150, 0, 200, 0.4), inset 0 0 30px rgba(100, 150, 0, 0.2); }
     50% { box-shadow: inset 0 0 100px rgba(150, 0, 200, 0.6), inset 0 0 50px rgba(100, 150, 0, 0.3); }
@@ -79,11 +69,8 @@
 
 /* GUERREIRO - Vermelho/Laranja */
 .guerreiro-aura {
-    box-shadow: 
-        inset 0 0 60px rgba(255, 100, 0, 0.4),
-        inset 0 0 30px rgba(200, 0, 0, 0.3) !important;
+    animation: pulso-guerreiro 4s ease-in-out infinite;
 }
-
 @keyframes pulso-guerreiro {
     0%, 100% { box-shadow: inset 0 0 60px rgba(255, 100, 0, 0.4), inset 0 0 30px rgba(200, 0, 0, 0.3); }
     50% { box-shadow: inset 0 0 100px rgba(255, 100, 0, 0.6), inset 0 0 50px rgba(200, 0, 0, 0.4); }
@@ -91,11 +78,8 @@
 
 /* LADINO - Sombra/Verde Escuro */
 .ladino-aura {
-    box-shadow: 
-        inset 0 0 60px rgba(100, 200, 0, 0.3),
-        inset 0 0 30px rgba(50, 100, 0, 0.2) !important;
+    animation: pulso-ladino 4s ease-in-out infinite;
 }
-
 @keyframes pulso-ladino {
     0%, 100% { box-shadow: inset 0 0 60px rgba(100, 200, 0, 0.3), inset 0 0 30px rgba(50, 100, 0, 0.2); }
     50% { box-shadow: inset 0 0 100px rgba(100, 200, 0, 0.5), inset 0 0 50px rgba(50, 100, 0, 0.3); }
@@ -103,11 +87,8 @@
 
 /* SERAFIM - Ouro/Amarelo */
 .serafim-aura {
-    box-shadow: 
-        inset 0 0 60px rgba(255, 215, 0, 0.4),
-        inset 0 0 30px rgba(200, 150, 0, 0.3) !important;
+    animation: pulso-serafim 4s ease-in-out infinite;
 }
-
 @keyframes pulso-serafim {
     0%, 100% { box-shadow: inset 0 0 60px rgba(255, 215, 0, 0.4), inset 0 0 30px rgba(200, 150, 0, 0.3); }
     50% { box-shadow: inset 0 0 100px rgba(255, 215, 0, 0.6), inset 0 0 50px rgba(200, 150, 0, 0.4); }
@@ -115,11 +96,8 @@
 
 /* DRUIDA - Verde/Verde Claro */
 .druida-aura {
-    box-shadow: 
-        inset 0 0 60px rgba(0, 255, 100, 0.4),
-        inset 0 0 30px rgba(0, 200, 50, 0.3) !important;
+    animation: pulso-druida 4s ease-in-out infinite;
 }
-
 @keyframes pulso-druida {
     0%, 100% { box-shadow: inset 0 0 60px rgba(0, 255, 100, 0.4), inset 0 0 30px rgba(0, 200, 50, 0.3); }
     50% { box-shadow: inset 0 0 100px rgba(0, 255, 100, 0.6), inset 0 0 50px rgba(0, 200, 50, 0.4); }
@@ -127,17 +105,31 @@
 
 /* PATRULHEIRO - Amarelo/Âmbar */
 .patrulheiro-aura {
-    box-shadow: 
-        inset 0 0 60px rgba(255, 200, 0, 0.4),
-        inset 0 0 30px rgba(200, 150, 0, 0.3) !important;
+    animation: pulso-patrulheiro 4s ease-in-out infinite;
 }
-
 @keyframes pulso-patrulheiro {
     0%, 100% { box-shadow: inset 0 0 60px rgba(255, 200, 0, 0.4), inset 0 0 30px rgba(200, 150, 0, 0.3); }
     50% { box-shadow: inset 0 0 100px rgba(255, 200, 0, 0.6), inset 0 0 50px rgba(200, 150, 0, 0.4); }
 }
 
-/* PARTÍCULAS */
+/* =========================================================
+   TEMPLATE PARA NOVA CLASSE (COPIE E COLE ISSO ABAIXO)
+   Substitua 'suanovaclasse' pelo nome que você usou no JS
+   E mude os códigos RGB (ex: 255, 255, 255) para a cor desejada
+   ========================================================= */
+
+.suanovaclasse-aura {
+    animation: pulso-suanovaclasse 4s ease-in-out infinite;
+}
+@keyframes pulso-suanovaclasse {
+    0%, 100% { box-shadow: inset 0 0 60px rgba(255, 255, 255, 0.4), inset 0 0 30px rgba(200, 200, 200, 0.3); }
+    50% { box-shadow: inset 0 0 100px rgba(255, 255, 255, 0.6), inset 0 0 50px rgba(200, 200, 200, 0.4); }
+}
+
+/* ========================================================= */
+
+
+/* PARTÍCULAS GERAIS */
 .particula {
     position: absolute;
     border-radius: 50%;
@@ -145,6 +137,7 @@
     opacity: 0;
 }
 
+/* CORES DAS PARTÍCULAS (Adicione a sua nova aqui também) */
 .particula.guardiao { background: radial-gradient(circle, rgba(0, 200, 255, 0.8), transparent); }
 .particula.bardo { background: radial-gradient(circle, rgba(200, 0, 255, 0.8), transparent); }
 .particula.mago { background: radial-gradient(circle, rgba(100, 200, 255, 0.8), transparent); }
@@ -154,6 +147,10 @@
 .particula.serafim { background: radial-gradient(circle, rgba(255, 215, 0, 0.8), transparent); }
 .particula.druida { background: radial-gradient(circle, rgba(0, 255, 100, 0.8), transparent); }
 .particula.patrulheiro { background: radial-gradient(circle, rgba(255, 200, 0, 0.8), transparent); }
+
+/* EXEMPLO NOVA PARTÍCULA: */
+.particula.suanovaclasse { background: radial-gradient(circle, rgba(255, 255, 255, 0.8), transparent); }
+
 
 @keyframes flutuar {
     0% {
