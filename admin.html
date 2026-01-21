@@ -153,6 +153,7 @@
             <div>
                 <button class="btn-nav" onclick="window.location.href='mestre.html'">Ir para o Tabuleiro</button>
                 <button class="btn-nav" onclick="abrirModalTrocarSenha()" style="background: #4CAF50;">🔐 Trocar Minha Senha</button>
+                <button class="btn-nav" onclick="verificarStatusContas()" style="background: #FF9800; font-size: 0.8rem;">🔍 Debug Contas</button>
                 <button class="btn-nav" onclick="fazerLogout()">Sair</button>
             </div>
         </div>
@@ -547,6 +548,30 @@
                 fecharModalTrocarSenha();
             }
         });
+
+        window.verificarStatusContas = function() {
+            get(ref(db, 'mesa_rpg/accounts')).then(snapshot => {
+                console.log("=== DEBUG - VERIFICAÇÃO DE CONTAS ===");
+                if(!snapshot.exists()) {
+                    console.log("❌ Nenhuma conta encontrada no banco de dados!");
+                    return;
+                }
+
+                const contas = snapshot.val();
+                Object.keys(contas).forEach(uid => {
+                    const conta = contas[uid];
+                    console.log(`\n📧 Email: ${conta.email}`);
+                    console.log(`   Status: ${conta.status || 'não definido'}`);
+                    console.log(`   Personagens: ${conta.characters ? Object.keys(conta.characters).join(', ') || 'nenhum' : 'nenhum'}`);
+                    console.log(`   UID: ${uid}`);
+                });
+
+                alert("✅ Verificação de contas exibida no console (F12). Verifique o status de cada conta.");
+            }).catch(err => {
+                console.error("Erro ao verificar contas:", err);
+                alert("❌ Erro ao verificar contas: " + err.message);
+            });
+        };
     </script>
 
     <!-- MODAL TROCAR SENHA -->
