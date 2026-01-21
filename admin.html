@@ -303,33 +303,31 @@
                                 }
                             }
 
-                            // Se não existir, cria a conta
-                            createUserWithEmailAndPassword(auth, email, pass)
+                            // IMPORTANTE: Usa secondaryAuth para criar usuário, NÃO o auth principal do mestre
+                            // Isso evita que a sessão do mestre seja derrubada
+                            createUserWithEmailAndPassword(secondaryAuth, email, pass)
                             .then((cred) => {
                                 const uid = cred.user.uid;
-                                // Salva no Realtime Database
+                                // Salva no Realtime Database (pode usar db do auth principal)
                                 return set(ref(db, `mesa_rpg/accounts/${uid}`), {
                                     email: email,
                                     characters: {},
                                     status: 'active'
                                 }).then(() => {
-                                    // Faz logout e login novamente como mestre para manter sessão
-                                    signOut(auth).then(() => {
-                                        signInWithEmailAndPassword(auth, EMAIL_MESTRE, document.getElementById('narrador-pass')?.value || prompt("Senha do mestre:"))
-                                        .then(() => {
-                                            alert("✅ Usuário criado: " + email);
-                                            document.getElementById('new-user-email').value = "";
-                                            document.getElementById('new-user-pass').value = "";
-                                            carregarUsuarios();
-                                        })
-                                        .catch(() => {
-                                            alert("✅ Usuário criado: " + email + "\n⚠️ Faça login novamente como mestre.");
-                                            window.location.reload();
-                                        });
-                                    });
+                                    // Faz logout do secondaryAuth para limpar a sessão temporária
+                                    // Isso não afeta o auth principal do mestre
+                                    return signOut(secondaryAuth).catch(() => {});
+                                }).then(() => {
+                                    alert("✅ Usuário criado: " + email);
+                                    document.getElementById('new-user-email').value = "";
+                                    document.getElementById('new-user-pass').value = "";
+                                    carregarUsuarios();
                                 });
                             })
                             .catch((error) => {
+                                // Limpa qualquer sessão residual do secondaryAuth
+                                signOut(secondaryAuth).catch(() => {});
+                                
                                 let msg = "Erro ao criar: " + error.message;
                                 if (error.code === 'auth/email-already-in-use') {
                                     msg = "Este e-mail já está em uso.";
