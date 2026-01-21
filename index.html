@@ -133,15 +133,15 @@
     </div>
 
     <div id="sheet-modal" class="modal">
-        
-        <div class="sheet-toolbar">
-            <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Texto (T)">T</button>
-            <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador (Bolinha)">●</button>
-            <div style="height: 1px; background: #444; width: 100%; margin: 5px 0;"></div>
-            <button class="tool-btn" onclick="limparPaginaAtual()" title="Limpar Página" style="color: #ff6666;">🗑️</button>
-        </div>
-
         <div class="sheet-content">
+            
+            <div class="sheet-toolbar">
+                <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Texto (T)">T</button>
+                <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador (Bolinha)">●</button>
+                <div style="height: 1px; background: #444; width: 100%; margin: 5px 0;"></div>
+                <button class="tool-btn" onclick="limparPaginaAtual()" title="Limpar Página" style="color: #ff6666;">🗑️</button>
+            </div>
+
             <button class="btn-close-sheet" onclick="fecharFicha()" title="Fechar">X</button>
             
             <div class="sheet-container" id="sheet-container" onmousedown="cliqueNaFicha(event)">
@@ -228,7 +228,7 @@
                 bottom: 20px; 
                 right: 20px; 
                 z-index: 2000; 
-                pointer-events: auto; 
+                pointer-events: auto; /* IMPORTANTE: Permite clique através do footer */
                 padding: 10px 20px; 
                 background: var(--gold); 
                 border: 2px solid #fff; 
