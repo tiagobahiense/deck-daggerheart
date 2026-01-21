@@ -1,8 +1,7 @@
 // =========================================================
-// FICHA DIGITAL - PRANCHETA REALTIME (Versão Final Completa)
+// FICHA DIGITAL - PRANCHETA REALTIME (Drag & Drop v1.5)
 // =========================================================
 
-// Configuração exata baseada nos seus arquivos de imagem
 const FICHAS_IMAGENS = {
     'Bardo': ['img/fichas/ficha-bardo01.jpg', 'img/fichas/ficha-bardo02.jpg'],
     'Druida': ['img/fichas/ficha-druida01.jpg', 'img/fichas/ficha-druida02.jpg', 'img/fichas/ficha-druida03.jpg', 'img/fichas/ficha-druida04.jpg'],
@@ -15,320 +14,264 @@ const FICHAS_IMAGENS = {
     'Serafim': ['img/fichas/ficha-serafim01.jpg', 'img/fichas/ficha-serafim02.jpg']
 };
 
-// Variáveis de Estado
-let ferramentaAtual = 'texto'; // Pode ser 'texto' ou 'marcador'
+let ferramentaAtual = 'texto';
 let paginaFichaAtual = 0;
 let classeFichaAtual = '';
-let elementosFicha = {}; // Cache local dos elementos carregados do Firebase
+let elementosFicha = {};
 
-// =========================================================
-// FUNÇÕES DE ABERTURA E FECHAMENTO
-// =========================================================
+// Variáveis para lógica de Arrastar (Drag)
+let isDragging = false;
+let startX = 0, startY = 0;
+let tempBox = null;
 
+// --- ABRIR / FECHAR ---
 window.abrirFichaPersonagem = function() {
-    // 1. Tenta pegar a classe do LocalStorage
     const classe = localStorage.getItem('profissaoSelecionada');
-    
-    // Validação: Se não tiver classe selecionada ou imagem configurada
-    if (!classe || !FICHAS_IMAGENS[classe]) {
-        alert("⚠️ Você precisa selecionar uma classe válida antes de abrir a ficha.");
-        return;
-    }
+    if (!classe || !FICHAS_IMAGENS[classe]) { alert("Selecione uma classe válida primeiro."); return; }
 
-    // 2. Configura o estado inicial
     classeFichaAtual = classe;
     paginaFichaAtual = 0;
     
-    // 3. Exibe o modal
-    const modal = document.getElementById('sheet-modal');
-    if (modal) {
-        modal.style.display = 'flex';
-    } else {
-        console.error("Erro: Modal de ficha não encontrado no HTML.");
-        return;
-    }
-
-    // 4. Carrega a imagem da primeira página
+    document.getElementById('sheet-modal').style.display = 'flex';
     atualizarImagemFicha();
-    
-    // 5. Define a ferramenta padrão como Texto
     selecionarFerramenta('texto');
-    
-    // 6. Inicia a conexão com o Firebase para baixar as anotações salvas
     carregarElementosDoFirebase();
+    
+    // Ativa listeners de desenho
+    configurarEventosMouse();
 };
 
-window.fecharFicha = function() {
-    const modal = document.getElementById('sheet-modal');
-    if (modal) {
-        modal.style.display = 'none';
-    }
-};
+window.fecharFicha = function() { document.getElementById('sheet-modal').style.display = 'none'; };
 
-// =========================================================
-// NAVEGAÇÃO ENTRE PÁGINAS
-// =========================================================
-
+// --- NAVEGAÇÃO ---
 window.mudarPaginaFicha = function(dir) {
-    const totalPaginas = FICHAS_IMAGENS[classeFichaAtual].length;
+    const total = FICHAS_IMAGENS[classeFichaAtual].length;
     paginaFichaAtual += dir;
-    
-    // Impede que o índice saia dos limites (0 até total-1)
     if(paginaFichaAtual < 0) paginaFichaAtual = 0;
-    if(paginaFichaAtual >= totalPaginas) paginaFichaAtual = totalPaginas - 1;
-    
-    // Atualiza a imagem de fundo
+    if(paginaFichaAtual >= total) paginaFichaAtual = total - 1;
     atualizarImagemFicha();
-    
-    // Redesenha os elementos (apenas os da nova página aparecerão)
     renderizarElementosNaTela();
 };
 
 function atualizarImagemFicha() {
     const img = document.getElementById('sheet-bg');
-    const indicador = document.getElementById('sheet-page-indicator');
     const paginas = FICHAS_IMAGENS[classeFichaAtual];
-    
-    if (!img) return;
-
-    // Técnica de Preload para evitar "piscar" branco
-    const tempImg = new Image();
-    tempImg.src = paginas[paginaFichaAtual];
-    tempImg.onload = () => {
-        img.src = paginas[paginaFichaAtual];
-    };
-    
-    // Atualiza o texto do rodapé (Ex: Página 1 de 2)
-    if (indicador) {
-        indicador.innerText = `Página ${paginaFichaAtual + 1} de ${paginas.length}`;
-    }
+    img.src = paginas[paginaFichaAtual];
+    document.getElementById('sheet-page-indicator').innerText = `Página ${paginaFichaAtual + 1} de ${paginas.length}`;
 }
 
-// =========================================================
-// BARRA DE FERRAMENTAS
-// =========================================================
-
-window.selecionarFerramenta = function(ferramenta) {
-    ferramentaAtual = ferramenta;
-    
-    // Atualiza o visual dos botões (adiciona/remove classe .active)
-    const btns = document.querySelectorAll('.tool-btn');
-    btns.forEach(btn => btn.classList.remove('active'));
-    
-    // Ativa o botão correspondente
-    if(ferramenta === 'texto') {
-        // Assume que o primeiro botão é o de texto
-        if(btns[0]) btns[0].classList.add('active');
-    }
-    if(ferramenta === 'marcador') {
-        // Assume que o segundo botão é o de marcador
-        if(btns[1]) btns[1].classList.add('active');
-    }
+// --- FERRAMENTAS ---
+window.selecionarFerramenta = function(f) {
+    ferramentaAtual = f;
+    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+    if(f==='texto') document.querySelectorAll('.tool-btn')[0].classList.add('active');
+    if(f==='marcador') document.querySelectorAll('.tool-btn')[1].classList.add('active');
 };
 
-// =========================================================
-// INTERAÇÃO: CLIQUE NA FICHA (CRIAR ELEMENTOS)
-// =========================================================
+// --- LÓGICA DE CLIQUE E ARRASTE (DRAG TO CREATE) ---
 
-window.cliqueNaFicha = function(e) {
-    // IMPORTANTE: Se o clique foi em um elemento já existente (input, marcador ou botão de deletar),
-    // não faz nada. Isso evita criar um input em cima de outro.
-    if(e.target.classList.contains('user-input') || 
-       e.target.classList.contains('delete-handle') || 
-       e.target.classList.contains('user-marker')) {
-        return;
-    }
-
+function configurarEventosMouse() {
     const container = document.getElementById('sheet-container');
-    const rect = container.getBoundingClientRect();
     
-    // Calcula a posição do clique relativa à imagem, em PORCENTAGEM.
-    // Isso garante que os inputs fiquem no lugar certo mesmo se a janela for redimensionada.
-    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
-    const yPct = ((e.clientY - rect.top) / rect.height) * 100;
-    
-    // Gera um ID único para o novo elemento
-    const idUnico = 'el_' + Date.now() + Math.floor(Math.random() * 1000);
+    // Remove listeners antigos para não duplicar
+    container.onmousedown = null;
+    container.onmousemove = null;
+    container.onmouseup = null;
 
-    // Cria o objeto de dados do novo elemento
-    const novoElemento = {
-        id: idUnico,
-        tipo: ferramentaAtual, // 'texto' ou 'marcador'
-        x: xPct,
-        y: yPct,
-        pagina: paginaFichaAtual, // Salva em qual página foi criado
-        valor: ferramentaAtual === 'texto' ? '' : true // Se for texto começa vazio, se for marcador é true
+    container.onmousedown = (e) => {
+        // Ignora se clicar em elemento existente
+        if(e.target.closest('.element-wrapper')) return;
+
+        const rect = container.getBoundingClientRect();
+        startX = e.clientX - rect.left;
+        startY = e.clientY - rect.top;
+
+        if (ferramentaAtual === 'texto') {
+            isDragging = true;
+            // Cria caixa visual temporária
+            tempBox = document.createElement('div');
+            tempBox.className = 'temp-box';
+            tempBox.style.left = startX + 'px';
+            tempBox.style.top = startY + 'px';
+            tempBox.style.width = '0px';
+            tempBox.style.height = '0px';
+            document.getElementById('sheet-inputs-layer').appendChild(tempBox);
+        }
     };
 
-    // Salva no Firebase. O "listener" (onValue) vai detectar essa mudança e desenhar na tela automaticamente.
+    container.onmousemove = (e) => {
+        if (!isDragging || ferramentaAtual !== 'texto' || !tempBox) return;
+        
+        const rect = container.getBoundingClientRect();
+        const currentX = e.clientX - rect.left;
+        const currentY = e.clientY - rect.top;
+        
+        const width = currentX - startX;
+        const height = currentY - startY;
+        
+        // Permite arrastar para qualquer direção
+        tempBox.style.width = Math.abs(width) + 'px';
+        tempBox.style.height = Math.abs(height) + 'px';
+        tempBox.style.left = (width < 0 ? currentX : startX) + 'px';
+        tempBox.style.top = (height < 0 ? currentY : startY) + 'px';
+    };
+
+    container.onmouseup = (e) => {
+        const rect = container.getBoundingClientRect();
+        
+        // --- CRIAÇÃO DE MARCADOR (Clique Simples) ---
+        if (ferramentaAtual === 'marcador') {
+            // Se clicou em elemento existente, já foi tratado no onmousedown
+            if(e.target.closest('.element-wrapper')) return;
+
+            const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+            const yPct = ((e.clientY - rect.top) / rect.height) * 100;
+            
+            criarElementoFinal(xPct, yPct, 0, 0, 'marcador');
+            return;
+        }
+
+        // --- CRIAÇÃO DE TEXTO (Arrastar) ---
+        if (ferramentaAtual === 'texto' && isDragging) {
+            isDragging = false;
+            
+            // Pega dimensões finais da caixa temporária
+            const finalLeft = parseFloat(tempBox.style.left);
+            const finalTop = parseFloat(tempBox.style.top);
+            const finalWidth = parseFloat(tempBox.style.width);
+            const finalHeight = parseFloat(tempBox.style.height);
+            
+            // Remove visual temporário
+            if(tempBox) tempBox.remove();
+            tempBox = null;
+
+            // Se for muito pequeno, ignora (foi só um clique acidental)
+            if (finalWidth < 10 || finalHeight < 10) return;
+
+            // Converte para Porcentagem (Responsividade)
+            const xPct = (finalLeft / rect.width) * 100;
+            const yPct = (finalTop / rect.height) * 100;
+            const wPct = (finalWidth / rect.width) * 100;
+            const hPct = (finalHeight / rect.height) * 100;
+
+            criarElementoFinal(xPct, yPct, wPct, hPct, 'texto');
+        }
+    };
+}
+
+function criarElementoFinal(x, y, w, h, tipo) {
+    const idUnico = 'el_' + Date.now() + Math.floor(Math.random() * 1000);
+    const novoElemento = {
+        id: idUnico,
+        tipo: tipo,
+        x: x, y: y, 
+        w: w, h: h, // Largura e Altura (usado apenas no texto)
+        pagina: paginaFichaAtual,
+        valor: tipo === 'texto' ? '' : true
+    };
     salvarElementoNoFirebase(novoElemento);
-};
+}
 
-// =========================================================
-// CONEXÃO COM FIREBASE (SALVAR/CARREGAR/DELETAR)
-// =========================================================
-
+// --- FIREBASE ---
 function salvarElementoNoFirebase(elemento) {
-    // Verifica se as variáveis globais do script.js estão disponíveis
-    if (!window.nomeJogador || !window.db || !window.set || !window.ref) {
-        console.error("Erro Crítico: Conexão com Firebase não estabelecida ou Jogador não identificado.");
-        return;
-    }
-    
-    // Define o caminho no banco de dados: mesa_rpg/jogadores/NOME/ficha/ID
+    if (!window.nomeJogador || !window.db) return;
     const refPath = `mesa_rpg/jogadores/${window.nomeJogador}/ficha/${elemento.id}`;
-    
-    // Salva os dados
-    window.set(window.ref(window.db, refPath), elemento)
-        .catch(error => console.error("Erro ao salvar elemento na ficha:", error));
+    window.set(window.ref(window.db, refPath), elemento);
 }
 
 function deletarElementoNoFirebase(id) {
-    if (!window.nomeJogador || !window.db || !window.remove || !window.ref) {
-        console.error("Erro ao tentar deletar: Dependências do Firebase ausentes.");
-        return;
-    }
-
+    if (!window.nomeJogador || !window.db) return;
     const refPath = `mesa_rpg/jogadores/${window.nomeJogador}/ficha/${id}`;
-    
-    // Remove o nó do banco de dados
-    window.remove(window.ref(window.db, refPath))
-        .catch(error => console.error("Erro ao deletar elemento:", error));
+    window.remove(window.ref(window.db, refPath));
 }
 
 function carregarElementosDoFirebase() {
-    if (!window.nomeJogador || !window.db || !window.onValue || !window.ref) {
-        console.error("Erro ao tentar carregar: Dependências do Firebase ausentes.");
-        return;
-    }
-
+    if (!window.nomeJogador || !window.db) return;
     const refPath = `mesa_rpg/jogadores/${window.nomeJogador}/ficha`;
-    
-    // Conecta um "escutador" (listener) em tempo real.
-    // Sempre que algo mudar nesse caminho (adicionar, remover, editar), essa função roda.
     window.onValue(window.ref(window.db, refPath), (snapshot) => {
-        if (snapshot.exists()) {
-            // Se existirem dados, atualiza o cache local
-            elementosFicha = snapshot.val();
-        } else {
-            // Se não, limpa o cache
-            elementosFicha = {};
-        }
-        // Redesenha a tela com os dados novos
+        elementosFicha = snapshot.exists() ? snapshot.val() : {};
         renderizarElementosNaTela();
     });
 }
 
-// =========================================================
-// RENDERIZAÇÃO (DESENHAR NA TELA)
-// =========================================================
-
+// --- RENDERIZAÇÃO ---
 function renderizarElementosNaTela() {
     const layer = document.getElementById('sheet-inputs-layer');
-    if (!layer) return;
-
-    // Limpa a camada de inputs para evitar duplicatas
     layer.innerHTML = '';
 
-    // Percorre todos os elementos carregados
     Object.values(elementosFicha).forEach(el => {
-        // FILTRO: Só desenha se o elemento pertencer à página que o usuário está vendo agora
         if (el.pagina !== paginaFichaAtual) return;
-
-        // Chama a função de desenho apropriada
-        if (el.tipo === 'texto') {
-            criarVisualTexto(el, layer);
-        } else if (el.tipo === 'marcador') {
-            criarVisualMarcador(el, layer);
-        }
+        if (el.tipo === 'texto') criarVisualTexto(el, layer);
+        else if (el.tipo === 'marcador') criarVisualMarcador(el, layer);
     });
 }
 
 function criarVisualTexto(dados, container) {
-    // Cria o container do input
     const wrapper = document.createElement('div');
-    wrapper.className = 'user-input-wrapper';
-    wrapper.style.position = 'absolute';
+    wrapper.className = 'element-wrapper';
     wrapper.style.left = dados.x + '%';
     wrapper.style.top = dados.y + '%';
+    wrapper.style.width = dados.w + '%';
+    wrapper.style.height = dados.h + '%';
 
-    // Cria o campo de input
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'user-input';
-    input.value = dados.valor; // Preenche com o texto salvo
-    input.placeholder = "Digitar...";
+    // Usamos Textarea para permitir quebra de linha
+    const input = document.createElement('textarea');
+    input.className = 'user-textarea';
+    input.value = dados.valor;
+    input.placeholder = " Digite...";
     
-    // UX: Se o texto for vazio (novo), foca automaticamente para o usuário digitar
-    if(dados.valor === '') {
-        setTimeout(() => input.focus(), 50);
-    }
+    // Auto-foco se for novo (vazio)
+    if(dados.valor === '') setTimeout(() => input.focus(), 50);
     
-    // Lógica de Salvamento Automático (Debounce)
-    // Espera o usuário parar de digitar por 500ms antes de enviar ao banco
     let timeout;
     input.oninput = (e) => {
-        // Atualiza o valor localmente para feedback instantâneo
         dados.valor = e.target.value;
-        
         clearTimeout(timeout);
-        timeout = setTimeout(() => {
-            salvarElementoNoFirebase(dados);
-        }, 500);
+        timeout = setTimeout(() => salvarElementoNoFirebase(dados), 500);
     };
 
-    // Cria o botão de deletar (o "X" vermelho que aparece no hover)
     const delBtn = document.createElement('div');
     delBtn.className = 'delete-handle';
     delBtn.innerText = 'x';
-    delBtn.onclick = () => deletarElementoNoFirebase(dados.id);
+    delBtn.onclick = (e) => {
+        e.stopPropagation(); // Evita desenhar outro em cima
+        deletarElementoNoFirebase(dados.id);
+    };
 
-    // Monta a estrutura
     wrapper.appendChild(input);
     wrapper.appendChild(delBtn);
     container.appendChild(wrapper);
 }
 
 function criarVisualMarcador(dados, container) {
-    // Cria o container do marcador
     const wrapper = document.createElement('div');
-    wrapper.className = 'user-marker-wrapper';
-    wrapper.style.position = 'absolute';
+    wrapper.className = 'element-wrapper';
     wrapper.style.left = dados.x + '%';
     wrapper.style.top = dados.y + '%';
+    // Wrapper pequeno para marcadores
+    wrapper.style.width = '2vh'; 
+    wrapper.style.height = '2vh';
+    wrapper.style.transform = 'translate(-50%, -50%)'; // Centraliza no ponto do clique
 
-    // Cria a "bolinha" visual
     const marker = document.createElement('div');
     marker.className = 'user-marker';
     
-    // Cria o botão de deletar
     const delBtn = document.createElement('div');
     delBtn.className = 'delete-handle';
     delBtn.innerText = 'x';
-    delBtn.style.top = '-15px'; // Ajuste fino para ficar acima da bolinha
-    
     delBtn.onclick = (e) => {
-        e.stopPropagation(); // Impede que o clique atravesse e crie outro marcador
+        e.stopPropagation();
         deletarElementoNoFirebase(dados.id);
     };
 
-    // Monta a estrutura
     wrapper.appendChild(marker);
     wrapper.appendChild(delBtn);
     container.appendChild(wrapper);
 }
 
-// =========================================================
-// FUNÇÕES AUXILIARES
-// =========================================================
-
-// Botão "Lixeira": Apaga tudo da página atual
 window.limparPaginaAtual = function() {
-    if(!confirm("Tem certeza que deseja apagar TODAS as anotações desta página? Esta ação não pode ser desfeita.")) return;
-    
+    if(!confirm("Limpar esta página inteira?")) return;
     Object.values(elementosFicha).forEach(el => {
-        if (el.pagina === paginaFichaAtual) {
-            deletarElementoNoFirebase(el.id);
-        }
+        if (el.pagina === paginaFichaAtual) deletarElementoNoFirebase(el.id);
     });
 };

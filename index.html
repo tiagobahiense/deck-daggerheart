@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="style.css?v=10.1">
     <link rel="stylesheet" href="profissao.css?v=1.0">
     <link rel="stylesheet" href="selecao-classe.css?v=3.0">
-    <link rel="stylesheet" href="ficha.css?v=1.0">
+    <link rel="stylesheet" href="ficha.css?v=1.5">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -144,7 +144,7 @@
 
             <button class="btn-close-sheet" onclick="fecharFicha()" title="Fechar">X</button>
             
-            <div class="sheet-container" id="sheet-container" onmousedown="cliqueNaFicha(event)">
+            <div class="sheet-container" id="sheet-container">
                 <img id="sheet-bg" src="" alt="Ficha">
                 <div id="sheet-inputs-layer"></div>
             </div>
@@ -228,7 +228,7 @@
                 bottom: 20px; 
                 right: 20px; 
                 z-index: 2000; 
-                pointer-events: auto; /* IMPORTANTE: Permite clique através do footer */
+                pointer-events: auto;
                 padding: 10px 20px; 
                 background: var(--gold); 
                 border: 2px solid #fff; 
@@ -305,6 +305,6 @@
     <script type="module" src="script.js?v=10.2"></script>
     <script src="profissao.js?v=1.0"></script>
     <script src="selecao-classe.js?v=3.0"></script>
-    <script src="ficha.js?v=1.0"></script>
+    <script src="ficha.js?v=1.5"></script>
 </body>
 </html>

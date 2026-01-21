@@ -1,11 +1,10 @@
 /* =========================================================
-   ESTILOS DA FICHA - MODO PRANCHETA DIGITAL (CORRIGIDO FINAL)
+   ESTILOS DA FICHA - MODO PRANCHETA (FINAL v1.5)
    ========================================================= */
 
-/* Garante que o modal da ficha fique por cima de tudo */
-#sheet-modal {
+   #sheet-modal {
     display: none;
-    z-index: 9999 !important; /* Força ficar no topo */
+    z-index: 9999 !important;
     background: rgba(0, 0, 0, 0.95);
     position: fixed;
     top: 0;
@@ -16,7 +15,6 @@
     justify-content: center;
 }
 
-/* Caixa principal da ficha */
 .sheet-content {
     width: 95vh;
     aspect-ratio: 1 / 1.414;
@@ -28,12 +26,9 @@
     flex-direction: column;
     position: relative;
     box-shadow: 0 0 50px rgba(0,0,0,0.8);
-    
-    /* ESSENCIAL: Permite que botões saiam da caixa */
     overflow: visible !important; 
 }
 
-/* Container interno da imagem (esse sim esconde o excesso) */
 .sheet-container {
     position: relative;
     width: 100%;
@@ -42,6 +37,7 @@
     background: #fff;
     cursor: crosshair;
     border-radius: 4px 4px 0 0;
+    user-select: none;
 }
 
 #sheet-bg {
@@ -49,7 +45,6 @@
     height: 100%;
     object-fit: fill;
     pointer-events: none;
-    user-select: none;
 }
 
 #sheet-inputs-layer {
@@ -58,13 +53,14 @@
     left: 0;
     width: 100%;
     height: 100%;
+    pointer-events: none;
 }
 
-/* --- BARRA DE FERRAMENTAS LATERAL --- */
+/* --- BARRA DE FERRAMENTAS --- */
 .sheet-toolbar {
     position: absolute;
     top: 20px;
-    left: -60px; /* Joga para fora na esquerda */
+    left: -60px;
     width: 50px;
     background: #222;
     border: 2px solid var(--gold);
@@ -73,7 +69,7 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
-    z-index: 10000; /* Muito alto para garantir */
+    z-index: 10000;
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     align-items: center;
 }
@@ -103,11 +99,10 @@
     transform: scale(1.1);
 }
 
-/* --- BOTÃO DE FECHAR (FLUTUANTE) --- */
 .btn-close-sheet {
     position: absolute;
     top: -15px;
-    right: -55px; /* Joga para fora na direita */
+    right: -55px;
     width: 45px;
     height: 45px;
     background: #8b0000;
@@ -124,71 +119,92 @@
     box-shadow: 0 0 10px rgba(0,0,0,0.8);
     transition: transform 0.2s;
 }
-
 .btn-close-sheet:hover {
     background: #ff0000;
     transform: scale(1.1) rotate(90deg);
 }
 
 /* --- ELEMENTOS DO JOGADOR --- */
-.user-input-wrapper, .user-marker-wrapper {
+
+/* Wrapper Genérico para facilitar o hover */
+.element-wrapper {
     position: absolute;
+    pointer-events: auto; /* Reativa o clique nos elementos */
+    padding: 5px; 
+    margin: -5px; 
     z-index: 100;
 }
 
-.user-input {
+/* Caixa de Seleção Temporária (enquanto arrasta) */
+.temp-box {
+    position: absolute;
+    border: 1px dashed blue;
+    background-color: rgba(0, 0, 255, 0.1);
+    pointer-events: none;
+    z-index: 999;
+}
+
+/* TEXTO (TEXTAREA) */
+.user-textarea {
+    width: 100%;
+    height: 100%;
     background: transparent;
-    border: 1px solid transparent; 
+    border: 1px dashed transparent; 
     color: #000;
     font-family: 'Courier New', monospace;
     font-weight: bold;
-    font-size: 1.6vh;
-    padding: 2px 5px;
-    min-width: 30px;
+    font-size: 1.4vh; 
+    line-height: 1.1;
+    padding: 2px;
+    resize: none; 
+    overflow: hidden;
     outline: none;
-    transition: background 0.2s;
 }
 
-.user-input:hover, .user-input:focus {
-    border: 1px dashed blue;
-    background: rgba(255, 255, 0, 0.2);
+.element-wrapper:hover .user-textarea, 
+.user-textarea:focus {
+    border: 1px dashed rgba(0, 0, 255, 0.5);
+    background: rgba(255, 255, 0, 0.1);
 }
 
+/* MARCADOR (BOLINHA) */
 .user-marker {
-    width: 2.2vh;
-    height: 2.2vh;
+    width: 1.6vh;
+    height: 1.6vh;
     background-color: #000;
     border-radius: 50%;
-    transform: translate(-50%, -50%);
     cursor: pointer;
-    box-shadow: 0 0 2px #fff;
+    box-shadow: 0 0 1px #fff;
+    margin: auto; 
 }
 
-.user-marker:hover {
+.element-wrapper:hover .user-marker {
     background-color: #333;
-    transform: scale(1.2) translate(-40%, -40%);
+    transform: scale(1.2);
 }
 
+/* BOTÃO DE DELETAR */
 .delete-handle {
     position: absolute;
-    top: -15px;
-    right: -15px;
+    top: -12px;
+    right: -12px;
     background: red;
     color: white;
     border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    font-size: 10px;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
     font-weight: bold;
     cursor: pointer;
-    display: none;
+    display: none; 
     align-items: center;
     justify-content: center;
     z-index: 200;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    border: 1px solid white;
 }
 
-.user-input-wrapper:hover .delete-handle,
-.user-marker-wrapper:hover .delete-handle {
+.element-wrapper:hover .delete-handle {
     display: flex;
 }
 
@@ -216,23 +232,12 @@
 }
 .nav-simple-btn:hover { border-color: var(--gold); color: var(--gold); }
 
-/* Responsividade - Ajuste para telas pequenas */
+/* Responsividade */
 @media (max-width: 1100px) {
     .sheet-toolbar {
-        top: -60px; /* Move para cima */
-        left: 0;
-        width: 100%;
-        height: 50px;
-        flex-direction: row;
-        justify-content: center;
-        padding: 0;
+        top: -60px; left: 0; width: 100%; height: 50px;
+        flex-direction: row; justify-content: center;
     }
-    .btn-close-sheet {
-        top: -60px;
-        right: 0;
-    }
-    .sheet-content {
-        margin-top: 60px; /* Espaço para a barra */
-        height: 80vh; /* Reduz altura para caber */
-    }
+    .btn-close-sheet { top: -60px; right: 0; }
+    .sheet-content { margin-top: 60px; }
 }
