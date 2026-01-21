@@ -1,0 +1,225 @@
+╔════════════════════════════════════════════════════════════════════╗
+║    🎯 IMPLEMENTAÇÃO: SISTEMA DE SELEÇÃO DE CLASSE COM CARROSSEL    ║
+║                                                                    ║
+║                    ✅ CÓDIGO PRONTO PARA TESTES                    ║
+╚════════════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📋 ARQUIVOS CRIADOS (3)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✨ selecao-classe.css                 [165 LINHAS]
+   └─ Modal de carrossel
+   └─ Navegação visual (setas, dots)
+   └─ Botões de seleção coloridos
+   └─ Responsive design
+
+✨ selecao-classe.js                  [180 LINHAS]
+   └─ Lógica de carrossel
+   └─ Gerenciamento de profissão
+   └─ Persistência em localStorage
+   └─ Controle de teclado (← → ESC)
+
+✨ INSTRUCOES_PDF.md                  [GUIA COMPLETO]
+   └─ 3 métodos para converter PDF
+   └─ Verificação de estrutura
+   └─ Troubleshooting
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📝 ARQUIVOS MODIFICADOS (3)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔄 index.html
+   ├─ Adicionado link: selecao-classe.css
+   ├─ Adicionado modal: clase-selection-modal
+   └─ Adicionado script: selecao-classe.js
+
+🔄 script.js
+   ├─ Modificado: iniciarExperiencia()
+   │   └─ Chama inicializarSelecaoClasse() após login
+   ├─ Modificado: abrirGrimorio('Classes')
+   │   └─ Filtra cartas por profissão selecionada
+   └─ Modificado: forcarLogout()
+       └─ Reseta profissão ao fazer logout
+
+🔄 profissao.js
+   └─ Exposto globalmente:
+      ├─ window.ativarProfissao()
+      └─ window.desativarProfissao()
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎮 FLUXO DE FUNCIONAMENTO
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. JOGADOR LOGA
+   Email + Senha → Insere nome personagem
+
+2. CLICA "JOGAR"
+   └─ Abre MODAL DE CARROSSEL
+
+3. CARROSSEL EXIBE 9 CLASSES
+   ┌──────────────────────────┐
+   │   [IMAGEM DA CLASSE]     │
+   │                          │
+   │  ← [Indicadores] →       │
+   │  [Ser Guardião]  🔵      │
+   └──────────────────────────┘
+   
+   Navegação:
+   ├─ Setas (❮ ❯)
+   ├─ Indicadores (dots) clicáveis
+   ├─ Teclado (← →)
+   └─ ESC para fechar
+
+4. SELECIONA CLASSE
+   └─ Clica em "Ser [Classe]"
+      ├─ Salva em localStorage
+      ├─ Ativa aura visual
+      ├─ Ativa partículas
+      └─ Fecha modal
+
+5. BOARD APARECE COM EFEITOS
+   ├─ Aura colorida nas bordas
+   ├─ Partículas flutuam
+   └─ Tema segue cor da profissão
+
+6. GRIMÓRIO DE CLASSES FILTRADO
+   └─ Clica em slot de classe
+      ├─ Mostra APENAS cartas da profissão
+      ├─ Fundamental [Profissão]
+      ├─ Especialização [Profissão]
+      └─ Maestria [Profissão]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🎨 CORES DAS PROFISSÕES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔵 Guardião        rgb(0, 200, 255)     [Cyan]
+🟣 Bardo           rgb(200, 0, 255)     [Roxo]
+🔷 Mago            rgb(100, 200, 255)   [Azul Claro]
+🟤 Feiticeiro      rgb(150, 0, 200)     [Roxo Escuro]
+🟠 Guerreiro       rgb(255, 100, 0)     [Laranja]
+🟢 Ladino          rgb(100, 200, 0)     [Verde Escuro]
+🟡 Serafim         rgb(255, 215, 0)     [Dourado]
+🟢 Druida          rgb(0, 255, 100)     [Verde]
+🟠 Patrulheiro     rgb(255, 200, 0)     [Âmbar]
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📦 O QUE VOCÊ PRECISA FAZER AGORA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1️⃣  CONVERTER CLASSES.PDF EM IMAGENS
+
+    Opção A (Python - Recomendado):
+    ─────────────────────────────
+    pip install pdf2image pillow
+    python converter_pdf.py
+    
+    Opção B (Online):
+    ────────────────
+    ilovepdf.com/pt/pdf-para-jpg
+
+    Opção C (ImageMagick):
+    ────────────────────
+    magick convert Classes.pdf output_%d.jpg
+
+    Resultado esperado:
+    ─────────────────
+    img/cartas/Classes/
+    ├─ guardiao1.jpg
+    ├─ bardo1.jpg
+    ├─ mago1.jpg
+    ├─ feiticeiro1.jpg
+    ├─ guerreiro1.jpg
+    ├─ ladino1.jpg
+    ├─ serafim1.jpg
+    ├─ druida1.jpg
+    └─ patrulheiro1.jpg
+
+2️⃣  TESTAR NA APLICAÇÃO
+
+    ✓ Fazer login
+    ✓ Insira nome do personagem
+    ✓ Verifique carrossel aparece
+    ✓ Navegue com setas e dots
+    ✓ Clique em "Ser [Classe]"
+    ✓ Veja aura e partículas
+    ✓ Abra Grimório de Classes
+    ✓ Verifique filtro por profissão
+
+3️⃣  PRÓXIMO: V5 (Mesa de Jogo)
+
+    Após confirmar tudo funciona:
+    ─────────────────────────────
+    ✓ Criar mesa.html
+    ✓ Grid de batalha
+    ✓ Sistema de tokens
+    ✓ Drag & drop
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🔧 TROUBLESHOOTING
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+❌ "Carrossel não aparece"
+   ✓ Verifique se JS está carregando (F12 → Network)
+   ✓ Veja console para erros
+   ✓ Confirme login com teste
+
+❌ "Imagens não aparecem nas páginas"
+   ✓ Verifique nomes: guardiao1.jpg (lowercase!)
+   ✓ Caminho: img/cartas/Classes/
+   ✓ F12 → Network → verifique URLs
+
+❌ "Cartas não filtram por classe"
+   ✓ Limpe cache (Ctrl+Shift+Delete)
+   ✓ Verifique lista_cartas_v2.json tem "profissao"
+   ✓ Console: window.obterProfissaoSelecionada()
+
+❌ "Aura não aparece"
+   ✓ Verifique profissao.css carregou (F12 → Network)
+   ✓ Console: window.ativarProfissao('Bardo')
+   ✓ Verifique slotsFixos tem dados
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💡 DICAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ Abra F12 (DevTools) para ver console logs
+✓ Procure por "Profissão ativada" para confirmar
+✓ localStorage.getItem('profissaoSelecionada') vê a profissão
+✓ Todas as funções são acessíveis via window.
+
+Funções úteis no console:
+────────────────────────
+window.obterProfissaoSelecionada()    → Ver profissão selecionada
+window.ativarProfissao('Bardo')       → Ativar aura manualmente
+window.desativarProfissao()           → Desativar aura
+classeSelectionState                  → Ver estado do carrossel
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📊 ESTATÍSTICAS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Arquivos Criados:     3
+Arquivos Modif.:      3
+Linhas de Código:     ~450 (novo)
+Profissões:           9
+Cores Únicas:         9
+Cartas Filtradas:     ~3-6 por profissão
+Tempo Est. Testes:    15-20 min
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✅ STATUS: PRONTO PARA CONVERSÃO DE PDF E TESTES
+
+Aguardando você converter o PDF em imagens para prosseguir! 🚀
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

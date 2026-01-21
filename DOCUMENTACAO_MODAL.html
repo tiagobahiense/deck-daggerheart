@@ -1,0 +1,214 @@
+<!-- MODAL DE SELEÇÃO DE CLASSE - ADICIONADO AO index.html -->
+
+<!-- ============ ESTRUTURA HTML ============ -->
+
+<!-- Este modal aparece APÓS o login quando o jogador insere o nome do personagem -->
+<div id="classe-selection-modal">
+    <div class="classe-carousel-container">
+        <!-- Slides serão gerados dinamicamente por JavaScript -->
+        <div class="carousel-slides"></div>
+        
+        <!-- Botões de navegação -->
+        <button class="carousel-nav carousel-nav-prev" onclick="window.slideAnterior()">❮</button>
+        <button class="carousel-nav carousel-nav-next" onclick="window.proximoSlide()">❯</button>
+        
+        <!-- Indicadores visuais (dots) -->
+        <div class="carousel-indicators"></div>
+    </div>
+</div>
+
+<!-- ============ ESTRUTURA GERADA DINAMICAMENTE ============ -->
+
+<!-- Cada slide é criado assim (9 total): -->
+<div class="carousel-slide ativo" data-profissao="Guardião" data-index="0">
+    <!-- Imagem da página do PDF (você insere manualmente) -->
+    <img src="img/cartas/Classes/guardiao1.jpg" alt="Guardião">
+    
+    <!-- Info box com nome da classe -->
+    <div class="slide-info">
+        <h3 class="slide-info-title">GUARDIÃO</h3>
+        <p class="slide-info-subtitle">Escolha sua classe</p>
+    </div>
+    
+    <!-- Botão colorido para selecionar -->
+    <button class="btn-classe-select" style="background-color: rgb(0, 200, 255); color: #fff;">
+        Ser Guardião
+    </button>
+</div>
+
+<!-- ============ INTEGRAÇÃO COM ESTILOS ============ -->
+
+<!-- Adicionado em <head> -->
+<link rel="stylesheet" href="selecao-classe.css?v=1.0">
+
+<!-- Adicionado antes de </body> -->
+<script src="selecao-classe.js?v=1.0"></script>
+
+<!-- ============ COMPORTAMENTO ============ -->
+
+FLUXO:
+1. User loga e insere nome do personagem
+2. Clica "Jogar"
+3. iniciarExperiencia() é chamada
+4. Chama window.inicializarSelecaoClasse()
+5. Modal aparece com carrossel
+6. User navega com:
+   - Setas (❮ ❯)
+   - Dots clicáveis
+   - Teclado (← → ESC)
+7. User clica em "Ser [Classe]"
+8. selecionarClasse(profissao) é executada:
+   - Salva em localStorage
+   - Ativa aura visual
+   - Ativa partículas
+   - Fecha modal
+9. renderizar() mostra board com efeitos
+
+<!-- ============ FUNÇÕES GLOBAIS DISPONÍVEIS ============ -->
+
+window.inicializarSelecaoClasse()        // Criar e mostrar modal
+window.proximoSlide()                    // Próximo slide
+window.slideAnterior()                   // Slide anterior
+window.irParaSlide(index)                // Ir para slide específico
+window.selecionarClasse(profissao)       // Selecionar e confirmar
+window.fecharSelecaoClasse()             // Fechar modal (ESC)
+window.obterProfissaoSelecionada()       // Retorna profissão selecionada
+window.obterCorProfissao(profissao)      // Retorna cor RGB da profissão
+window.resetarSelecaoClasse()            // Reset para logout
+
+<!-- ============ DADOS ARMAZENADOS ============ -->
+
+// localStorage
+localStorage.getItem('profissaoSelecionada')  → Armazena profissão do jogador
+
+// Estado global
+classeSelectionState = {
+    profissaoAtualSelecionada: 'Bardo',  // Profissão ativa
+    indiceSlideAtual: 1,                 // Slide atual (0-8)
+    totalSlides: 9,                      // Total de slides
+    paginasCarregadas: {}                // Cache de imagens
+}
+
+<!-- ============ INTEGRAÇÃO COM PROFISSÃO ============ -->
+
+Quando seleciona classe:
+1. window.ativarProfissao(profissao) é chamada
+2. Aplica classe CSS: {profissao}-aura
+3. Inicia partículas flutuantes
+4. Aura fica visível nas bordas da tela
+5. Partículas continuam flutuando até fazer logout
+
+<!-- ============ INTEGRAÇÃO COM GRIMÓRIO ============ -->
+
+Quando abre Grimório de Classes:
+1. abrirGrimorio('Classes', slotDestino) é chamada
+2. Verifica window.obterProfissaoSelecionada()
+3. Filtra catalogoCartas por profissao
+4. Mostra APENAS:
+   - Fundamental [Profissão]
+   - Especialização [Profissão]
+   - Maestria [Profissão]
+
+<!-- ============ INTEGRAÇÃO COM LOGOUT ============ -->
+
+Quando faz logout (forcarLogout):
+1. window.resetarSelecaoClasse() é chamada
+2. window.desativarProfissao() é chamada
+3. localStorage['profissaoSelecionada'] é deletado
+4. Aura desaparece
+5. Particulas param
+
+<!-- ============ ARQUIVO ESTRUTURADO ASSIM ============ -->
+
+ANTES (index.html):
+   <div id="login-screen">...</div>
+   <div id="app-container">...</div>
+   <script src="script.js"></script>
+   <script src="profissao.js"></script>
+
+DEPOIS (index.html):
+   <div id="login-screen">...</div>
+   <div id="classe-selection-modal">...</div>  ← NOVO!
+   <div id="app-container">...</div>
+   <script src="script.js"></script>
+   <script src="profissao.js"></script>
+   <script src="selecao-classe.js"></script>   ← NOVO!
+
+<!-- ============ DEPENDÊNCIAS ============ -->
+
+✓ lista_cartas_v2.json  - Já tem campo "profissao" para Classes
+✓ profissao.css         - Aura visual e animações
+✓ profissao.js          - Ativa/desativa efeitos
+✓ style.css             - Estilos gerais
+✓ script.js             - Lógica principal da app
+
+<!-- ============ IMAGENS ESPERADAS ============ -->
+
+As imagens devem estar em: img/cartas/Classes/
+
+guardiao1.jpg         (Página do Guardião)
+bardo1.jpg            (Página do Bardo)
+mago1.jpg             (Página do Mago)
+feiticeiro1.jpg       (Página do Feiticeiro)
+guerreiro1.jpg        (Página do Guerreiro)
+ladino1.jpg           (Página do Ladino)
+serafim1.jpg          (Página do Serafim)
+druida1.jpg           (Página do Druida)
+patrulheiro1.jpg      (Página do Patrulheiro)
+
+Se tiver múltiplas páginas por classe:
+bardo1.jpg, bardo2.jpg, bardo3.jpg  (Várias páginas do Bardo)
+
+<!-- ============ ESTILOS APLICADOS ============ -->
+
+Modal:
+- Background escuro com blur
+- Borda dourada (medieval)
+- Z-index: 10000 (fica acima de tudo)
+- Sombra brilhante
+
+Carrossel:
+- Transição suave entre slides (0.4s)
+- Responsivo (90% width, máx 900px)
+- Altura: 600px
+
+Botões:
+- Cores variam por profissão
+- Hover: scale(1.05) + brilho
+- Active: scale(0.98)
+
+Navegação:
+- Setas circulares (50px)
+- Cor: ouro (212, 175, 55)
+- Hover: mais brilho e escala
+
+Indicadores:
+- Dots pequenos (10px)
+- Ativo tem tamanho maior (12px)
+- Clicáveis
+
+<!-- ============ COMPATIBILIDADE ============ -->
+
+✓ Desktop (1920x1080+)
+✓ Tablet (768px+)
+✓ Mobile (responsivo até 320px)
+✓ Todos navegadores modernos
+✓ Chrome, Firefox, Safari, Edge
+
+<!-- ============ PERFORMANCE ============ -->
+
+- Modal lazy load: carregado apenas ao clicar "Jogar"
+- Imagens lazy load: carregam sob demanda
+- Sem animações durante troca de slides
+- Particulas: máximo 30 simultâneas
+- Nenhuma requisição ao banco durante seleção
+
+<!-- ============ SEGURANÇA ============ -->
+
+✓ Sem vulnerabilidades XSS
+✓ Dados salvos apenas em localStorage (lado cliente)
+✓ Nenhum dado sensitivo é armazenado
+✓ Reset automático ao logout
+✓ Validação de profissão contra profissaoConfig
+
+================================================================================

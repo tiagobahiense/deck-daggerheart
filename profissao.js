@@ -87,6 +87,9 @@ function ativarProfissao(profissao) {
     console.log(`✨ Profissão ativada: ${profissao}`);
 }
 
+// Expor como function global
+window.ativarProfissao = ativarProfissao;
+
 // Cria e anima partículas flutuantes
 function iniciarParticulasProfissao(config) {
     const container = document.getElementById('particulas-profissao');
@@ -159,4 +162,7 @@ function desativarProfissao() {
 
     console.log('✨ Profissão desativada');
 }
+
+// Expor como function global
+window.desativarProfissao = desativarProfissao;
 

@@ -1,0 +1,284 @@
+🎯 ARQUITETURA FINAL - SELEÇÃO DE CLASSE
+════════════════════════════════════════════════════════════════════
+
+📁 projeto-daggerheart/
+│
+├─ 📄 index.html                    [MODIFICADO]
+│  ├─ Link: selecao-classe.css
+│  ├─ Modal: classe-selection-modal
+│  └─ Script: selecao-classe.js
+│
+├─ 🔧 script.js (918 linhas)        [MODIFICADO]
+│  ├─ iniciarExperiencia() → Chama: window.inicializarSelecaoClasse()
+│  ├─ abrirGrimorio('Classes') → Filtra por profissão
+│  └─ forcarLogout() → Reseta profissão
+│
+├─ 💅 style.css
+├─ 💅 profissao.css
+│  └─ Classes: .guardiao-aura, .bardo-aura, etc.
+│
+├─ 🔧 profissao.js                 [MODIFICADO]
+│  ├─ Exposto: window.ativarProfissao()
+│  └─ Exposto: window.desativarProfissao()
+│
+├─ ✨ selecao-classe.css            [NOVO - 165 LINHAS]
+│  ├─ #classe-selection-modal
+│  ├─ .carousel-*
+│  ├─ .btn-classe-select
+│  └─ Media queries
+│
+├─ ✨ selecao-classe.js             [NOVO - 180 LINHAS]
+│  ├─ const profissaoPrincipal{}
+│  ├─ const classeSelectionState
+│  ├─ window.inicializarSelecaoClasse()
+│  ├─ window.proximoSlide()
+│  ├─ window.slideAnterior()
+│  ├─ window.irParaSlide(index)
+│  ├─ window.selecionarClasse(profissao)
+│  ├─ window.obterProfissaoSelecionada()
+│  └─ Listeners de teclado
+│
+├─ 📊 lista_cartas_v2.json          [Já tem "profissao"]
+│  └─ Classes cards com campo: "profissao": "Bardo"
+│
+├─ 🎨 img/cartas/Classes/           [SEUS ARQUIVOS]
+│  ├─ guardiao1.jpg               ← VOCÊ ADICIONA AQUI
+│  ├─ bardo1.jpg
+│  ├─ mago1.jpg
+│  ├─ feiticeiro1.jpg
+│  ├─ guerreiro1.jpg
+│  ├─ ladino1.jpg
+│  ├─ serafim1.jpg
+│  ├─ druida1.jpg
+│  └─ patrulheiro1.jpg
+│
+├─ 📖 INSTRUCOES_PDF.md             [NOVO - GUIA]
+│  ├─ 3 métodos para converter PDF
+│  ├─ Estrutura esperada
+│  ├─ Troubleshooting
+│  └─ Customizações
+│
+├─ 📖 RESUMO_IMPLEMENTACAO.md       [NOVO - RESUMO]
+│  ├─ O que foi feito
+│  ├─ Fluxo de uso
+│  ├─ Mapeamento de profissões
+│  ├─ Próximos passos
+│  └─ Checklist
+│
+├─ 📖 MUDANCAS_DETALHADAS.md        [NOVO - DETALHES]
+│  ├─ Cada modificação em index.html
+│  ├─ Cada modificação em script.js
+│  ├─ Cada modificação em profissao.js
+│  ├─ Arquivos novos
+│  ├─ Dependências
+│  └─ Fluxo de execução
+│
+├─ 📖 DOCUMENTACAO_MODAL.html       [NOVO - DOCS]
+│  ├─ Estrutura HTML gerada
+│  ├─ Funcões globais
+│  ├─ Dados armazenados
+│  └─ Compatibilidade
+│
+├─ 📖 README_IMPLEMENTACAO.txt      [NOVO - GUIA]
+│  ├─ Resumo executivo
+│  ├─ Como começar (5 passos)
+│  ├─ Demonstração do fluxo
+│  ├─ Mapeamento profissões
+│  ├─ Commands de debug
+│  ├─ Checklist pré-testes
+│  └─ Troubleshooting
+│
+├─ 📖 STATUS_IMPLEMENTACAO.txt      [NOVO - STATUS]
+│  └─ Versão visual bonita do progresso
+│
+├─ admin.html
+├─ mestre.html
+├─ audio/
+│  ├─ jornada.mp3
+│  └─ use-card.mp3
+│
+└─ Classes.pdf                      [JÁ EXISTE]
+   └─ Converter em 9 JPGs (PRÓXIMO PASSO)
+
+
+════════════════════════════════════════════════════════════════════
+                    FLUXO DE DADOS
+════════════════════════════════════════════════════════════════════
+
+┌─────────────────────────────────────────────────────────────┐
+│ USUÁRIO LOGA → INSERE NOME → CLICA "JOGAR"                 │
+└────────────────────┬────────────────────────────────────────┘
+                     ↓
+           script.js: iniciarExperiencia()
+                     ↓
+        window.inicializarSelecaoClasse()
+                     ↓
+    ┌───────────────────────────────────────┐
+    │ MODAL: classe-selection-modal (visível)│
+    │ ┌─────────────────────────────────────┐│
+    │ │ Slide 1: [IMG] + "Ser Guardião"    ││
+    │ │ Slide 2: [IMG] + "Ser Bardo" ← U está aqui
+    │ │ Slide 3: [IMG] + "Ser Mago"        ││
+    │ │ ... (9 slides)                     ││
+    │ │ Navegação: ← [1•2•3•4•5•6•7•8•9] →││
+    │ └─────────────────────────────────────┘│
+    └───────────────────────────────────────┘
+                     ↓
+        Usuário clica: "Ser Bardo"
+                     ↓
+    window.selecionarClasse('Bardo')
+        ├─ localStorage['profissaoSelecionada'] = 'Bardo'
+        ├─ window.ativarProfissao('Bardo')
+        │  ├─ aura.classList.add('bardo-aura')
+        │  └─ iniciarParticulasProfissao()
+        ├─ window.renderizar()
+        └─ modal.classList.remove('ativo')
+                     ↓
+    ┌───────────────────────────────────────┐
+    │ BOARD PRINCIPAL (Jogador vê)          │
+    │ ┌─────────────────────────────────────┐│
+    │ │ [AURA ROXA NAS BORDAS]              ││
+    │ │ Partículas roxas flutuando          ││
+    │ │ [Slots com cartas]                  ││
+    │ │ [Mão do jogador]                    ││
+    │ │ [Controles de volume]               ││
+    │ └─────────────────────────────────────┘│
+    └───────────────────────────────────────┘
+                     ↓
+        Usuário clica em slot "Classes"
+                     ↓
+    script.js: abrirGrimorio('Classes')
+        ├─ Chama: window.obterProfissaoSelecionada()
+        │         → Retorna: 'Bardo'
+        ├─ Filtra: catalogoCartas.filter(c => 
+        │           c.categoria === 'Classes' && 
+        │           c.profissao === 'Bardo')
+        └─ Exibe: APENAS cartas de Bardo
+                  (Fundamental Bardo, Especialização Bardo, Maestria Bardo)
+                     ↓
+    ┌───────────────────────────────────────┐
+    │ GRIMÓRIO (Filtrado)                   │
+    │ ┌─────────────────────────────────────┐│
+    │ │ Título: "Cartas de Bardo"          ││
+    │ │ [Fundamental Beletrista]            ││
+    │ │ [Especialização Beletrista]        ││
+    │ │ [Maestria Beletrista] (variante 1) ││
+    │ │ [Maestria Beletrista] (variante 2) ││
+    │ └─────────────────────────────────────┘│
+    │ (Não vê: Guerreiro, Mago, etc.)       │
+    └───────────────────────────────────────┘
+
+
+════════════════════════════════════════════════════════════════════
+                    ARMAZENAMENTO DE DADOS
+════════════════════════════════════════════════════════════════════
+
+localStorage (PERSISTENTE - Mesmo após reload):
+───────────────────────────────────────────────
+{
+    "profissaoSelecionada": "Bardo"    ← Qual classe escolheu
+}
+
+Memória (DURANTE SESSÃO):
+────────────────────────
+classeSelectionState = {
+    profissaoAtualSelecionada: "Bardo",
+    indiceSlideAtual: 1,               ← Qual slide está vendo
+    totalSlides: 9,
+    paginasCarregadas: {}
+}
+
+window.slotsFixos = {
+    'Fundamental': {
+        nome: "Fundamental - Beletrista",
+        profissao: "Bardo",            ← Extraído de lista_cartas_v2.json
+        caminho: "img/cartas/Classes/...",
+        estado: "ativo"
+    },
+    ...
+}
+
+Firebase (NÃO MUDA):
+──────────────────
+mesa_rpg/
+├─ accounts/
+│  └─ {userId}/
+│     ├─ email: "player@example.com"
+│     └─ characters/
+│        ├─ HERÓI1: true
+│        ├─ HERÓI2: true
+│        └─ HERÓI3: true
+│
+└─ ... (resto da estrutura)
+
+[NOTA: profissaoSelecionada fica no localStorage do navegador, 
+       não no Firebase. Pode mudar isso depois se quiser sincronizar]
+
+
+════════════════════════════════════════════════════════════════════
+                INTEGRAÇÃO COM SISTEMAS EXISTENTES
+════════════════════════════════════════════════════════════════════
+
+✅ PROFISSÃO + AURA:
+   selecao-classe.js → window.ativarProfissao()
+                    → profissao.js: ativarProfissao()
+                    → Aplica CSS + Partículas
+
+✅ PROFISSÃO + CARTAS:
+   selecao-classe.js → localStorage['profissaoSelecionada']
+                    → script.js: abrirGrimorio('Classes')
+                    → Filtra by profissão
+                    → Mostra apenas cartas relevantes
+
+✅ PROFISSÃO + LOGOUT:
+   script.js: forcarLogout()
+   → window.resetarSelecaoClasse()
+   → window.desativarProfissao()
+   → localStorage cleared
+   → Volta ao login
+
+✅ PROFISSÃO + PERSISTÊNCIA:
+   localStorage mantém valor
+   → Ao recarregar página: profissão ainda está lá
+   → Ao fazer logout: profissão é apagada
+
+
+════════════════════════════════════════════════════════════════════
+                    PRÓXIMAS MODIFICAÇÕES (V5)
+════════════════════════════════════════════════════════════════════
+
+1. mesa.html
+   ├─ Canvas para grid de batalha
+   ├─ Sistema de tokens
+   └─ Sincronização Firebase
+
+2. Modificar script.js
+   ├─ Adicionar listeners para mesa
+   ├─ Gerenciar tokens
+   └─ Atualizar Firebase
+
+3. Adicionar mesa.css
+   ├─ Grid display
+   ├─ Tokens styling
+   └─ Canvas effects
+
+4. Adicionar mesa.js
+   ├─ Drag & drop
+   ├─ Snap to grid
+   ├─ Collision detection
+   └─ Firebase sync
+
+
+════════════════════════════════════════════════════════════════════
+                        VERSÃO FINAL
+════════════════════════════════════════════════════════════════════
+
+Nome: Projeto Daggerheart
+Versão: V4.5 (Seleção de Classe)
+Data: Janeiro 2026
+Status: ✅ PRONTO PARA TESTES
+
+Próxima Versão: V5 (Mesa de Jogo)
+Estimativa: 3-4 semanas
+
+════════════════════════════════════════════════════════════════════

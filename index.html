@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="img/favicon.png" />
     <link rel="stylesheet" href="style.css?v=10.0">
     <link rel="stylesheet" href="profissao.css?v=1.0">
+    <link rel="stylesheet" href="selecao-classe.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -68,6 +69,28 @@
             <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Cancelar</button>
         </div>
 
+    </div>
+
+    <!-- Modal de Seleção de Classe -->
+    <div id="classe-selection-modal">
+        <div class="classe-carousel-container">
+            <div class="slide-info">
+                <h3 class="slide-info-title">GUARDIÃO</h3>
+                <p class="slide-info-subtitle">1 de 3</p>
+            </div>
+            
+            <img class="slide-imagem-classe" src="" alt="Classe">
+            
+            <button class="carousel-nav carousel-nav-prev" onclick="window.paginaAnteriorClasse()">❮</button>
+            <button class="carousel-nav carousel-nav-next" onclick="window.proximaPaginaClasse()">❯</button>
+            
+            <button class="carousel-nav-classe carousel-nav-classe-prev" onclick="window.classeAnterior()" style="left: 20px;">⬅ Classe</button>
+            <button class="carousel-nav-classe carousel-nav-classe-next" onclick="window.proximaClasse()" style="right: 20px;">Classe ➡</button>
+            
+            <button class="btn-confirmar-classe" onclick="window.confirmarSelecaoClasse()">✓ Confirmar Classe</button>
+            
+            <div class="carousel-indicators"></div>
+        </div>
     </div>
 
     <div id="app-container" style="display: none; opacity: 0;">
@@ -193,5 +216,6 @@
 
     <script type="module" src="script.js?v=10.0"></script>
     <script src="profissao.js?v=1.0"></script>
+    <script src="selecao-classe.js?v=1.0"></script>
 </body>
 </html>

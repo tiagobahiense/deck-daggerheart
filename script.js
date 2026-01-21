@@ -181,6 +181,14 @@ window.forcarLogout = function() {
         nomeJogador = "";
         maoDoJogador = [];
         reservaDoJogador = [];
+        // Resetar profissão selecionada
+        if (typeof window.resetarSelecaoClasse === 'function') {
+            window.resetarSelecaoClasse();
+        }
+        // Desativar aura de profissão
+        if (typeof window.desativarProfissao === 'function') {
+            window.desativarProfissao();
+        }
         document.getElementById('login-screen').style.display = 'block';
         document.getElementById('app-container').style.display = 'none';
         window.voltarParaSelecao();
@@ -288,6 +296,16 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
     if (tipo === 'Geral') {
         titulo.innerText = "Grimório Principal";
         lista = catalogoCartas.filter(c => !['Classes','Ancestralidade','Comunidade'].includes(c.categoria));
+    } else if (tipo === 'Classes') {
+        // NOVO: Filtrar por profissão selecionada
+        const profissaoSelecionada = window.obterProfissaoSelecionada?.();
+        if (profissaoSelecionada) {
+            titulo.innerText = `Cartas de ${profissaoSelecionada}`;
+            lista = catalogoCartas.filter(c => c.categoria === 'Classes' && c.profissao === profissaoSelecionada);
+        } else {
+            titulo.innerText = "Selecionar: Classes";
+            lista = catalogoCartas.filter(c => c.categoria === 'Classes');
+        }
     } else {
         titulo.innerText = `Selecionar: ${tipo}`;
         lista = catalogoCartas.filter(c => c.categoria === tipo);
@@ -468,6 +486,13 @@ window.iniciarExperiencia = async function() {
 
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
+    
+    // Mostrar modal de seleção de classe
+    setTimeout(() => {
+        if (typeof window.inicializarSelecaoClasse === 'function') {
+            window.inicializarSelecaoClasse();
+        }
+    }, 300);
     setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
 
     // Iniciar música de fundo
