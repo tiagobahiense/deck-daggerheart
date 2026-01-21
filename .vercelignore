@@ -1,0 +1,21 @@
+# Arquivos que o Vercel deve ignorar
+node_modules/
+.git/
+.DS_Store
+*.md
+!README.md
+ARQUITETURA_FINAL.txt
+DOCUMENTACAO_MODAL.html
+escudo-mestre.md
+FIREBASE_RULES_RECOMENDADAS.txt
+INDICE_COMPLETO.txt
+INSTRUCOES_PDF.md
+LEIA_PRIMEIRO.txt
+MUDANCAS_DETALHADAS.md
+README_IMPLEMENTACAO.txt
+RESUMO_IMPLEMENTACAO.md
+STATUS_IMPLEMENTACAO.txt
+VERCEL_TROUBLESHOOTING.md
+VISUAL_TESTE.txt
+gerar_lista.py
+package-lock.json
