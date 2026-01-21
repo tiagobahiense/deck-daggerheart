@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, child, remove, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+// Linha de importação já contém browserSessionPersistence e setPersistence, o que é ótimo.
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // Configuração do Firebase
@@ -18,11 +19,24 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
+// === CORREÇÃO DE CONCORRÊNCIA: DEFINIR PERSISTÊNCIA ===
+// Garante que a sessão do jogador persista APENAS durante a sessão do navegador (evita conflitos de tabs/multi-login)
+setPersistence(auth, browserSessionPersistence)
+    .then(() => {
+        debug("Persistência de autenticação do jogador configurada para sessão.");
+    })
+    .catch((error) => console.error("Erro ao definir persistência:", error));
+// =======================================================
+
 // Expor db, ref, set globalmente para selecao-classe.js
 window.db = db;
 window.ref = ref;
 window.set = set;
 window.get = get;
+
+// Configuração global
+// ... (restante do código original)
+
 
 // Configuração global
 const EMAIL_MESTRE = "tgbahiense@gmail.com";
