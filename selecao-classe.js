@@ -1,4 +1,4 @@
-// Sistema de Seleção de Classe com Carrossel
+// Sistema de Seleção de Classe com Carrossel - Imagens do PDF
 
 const profissaoPrincipal = {
     'Guardião': { cor: 'rgb(0, 200, 255)', rgb: [0, 200, 255] },
@@ -12,28 +12,28 @@ const profissaoPrincipal = {
     'Patrulheiro': { cor: 'rgb(255, 200, 0)', rgb: [255, 200, 0] }
 };
 
-// Mapeamento de profissão para nomes das cartas
-const profissaoParaCartas = {
-    'Guardião': ['Baluarte', 'Sentinela Alada'],
-    'Bardo': ['Beletrista', 'Trovador'],
-    'Mago': ['Discípulo da Guerra', 'Discípulo do conhecimento'],
-    'Feiticeiro': 'Elementalista',
-    'Guerreiro': ['Escolhido da bravura', 'Escolhido da Matança', 'VinGador'],
-    'Ladino': ['Gatuno', 'Mafioso'],
-    'Serafim': ['Portador Divino', 'Treinador'],
-    'Druida': ['Primordialista', 'Protetor da Renovação', 'Protetor dos elementos'],
-    'Patrulheiro': 'rastreador'
+// Imagens do PDF de classes agrupadas por profissão
+const classesImagensPorProfissao = {
+    'Guardião': ['guardiao1', 'guardiao2'],
+    'Bardo': ['bardo1', 'bardo2'],
+    'Mago': ['mago1', 'mago2'],
+    'Feiticeiro': ['feiticeiro1', 'feiticeiro2'],
+    'Guerreiro': ['guerreiro1', 'guerreiro2'],
+    'Ladino': ['ladino1', 'ladino2'],
+    'Serafim': ['serafim1', 'serafim2'],
+    'Druida': ['druida1', 'druida2', 'druida3', 'druida4', 'druida5', 'druida6'],
+    'Patrulheiro': ['patrulheiro1', 'patrulheiro2', 'patrulheiro3', 'patrulheiro4']
 };
 
-// Tipos de cartas a exibir
-const tiposCartas = ['Fundamental', 'Especialização', 'Maestria'];
+// Lista de profissões em ordem
+const listaProfissoes = ['Guardião', 'Bardo', 'Mago', 'Feiticeiro', 'Guerreiro', 'Ladino', 'Serafim', 'Druida', 'Patrulheiro'];
 
 let classeSelectionState = {
     profissaoAtualSelecionada: null,
-    indiceClasseAtual: 0,
-    indicePaginaAtual: 0,
+    indiceClasseAtual: 0,           // Índice da profissão atual (0-8)
+    indicePaginaAtual: 0,            // Índice da página/imagem dentro da profissão
     totalClasses: 9,
-    cartasAtualProfissao: [],
+    imagensAtualProfissao: [],       // Array de nomes de imagens para a profissão atual
     paginasCarregadas: {}
 };
 
@@ -48,148 +48,137 @@ window.inicializarSelecaoClasse = function() {
     classeSelectionState.indiceClasseAtual = 0;
     classeSelectionState.indicePaginaAtual = 0;
 
-    // Abrir modal
-    modal.classList.add('ativo');
-    
-    // Mostrar primeira classe
+    // Adicionar event listeners
+    document.addEventListener('keydown', window.tratarTeclasSelecaoClasse);
+
+    // Inicializar carrossel
     window.atualizarCarrosselClasse();
+    
+    // Mostrar modal
+    modal.classList.add('ativo');
 };
 
-// Atualizar display do carrossel com a classe atual
+// Função central de atualização do carrossel
 window.atualizarCarrosselClasse = function() {
-    const nomesProfissoes = Object.keys(profissaoPrincipal);
-    const profissaoAtual = nomesProfissoes[classeSelectionState.indiceClasseAtual];
+    const profissaoAtual = listaProfissoes[classeSelectionState.indiceClasseAtual];
     
-    // Carregar cartas da profissão atual
-    carregarCartasProfissao(profissaoAtual);
+    // Carregar imagens da profissão atual
+    classeSelectionState.imagensAtualProfissao = classesImagensPorProfissao[profissaoAtual];
     
-    // Atualizar info
-    const info = document.querySelector('.slide-info-title');
-    const subtitle = document.querySelector('.slide-info-subtitle');
-    if (info) info.textContent = profissaoAtual.toUpperCase();
-    if (subtitle) subtitle.textContent = `${classeSelectionState.indicePaginaAtual + 1} de ${classeSelectionState.cartasAtualProfissao.length}`;
+    // Atualizar informações
+    window.atualizarInfoClasse();
     
-    // Atualizar imagem e botão
+    // Atualizar imagem
     window.atualizarImagemClasse();
     
-    // Atualizar indicadores de classe
+    // Atualizar indicadores (dots)
     window.atualizarIndicadoresClasse();
 };
 
-// Carregar cartas da profissão (Fundamental, Especialização, Maestria)
-function carregarCartasProfissao(profissao) {
-    classeSelectionState.cartasAtualProfissao = [];
+// Atualizar informações do carrossel
+window.atualizarInfoClasse = function() {
+    const profissaoAtual = listaProfissoes[classeSelectionState.indiceClasseAtual];
+    const totalPaginas = classeSelectionState.imagensAtualProfissao.length;
     
-    const nomesCartas = profissaoParaCartas[profissao];
-    const listaCartas = Array.isArray(nomesCartas) ? nomesCartas : [nomesCartas];
+    const titulo = document.querySelector('.slide-info-title');
+    const subtitulo = document.querySelector('.slide-info-subtitle');
     
-    // Para cada nome de carta, adicionar os 3 tipos
-    listaCartas.forEach(nomeCarta => {
-        tiposCartas.forEach(tipo => {
-            classeSelectionState.cartasAtualProfissao.push({
-                nome: `${tipo} - ${nomeCarta}`,
-                tipo: tipo,
-                profissao: profissao
-            });
-        });
-    });
+    if (titulo) {
+        titulo.textContent = profissaoAtual.toUpperCase();
+    }
+    
+    if (subtitulo) {
+        subtitulo.textContent = `${classeSelectionState.indicePaginaAtual + 1} de ${totalPaginas}`;
+    }
+};
 
-    // Se só tem um nome de carta, mostra as 3 em sequência
-    // Se tem múltiplos, agrupa e mostra lado a lado
-    
-    console.log(`Cartas para ${profissao}:`, classeSelectionState.cartasAtualProfissao);
-}
-
-// Atualizar imagem da carta atual
+// Atualizar imagem do carrossel
 window.atualizarImagemClasse = function() {
-    const cartaAtual = classeSelectionState.cartasAtualProfissao[classeSelectionState.indicePaginaAtual];
-    if (!cartaAtual) return;
+    const profissaoAtual = listaProfissoes[classeSelectionState.indiceClasseAtual];
+    const imagemAtual = classeSelectionState.imagensAtualProfissao[classeSelectionState.indicePaginaAtual];
+    
+    if (!imagemAtual) return;
 
-    const caminhoImagem = `img/cartas/Classes/${cartaAtual.nome}.jpg`;
+    const caminhoImagem = `img/classes-pdf/${imagemAtual}.jpg`;
     const imgElement = document.querySelector('.slide-imagem-classe');
     
     if (imgElement) {
         imgElement.src = caminhoImagem;
-        imgElement.alt = cartaAtual.nome;
+        imgElement.alt = `${profissaoAtual} - ${imagemAtual}`;
     }
 
-    // Atualizar cor do botão
+    // Atualizar cor do botão de confirmação
     const btnConfirmar = document.querySelector('.btn-confirmar-classe');
     if (btnConfirmar) {
-        const profissao = classeSelectionState.cartasAtualProfissao[classeSelectionState.indicePaginaAtual].profissao;
-        btnConfirmar.style.backgroundColor = profissaoPrincipal[profissao].cor;
-        btnConfirmar.style.color = profissao === 'Serafim' ? '#000' : '#fff';
+        btnConfirmar.style.backgroundColor = profissaoPrincipal[profissaoAtual].cor;
+        btnConfirmar.style.color = profissaoAtual === 'Serafim' ? '#000' : '#fff';
     }
 };
 
-// Próxima página da profissão atual
+// Próxima página (próxima imagem da mesma profissão)
 window.proximaPaginaClasse = function() {
-    const maxPaginas = classeSelectionState.cartasAtualProfissao.length;
-    classeSelectionState.indicePaginaAtual = (classeSelectionState.indicePaginaAtual + 1) % maxPaginas;
-    window.atualizarImagemClasse();
-    window.atualizarSubtitulo();
+    const totalPaginas = classeSelectionState.imagensAtualProfissao.length;
+    classeSelectionState.indicePaginaAtual = (classeSelectionState.indicePaginaAtual + 1) % totalPaginas;
+    window.atualizarCarrosselClasse();
 };
 
-// Página anterior da profissão atual
+// Página anterior (imagem anterior da mesma profissão)
 window.paginaAnteriorClasse = function() {
-    const maxPaginas = classeSelectionState.cartasAtualProfissao.length;
-    classeSelectionState.indicePaginaAtual = (classeSelectionState.indicePaginaAtual - 1 + maxPaginas) % maxPaginas;
-    window.atualizarImagemClasse();
-    window.atualizarSubtitulo();
+    const totalPaginas = classeSelectionState.imagensAtualProfissao.length;
+    classeSelectionState.indicePaginaAtual = (classeSelectionState.indicePaginaAtual - 1 + totalPaginas) % totalPaginas;
+    window.atualizarCarrosselClasse();
 };
 
-// Atualizar subtitle
-window.atualizarSubtitulo = function() {
-    const subtitle = document.querySelector('.slide-info-subtitle');
-    if (subtitle) subtitle.textContent = `${classeSelectionState.indicePaginaAtual + 1} de ${classeSelectionState.cartasAtualProfissao.length}`;
-};
-
-// Próxima classe
+// Próxima classe (próxima profissão)
 window.proximaClasse = function() {
     classeSelectionState.indiceClasseAtual = (classeSelectionState.indiceClasseAtual + 1) % classeSelectionState.totalClasses;
-    classeSelectionState.indicePaginaAtual = 0;
+    classeSelectionState.indicePaginaAtual = 0; // Resetar página ao trocar profissão
     window.atualizarCarrosselClasse();
 };
 
-// Classe anterior
+// Classe anterior (profissão anterior)
 window.classeAnterior = function() {
     classeSelectionState.indiceClasseAtual = (classeSelectionState.indiceClasseAtual - 1 + classeSelectionState.totalClasses) % classeSelectionState.totalClasses;
-    classeSelectionState.indicePaginaAtual = 0;
+    classeSelectionState.indicePaginaAtual = 0; // Resetar página ao trocar profissão
     window.atualizarCarrosselClasse();
 };
 
-// Ir para classe específica
+// Ir para uma classe específica
 window.irParaClasse = function(indice) {
-    classeSelectionState.indiceClasseAtual = indice;
-    classeSelectionState.indicePaginaAtual = 0;
-    window.atualizarCarrosselClasse();
+    if (indice >= 0 && indice < classeSelectionState.totalClasses) {
+        classeSelectionState.indiceClasseAtual = indice;
+        classeSelectionState.indicePaginaAtual = 0;
+        window.atualizarCarrosselClasse();
+    }
 };
 
-// Atualizar indicadores (dots) de classe
+// Atualizar indicadores (dots)
 window.atualizarIndicadoresClasse = function() {
-    const indicadoresContainer = document.querySelector('.carousel-indicators');
-    if (!indicadoresContainer) return;
+    const container = document.querySelector('.carousel-indicators');
+    if (!container) return;
 
-    indicadoresContainer.innerHTML = '';
+    // Limpar indicadores existentes
+    container.innerHTML = '';
+
+    // Criar novo dot para cada profissão
     for (let i = 0; i < classeSelectionState.totalClasses; i++) {
         const dot = document.createElement('div');
-        dot.className = `indicator-dot ${i === classeSelectionState.indiceClasseAtual ? 'ativo' : ''}`;
-        dot.onclick = () => window.irParaClasse(i);
-        indicadoresContainer.appendChild(dot);
+        dot.className = 'indicator-dot';
+        if (i === classeSelectionState.indiceClasseAtual) {
+            dot.classList.add('ativo');
+        }
+        dot.addEventListener('click', () => window.irParaClasse(i));
+        container.appendChild(dot);
     }
 };
 
 // Confirmar seleção de classe
 window.confirmarSelecaoClasse = function() {
-    const nomesProfissoes = Object.keys(profissaoPrincipal);
-    const profissao = nomesProfissoes[classeSelectionState.indiceClasseAtual];
+    const profissaoSelecionada = listaProfissoes[classeSelectionState.indiceClasseAtual];
     
-    console.log(`Classe confirmada: ${profissao}`);
-    
-    classeSelectionState.profissaoAtualSelecionada = profissao;
-    
-    // Salvar no localStorage
-    localStorage.setItem('profissaoSelecionada', profissao);
+    // Salvar profissão selecionada
+    classeSelectionState.profissaoAtualSelecionada = profissaoSelecionada;
+    localStorage.setItem('profissaoSelecionada', profissaoSelecionada);
     
     // Fechar modal
     const modal = document.getElementById('classe-selection-modal');
@@ -197,23 +186,64 @@ window.confirmarSelecaoClasse = function() {
         modal.classList.remove('ativo');
     }
 
-    // Ativar aura da profissão
-    if (typeof window.ativarProfissao === 'function') {
-        window.ativarProfissao(profissao);
+    // Ativar profissão (effects, aura, etc)
+    if (window.ativarProfissao) {
+        window.ativarProfissao(profissaoSelecionada);
     }
 
-    // Renderizar board com profissão selecionada
-    if (typeof window.renderizar === 'function') {
+    // Renderizar tabuleiro principal
+    if (window.renderizar) {
         window.renderizar();
+    }
+
+    // Remover listener de teclado
+    document.removeEventListener('keydown', window.tratarTeclasSelecaoClasse);
+};
+
+// Tratar teclas no carrossel
+window.tratarTeclasSelecaoClasse = function(evento) {
+    const modal = document.getElementById('classe-selection-modal');
+    if (!modal || !modal.classList.contains('ativo')) {
+        return;
+    }
+
+    switch(evento.key) {
+        case 'ArrowLeft':
+            evento.preventDefault();
+            window.paginaAnteriorClasse();
+            break;
+        case 'ArrowRight':
+            evento.preventDefault();
+            window.proximaPaginaClasse();
+            break;
+        case 'ArrowUp':
+            evento.preventDefault();
+            window.classeAnterior();
+            break;
+        case 'ArrowDown':
+            evento.preventDefault();
+            window.proximaClasse();
+            break;
+        case 'Enter':
+            evento.preventDefault();
+            window.confirmarSelecaoClasse();
+            break;
+        case 'Escape':
+            evento.preventDefault();
+            if (modal) {
+                modal.classList.remove('ativo');
+            }
+            document.removeEventListener('keydown', window.tratarTeclasSelecaoClasse);
+            break;
     }
 };
 
-// Fechar modal de seleção
-window.fecharSelecaoClasse = function() {
-    const modal = document.getElementById('classe-selection-modal');
-    if (modal) {
-        modal.classList.remove('ativo');
-    }
+// Resetar seleção de classe
+window.resetarSelecaoClasse = function() {
+    classeSelectionState.profissaoAtualSelecionada = null;
+    classeSelectionState.indiceClasseAtual = 0;
+    classeSelectionState.indicePaginaAtual = 0;
+    localStorage.removeItem('profissaoSelecionada');
 };
 
 // Obter profissão selecionada
@@ -225,41 +255,3 @@ window.obterProfissaoSelecionada = function() {
 window.obterCorProfissao = function(profissao) {
     return profissaoPrincipal[profissao]?.cor || null;
 };
-
-// Resetar seleção de classe (para logout)
-window.resetarSelecaoClasse = function() {
-    classeSelectionState.profissaoAtualSelecionada = null;
-    classeSelectionState.indiceClasseAtual = 0;
-    classeSelectionState.indicePaginaAtual = 0;
-    localStorage.removeItem('profissaoSelecionada');
-};
-
-// Suporte a teclado (setas)
-document.addEventListener('keydown', function(event) {
-    const modal = document.getElementById('classe-selection-modal');
-    if (!modal || !modal.classList.contains('ativo')) return;
-
-    if (event.key === 'ArrowLeft') {
-        // Esquerda = página anterior ou classe anterior
-        if (classeSelectionState.indicePaginaAtual > 0) {
-            window.paginaAnteriorClasse();
-        } else {
-            window.classeAnterior();
-        }
-    } else if (event.key === 'ArrowRight') {
-        // Direita = próxima página ou próxima classe
-        if (classeSelectionState.indicePaginaAtual < classeSelectionState.cartasAtualProfissao.length - 1) {
-            window.proximaPaginaClasse();
-        } else {
-            window.proximaClasse();
-        }
-    } else if (event.key === 'ArrowUp') {
-        window.classeAnterior();
-    } else if (event.key === 'ArrowDown') {
-        window.proximaClasse();
-    } else if (event.key === 'Enter') {
-        window.confirmarSelecaoClasse();
-    } else if (event.key === 'Escape') {
-        window.fecharSelecaoClasse();
-    }
-});
