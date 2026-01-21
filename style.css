@@ -1125,8 +1125,8 @@ button {
 }
 
 .mini-carta {
-    width: 50px;
-    height: 75px;
+    width: 60px;
+    height: 90px;
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -1138,7 +1138,7 @@ button {
     position: relative;
 }
 .mini-carta:hover {
-    transform: scale(4);
+    transform: scale(4.5);
     z-index: 100;
     border-color: gold;
     box-shadow: 0 0 20px #000;

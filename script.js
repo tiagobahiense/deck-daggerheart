@@ -539,9 +539,21 @@ function salvarUsoDeCartaNaNuvem() {
     // Toca o som de uso de carta
     const soundUseCard = document.getElementById('use-card-sound');
     if (soundUseCard) {
-        soundUseCard.volume = 0.4;
-        soundUseCard.currentTime = 0; // Reinicia o áudio
-        soundUseCard.play().catch(err => console.warn('Não foi possível tocar o som:', err));
+        try {
+            soundUseCard.volume = 0.35;
+            soundUseCard.currentTime = 0;
+            const playPromise = soundUseCard.play();
+            
+            if (playPromise !== undefined) {
+                playPromise
+                    .then(() => console.log('🔊 Som de uso da carta tocando'))
+                    .catch(err => console.warn('❌ Erro ao tocar som:', err.message));
+            }
+        } catch (e) {
+            console.error('❌ Erro ao tentar tocar som:', e);
+        }
+    } else {
+        console.warn('⚠️ Elemento de áudio não encontrado!');
     }
     
     // Registra o uso da carta no Firebase
