@@ -28,11 +28,15 @@ setPersistence(auth, browserSessionPersistence)
     .catch((error) => console.error("Erro ao definir persistência:", error));
 // =======================================================
 
-// Expor db, ref, set globalmente para selecao-classe.js
+// Expor db, ref, set globalmente para selecao-classe.js e ficha.js
 window.db = db;
 window.ref = ref;
 window.set = set;
 window.get = get;
+// --- ADIÇÃO CRÍTICA PARA FICHA ---
+window.remove = remove;
+window.onValue = onValue;
+// ---------------------------------
 
 // Configuração global
 const EMAIL_MESTRE = "tgbahiense@gmail.com";
@@ -385,9 +389,7 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
     modal.style.display = 'flex';
 };
 
-// === CORREÇÃO IMPORTANTE AQUI: NOVA FUNÇÃO renderizarSlots ===
-// Essa função desenha as imagens nos slots (Ancestralidade, Classe, etc)
-// Sem ela, o "vigia" do profissao.js não acha a imagem e desliga a aura.
+// === FUNÇÃO DE RENDERIZAR SLOTS (IMPORTANTE) ===
 function renderizarSlots() {
     if (!slotsFixos) return;
 
@@ -587,7 +589,7 @@ function renderizar() {
 // Expor renderizar globalmente para ser usada por outros scripts
 window.renderizar = renderizar;
 
-// Função para carregar lista de personagens (CORRIGIDA PARA ASPAS NO NOME)
+// Função para carregar lista de personagens
 async function carregarListaPersonagens() {
     if (!currentUser) return;
     
@@ -608,8 +610,7 @@ async function carregarListaPersonagens() {
             let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
             
             for (const charName of characters) {
-                // TRATAMENTO DE ASPAS NO NOME
-                // Substitui ' por \' para não quebrar o HTML do onclick
+                // TRATAMENTO DE ASPAS NO NOME (Para nomes como Joana D'Arc)
                 const safeName = charName.replace(/'/g, "\\'");
 
                 // Buscar classe do personagem
