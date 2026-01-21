@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="style.css?v=10.1">
     <link rel="stylesheet" href="profissao.css?v=1.0">
     <link rel="stylesheet" href="selecao-classe.css?v=3.0">
+    <link rel="stylesheet" href="ficha.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -131,6 +132,24 @@
         </div>
     </div>
 
+    <div id="sheet-modal" class="modal">
+        <div class="sheet-content">
+            <div class="sheet-container" id="sheet-container">
+                <img id="sheet-bg" src="" alt="Ficha">
+                <div id="sheet-inputs-layer"></div>
+            </div>
+            
+            <div class="sheet-footer">
+                <button class="btn-sheet-nav" onclick="mudarPaginaFicha(-1)">❮ Anterior</button>
+                <span id="sheet-page-indicator" style="color: #fff;">Página 1</span>
+                <button class="btn-sheet-nav" onclick="mudarPaginaFicha(1)">Próxima ❯</button>
+                
+                <button class="btn-mapear" onclick="ativarModoMapeamento()">🛠️ Mapear</button>
+                <button class="close-btn" onclick="fecharFicha()" style="margin-left: 10px;">Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="hover-preview" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 525px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(255, 215, 0, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
     <div id="hover-preview-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 525px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
     <div id="hover-preview-slot" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 600px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
@@ -194,7 +213,13 @@
                 <div id="cartas-reserva"></div>
             </section>
         </div> 
-        <footer id="mao-area"><div id="cartas-mao"></div></footer>
+        <footer id="mao-area">
+            <div id="cartas-mao"></div>
+            
+            <button onclick="window.abrirFichaPersonagem()" style="position: absolute; bottom: 20px; right: 20px; z-index: 200; padding: 10px 20px; background: var(--gold); border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-family: 'MedievalSharp', cursive; font-size: 1rem; box-shadow: 0 0 10px rgba(0,0,0,0.5);">
+                📝 Ficha
+            </button>
+        </footer>
         
         <div id="carta-tabuleiro-animada" class="carta-tabuleiro-animada"></div>
     </div>
@@ -254,8 +279,9 @@
         </div>
     </div>
 
-    <script type="module" src="script.js?v=10.0"></script>
+    <script type="module" src="script.js?v=10.2"></script>
     <script src="profissao.js?v=1.0"></script>
     <script src="selecao-classe.js?v=3.0"></script>
+    <script src="ficha.js?v=1.0"></script>
 </body>
 </html>

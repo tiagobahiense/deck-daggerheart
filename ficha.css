@@ -1,0 +1,151 @@
+/* =========================================================
+   ESTILOS DA FICHA DE PERSONAGEM
+   ========================================================= */
+
+/* Modal Fundo Escuro */
+#sheet-modal {
+    display: none; /* Controlado via JS */
+    z-index: 8000; /* Acima de tudo */
+    background: rgba(0, 0, 0, 0.95);
+    align-items: center;
+    justify-content: center;
+}
+
+/* Moldura da Ficha */
+.sheet-content {
+    width: 95vh; 
+    aspect-ratio: 1 / 1.414; /* Proporção papel A4 */
+    max-width: 900px;
+    height: 90vh;
+    background: #111;
+    border: 3px solid var(--gold);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+}
+
+/* Container da Imagem + Inputs */
+.sheet-container {
+    position: relative;
+    width: 100%;
+    flex-grow: 1;
+    overflow: hidden;
+    background: #fff; /* Fundo branco caso a imagem demore */
+}
+
+/* Imagem de Fundo (A Ficha em si) */
+#sheet-bg {
+    width: 100%;
+    height: 100%;
+    object-fit: fill; /* Força preencher o espaço exato */
+    pointer-events: none; /* Permite clicar nos inputs por cima */
+    user-select: none;
+}
+
+/* Camada onde ficam os campos de texto */
+#sheet-inputs-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* --- ESTILOS DOS CAMPOS --- */
+
+/* Campo de Texto (Input) */
+.ficha-input {
+    position: absolute;
+    background: transparent;
+    border: none;
+    color: #000; /* Texto preto (tinta) */
+    font-family: 'Courier New', monospace; /* Estilo máquina de escrever */
+    font-weight: bold;
+    font-size: 1.8vh; /* Tamanho responsivo */
+    padding: 0 5px;
+    resize: none;
+    overflow: hidden;
+    line-height: 1.2;
+    z-index: 10;
+}
+
+.ficha-input:focus {
+    background: rgba(255, 255, 0, 0.2); /* Marca-texto amarelo ao editar */
+    outline: 1px dashed blue;
+}
+
+/* Campo Checkbox (Bolinhas/Quadrados) */
+.ficha-check {
+    position: absolute;
+    cursor: pointer;
+    z-index: 10;
+}
+
+.ficha-check:hover {
+    background: rgba(255, 0, 0, 0.1);
+}
+
+/* Quando marcado */
+.ficha-check.marcado {
+    background-color: #000; /* Preenchimento preto */
+    border-radius: 50%; /* Bolinha */
+    box-shadow: 0 0 2px #fff;
+}
+
+/* Estilo X (para quadrados) */
+.ficha-check.tipo-x.marcado {
+    background-color: transparent;
+    border-radius: 0;
+}
+.ficha-check.tipo-x.marcado::after {
+    content: "✖";
+    color: red;
+    font-size: 1.5vh;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: bold;
+}
+
+/* Rodapé com Navegação */
+.sheet-footer {
+    height: 60px;
+    background: #222;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-top: 2px solid var(--gold);
+}
+
+.btn-sheet-nav {
+    background: #444;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    padding: 8px 15px;
+    cursor: pointer;
+    font-family: 'MedievalSharp', cursive;
+    border-radius: 5px;
+}
+.btn-sheet-nav:hover { background: #555; }
+
+/* Botão Mapear (Construtor) */
+.btn-mapear {
+    background: #8b0000;
+    color: #fff;
+    border: 1px solid red;
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    margin-left: auto;
+}
+.btn-mapear.ativo {
+    background: #00ff00;
+    color: #000;
+    border-color: #000;
+    animation: piscar 1s infinite;
+}
+
+@keyframes piscar { 50% { opacity: 0.5; } }
