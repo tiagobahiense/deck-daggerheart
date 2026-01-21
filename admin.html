@@ -218,7 +218,16 @@
         setPersistence(auth, browserSessionPersistence)
             .then(() => {
                 console.log("Persistência de autenticação configurada com sucesso.");
+                // Flag para evitar múltiplas verificações durante criação de usuário
+                let isCreatingUser = false;
+                
                 onAuthStateChanged(auth, user => {
+                    // Ignora mudanças durante a criação de usuário (previne falsos positivos)
+                    if (isCreatingUser) {
+                        console.log("⏳ Mudança de auth ignorada (criação de usuário em progresso)");
+                        return;
+                    }
+                    
                     const deniedScreen = document.getElementById('access-denied-screen');
                     const debugText = document.getElementById('debug-text');
                     const adminContainer = document.getElementById('admin-container');
@@ -268,11 +277,22 @@
             });
         }
 
+        // Variável para guardar o estado do mestre antes de criar usuário
+        let mestreSessionBackup = null;
+
         window.criarUsuario = function() {
             const email = document.getElementById('new-user-email').value;
             const pass = document.getElementById('new-user-pass').value;
 
             if(!email || !pass) return alert("Preencha tudo");
+
+            // Guarda o estado atual do mestre ANTES de criar
+            const currentUser = auth.currentUser;
+            if (!currentUser || currentUser.email !== EMAIL_MESTRE) {
+                alert("⚠️ Você não está logado como mestre!");
+                return;
+            }
+            mestreSessionBackup = { email: currentUser.email, uid: currentUser.uid };
 
             // Verifica se o e-mail já existe no Realtime Database como inativo
             get(ref(db, 'mesa_rpg/accounts_inactive')).then(snapshot => {
@@ -303,6 +323,9 @@
                                 }
                             }
 
+                            // Marca que estamos criando usuário (evita falsos positivos no onAuthStateChanged)
+                            isCreatingUser = true;
+                            
                             // IMPORTANTE: Usa secondaryAuth para criar usuário, NÃO o auth principal do mestre
                             // Isso evita que a sessão do mestre seja derrubada
                             createUserWithEmailAndPassword(secondaryAuth, email, pass)
@@ -314,29 +337,57 @@
                                     characters: {},
                                     status: 'active'
                                 }).then(() => {
-                                    // Faz logout do secondaryAuth para limpar a sessão temporária
-                                    // Isso não afeta o auth principal do mestre
+                                    // Faz logout do secondaryAuth imediatamente
                                     return signOut(secondaryAuth).catch(() => {});
                                 }).then(() => {
-                                    alert("✅ Usuário criado: " + email);
-                                    document.getElementById('new-user-email').value = "";
-                                    document.getElementById('new-user-pass').value = "";
-                                    carregarUsuarios();
+                                    // Desmarca flag após um pequeno delay para permitir que onAuthStateChanged se estabilize
+                                    setTimeout(() => {
+                                        isCreatingUser = false;
+                                        
+                                        // Verifica se o auth principal ainda está como mestre
+                                        const currentAuthUser = auth.currentUser;
+                                        if (!currentAuthUser || currentAuthUser.email !== EMAIL_MESTRE) {
+                                            console.warn("⚠️ Sessão do mestre foi afetada! Recarregando página...");
+                                            alert("⚠️ A sessão foi afetada. A página será recarregada.\n\nPor favor, faça login novamente como mestre.");
+                                            window.location.reload();
+                                            return;
+                                        }
+                                        
+                                        // Tudo OK, continua normalmente
+                                        alert("✅ Usuário criado: " + email);
+                                        document.getElementById('new-user-email').value = "";
+                                        document.getElementById('new-user-pass').value = "";
+                                        carregarUsuarios();
+                                    }, 500);
                                 });
                             })
                             .catch((error) => {
                                 // Limpa qualquer sessão residual do secondaryAuth
                                 signOut(secondaryAuth).catch(() => {});
                                 
-                                let msg = "Erro ao criar: " + error.message;
-                                if (error.code === 'auth/email-already-in-use') {
-                                    msg = "Este e-mail já está em uso.";
-                                } else if (error.code === 'auth/invalid-email') {
-                                    msg = "E-mail inválido.";
-                                } else if (error.code === 'auth/weak-password') {
-                                    msg = "Senha muito fraca. Use pelo menos 6 caracteres.";
-                                }
-                                alert(msg);
+                                // Desmarca flag
+                                setTimeout(() => {
+                                    isCreatingUser = false;
+                                    
+                                    // Verifica se o auth principal ainda está OK
+                                    const currentAuthUser = auth.currentUser;
+                                    if (!currentAuthUser || currentAuthUser.email !== EMAIL_MESTRE) {
+                                        console.warn("⚠️ Sessão do mestre foi afetada após erro!");
+                                        alert("⚠️ A sessão foi afetada. A página será recarregada.\n\nPor favor, faça login novamente como mestre.");
+                                        window.location.reload();
+                                        return;
+                                    }
+                                    
+                                    let msg = "Erro ao criar: " + error.message;
+                                    if (error.code === 'auth/email-already-in-use') {
+                                        msg = "Este e-mail já está em uso.";
+                                    } else if (error.code === 'auth/invalid-email') {
+                                        msg = "E-mail inválido.";
+                                    } else if (error.code === 'auth/weak-password') {
+                                        msg = "Senha muito fraca. Use pelo menos 6 caracteres.";
+                                    }
+                                    alert(msg);
+                                }, 500);
                             });
                         }).catch((error) => {
                             alert("Erro ao verificar contas: " + error.message);
