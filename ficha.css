@@ -1,18 +1,18 @@
 /* =========================================================
-   ESTILOS DA FICHA - MODO PRANCHETA DIGITAL (CORRIGIDO)
+   ESTILOS DA FICHA - MODO PRANCHETA DIGITAL
    ========================================================= */
 
    #sheet-modal {
     display: none;
     z-index: 8000;
     background: rgba(0, 0, 0, 0.95);
-    align-items: center;
-    justify-content: center;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
+    align-items: center;
+    justify-content: center;
 }
 
 .sheet-content {
@@ -26,17 +26,19 @@
     flex-direction: column;
     position: relative;
     box-shadow: 0 0 50px rgba(0,0,0,0.8);
-    /* REMOVIDO O OVERFLOW: HIDDEN QUE CORTAVA OS BOTÕES */
-    overflow: visible; 
+    
+    /* --- CORREÇÃO PRINCIPAL --- */
+    /* Permite que a barra de ferramentas e o botão X apareçam fora da caixa */
+    overflow: visible !important; 
 }
 
 .sheet-container {
     position: relative;
     width: 100%;
     flex-grow: 1;
-    overflow: hidden; /* AQUI mantemos hidden para a imagem não vazar */
+    overflow: hidden; /* A imagem deve ficar contida aqui */
     background: #fff;
-    cursor: crosshair;
+    cursor: crosshair; /* Cursor de "mira" */
     border-radius: 4px 4px 0 0;
 }
 
@@ -48,7 +50,6 @@
     user-select: none;
 }
 
-/* Camada onde os inputs são desenhados */
 #sheet-inputs-layer {
     position: absolute;
     top: 0;
@@ -57,11 +58,11 @@
     height: 100%;
 }
 
-/* --- BARRA DE FERRAMENTAS FLUTUANTE --- */
+/* --- BARRA DE FERRAMENTAS LATERAL --- */
 .sheet-toolbar {
     position: absolute;
     top: 20px;
-    left: -60px; /* Fica fora da folha, na esquerda */
+    left: -60px; /* Joga para a esquerda, fora da folha */
     width: 50px;
     background: #222;
     border: 2px solid var(--gold);
@@ -69,8 +70,8 @@
     padding: 10px 5px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    z-index: 9005; /* Acima da ficha */
+    gap: 15px;
+    z-index: 9005;
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     align-items: center;
 }
@@ -79,18 +80,18 @@
     background: #444;
     color: #fff;
     border: 1px solid #666;
-    width: 35px;
-    height: 35px;
+    width: 40px;
+    height: 40px;
     border-radius: 5px;
     cursor: pointer;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
-.tool-btn:hover { background: #666; }
+.tool-btn:hover { background: #666; border-color: #fff; }
 
 .tool-btn.active {
     background: var(--gold);
@@ -100,17 +101,17 @@
     transform: scale(1.1);
 }
 
-/* --- NOVO BOTÃO DE FECHAR (NA LATERAL) --- */
+/* --- BOTÃO DE FECHAR (FLUTUANTE) --- */
 .btn-close-sheet {
     position: absolute;
-    top: -2px; /* Alinhado com a borda */
-    right: -50px; /* Joga para a direita fora da ficha */
+    top: -10px;
+    right: -50px; /* Joga para a direita, fora da folha */
     width: 40px;
     height: 40px;
     background: #8b0000;
     color: #fff;
     border: 2px solid #fff;
-    border-radius: 5px;
+    border-radius: 50%;
     font-weight: bold;
     font-size: 1.2rem;
     cursor: pointer;
@@ -118,55 +119,58 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    box-shadow: 0 0 10px rgba(0,0,0,0.8);
+    transition: transform 0.2s;
 }
 
 .btn-close-sheet:hover {
     background: #ff0000;
-    transform: scale(1.1);
+    transform: scale(1.1) rotate(90deg);
 }
 
-/* --- ELEMENTOS DINÂMICOS --- */
+/* --- ELEMENTOS CRIADOS PELO JOGADOR --- */
 
 .user-input-wrapper, .user-marker-wrapper {
     position: absolute;
     z-index: 100;
 }
 
+/* Input de Texto */
 .user-input {
     background: transparent;
     border: 1px solid transparent; 
     color: #000;
     font-family: 'Courier New', monospace;
     font-weight: bold;
-    font-size: 1.6vh;
+    font-size: 1.6vh; /* Tamanho relativo à altura da tela */
     padding: 2px 5px;
     min-width: 30px;
     outline: none;
-    transition: border 0.2s, background 0.2s;
+    transition: background 0.2s;
 }
 
 .user-input:hover, .user-input:focus {
     border: 1px dashed blue;
-    background: rgba(255, 255, 0, 0.2);
+    background: rgba(255, 255, 0, 0.2); /* Marca-texto ao focar */
 }
 
+/* Marcador (Bolinha) */
 .user-marker {
     width: 2.2vh;
     height: 2.2vh;
     background-color: #000;
     border-radius: 50%;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%); /* Centraliza no clique */
     cursor: pointer;
     box-shadow: 0 0 2px #fff;
 }
 
 .user-marker:hover {
-    transform: translate(-50%, -50%) scale(1.2);
     background-color: #333;
+    transform: translate(-50%, -50%) scale(1.2);
 }
 
-/* Botão de Excluir (aparece no hover) */
+/* Botão X para deletar itens (só aparece no hover) */
 .delete-handle {
     position: absolute;
     top: -15px;
@@ -174,9 +178,9 @@
     background: red;
     color: white;
     border-radius: 50%;
-    width: 18px;
-    height: 18px;
-    font-size: 12px;
+    width: 16px;
+    height: 16px;
+    font-size: 10px;
     font-weight: bold;
     cursor: pointer;
     display: none;
@@ -201,6 +205,7 @@
     gap: 20px;
     border-top: 1px solid #444;
     color: #fff;
+    flex-shrink: 0;
 }
 
 .nav-simple-btn {
@@ -214,10 +219,10 @@
 }
 .nav-simple-btn:hover { border-color: var(--gold); color: var(--gold); }
 
-/* Ajuste Responsivo para telas pequenas */
+/* Responsividade para telas menores */
 @media (max-width: 1200px) {
     .sheet-toolbar {
-        top: -60px; /* Move para cima da ficha */
+        top: -60px; /* Move para cima */
         left: 0;
         width: 100%;
         height: 50px;
@@ -229,6 +234,6 @@
         right: 0;
     }
     .sheet-content {
-        margin-top: 60px; /* Dá espaço para a barra */
+        margin-top: 50px;
     }
 }
