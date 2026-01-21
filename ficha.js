@@ -1,8 +1,8 @@
 // =========================================================
-// SISTEMA DE FICHA DE PERSONAGEM + MAPEADOR
+// FICHA DIGITAL - SISTEMA DE PRANCHETA (REALTIME)
 // =========================================================
 
-// Configuração das Imagens (Baseado nos seus arquivos)
+// Configuração das Imagens (Conforme sua lista de arquivos)
 const FICHAS_IMAGENS = {
     'Bardo': ['img/fichas/ficha-bardo01.jpg', 'img/fichas/ficha-bardo02.jpg'],
     'Druida': ['img/fichas/ficha-druida01.jpg', 'img/fichas/ficha-druida02.jpg', 'img/fichas/ficha-druida03.jpg', 'img/fichas/ficha-druida04.jpg'],
@@ -15,156 +15,241 @@ const FICHAS_IMAGENS = {
     'Serafim': ['img/fichas/ficha-serafim01.jpg', 'img/fichas/ficha-serafim02.jpg']
 };
 
-// Configuração dos Campos (AQUI É ONDE VOCÊ VAI COLAR O CÓDIGO GERADO)
-// Por enquanto está vazio. Use a ferramenta para preencher!
-const FICHAS_CAMPOS = {
-    'Guardião': {
-        // Exemplo: 0: [ {id: 'nome', top: 10, left: 20...} ]
-    }
-};
-
+let ferramentaAtual = 'texto'; // 'texto' ou 'marcador'
 let paginaFichaAtual = 0;
 let classeFichaAtual = '';
-let modoMapeamento = false;
+let elementosFicha = {}; // Cache local dos dados
 
-// --- FUNÇÕES PRINCIPAIS ---
+// --- ABRIR E FECHAR ---
 
 window.abrirFichaPersonagem = function() {
-    // Tenta pegar a classe do LocalStorage
+    // 1. Descobre a classe do jogador
     const classe = localStorage.getItem('profissaoSelecionada');
     
     if (!classe || !FICHAS_IMAGENS[classe]) {
-        alert("Erro: Classe não selecionada ou ficha não encontrada.");
+        alert("⚠️ Você precisa selecionar uma classe antes de abrir a ficha.");
         return;
     }
 
     classeFichaAtual = classe;
     paginaFichaAtual = 0;
     
+    // 2. Abre o modal e carrega a imagem
     document.getElementById('sheet-modal').style.display = 'flex';
-    atualizarVisualizacaoFicha();
+    atualizarImagemFicha();
+    
+    // 3. Seleciona ferramenta padrão
+    selecionarFerramenta('texto');
+    
+    // 4. Inicia escuta do Firebase (Carrega dados salvos)
+    carregarElementosDoFirebase();
 };
 
 window.fecharFicha = function() {
     document.getElementById('sheet-modal').style.display = 'none';
-    if(modoMapeamento) window.ativarModoMapeamento(); // Desliga mapeamento ao fechar
 };
+
+// --- NAVEGAÇÃO DE PÁGINAS ---
 
 window.mudarPaginaFicha = function(dir) {
-    const totalPaginas = FICHAS_IMAGENS[classeFichaAtual].length;
+    const total = FICHAS_IMAGENS[classeFichaAtual].length;
     paginaFichaAtual += dir;
     
+    // Loop ou trava nas pontas (optei por travar)
     if(paginaFichaAtual < 0) paginaFichaAtual = 0;
-    if(paginaFichaAtual >= totalPaginas) paginaFichaAtual = totalPaginas - 1;
+    if(paginaFichaAtual >= total) paginaFichaAtual = total - 1;
     
-    atualizarVisualizacaoFicha();
+    atualizarImagemFicha();
+    renderizarElementosNaTela(); // Redesenha apenas os elementos desta página
 };
 
-function atualizarVisualizacaoFicha() {
+function atualizarImagemFicha() {
     const img = document.getElementById('sheet-bg');
     const paginas = FICHAS_IMAGENS[classeFichaAtual];
     
-    // Atualiza Imagem
-    img.src = paginas[paginaFichaAtual];
+    // Preload básico para evitar piscar
+    const tempImg = new Image();
+    tempImg.src = paginas[paginaFichaAtual];
+    tempImg.onload = () => {
+        img.src = paginas[paginaFichaAtual];
+    };
     
-    // Atualiza Contador
     document.getElementById('sheet-page-indicator').innerText = `Página ${paginaFichaAtual + 1} de ${paginas.length}`;
-    
-    // Limpa campos antigos
-    document.getElementById('sheet-inputs-layer').innerHTML = '';
-    
-    // Renderiza campos salvos (Se existirem no futuro)
-    renderizarCamposSalvos();
 }
 
-function renderizarCamposSalvos() {
-    // Lógica futura para carregar campos do FICHAS_CAMPOS
-    // Vamos focar no mapeamento primeiro.
-}
+// --- BARRA DE FERRAMENTAS ---
 
-// ========================================================
-// 🛠️ FERRAMENTA DE MAPEAMENTO (MODO CONSTRUTOR)
-// ========================================================
-
-window.ativarModoMapeamento = function() {
-    modoMapeamento = !modoMapeamento;
-    const container = document.getElementById('sheet-container');
-    const btn = document.querySelector('.btn-mapear');
+window.selecionarFerramenta = function(ferramenta) {
+    ferramentaAtual = ferramenta;
     
-    if (modoMapeamento) {
-        alert(`MODO MAPEAMENTO ATIVADO PARA: ${classeFichaAtual.toUpperCase()}\n\n1. Clique e arraste para criar um campo.\n2. Escolha o tipo (Texto/Check).\n3. Dê um ID único (ex: 'forca', 'vida').\n4. Copie o JSON do Console (F12).`);
-        container.style.cursor = 'crosshair';
-        container.onmousedown = iniciarDesenho;
-        btn.classList.add('ativo');
-        btn.innerText = '🔴 GRAVANDO...';
-    } else {
-        container.style.cursor = 'default';
-        container.onmousedown = null;
-        btn.classList.remove('ativo');
-        btn.innerText = '🛠️ Mapear';
-    }
+    // Atualiza visual dos botões (classe .active)
+    const btns = document.querySelectorAll('.tool-btn');
+    btns.forEach(btn => btn.classList.remove('active'));
+    
+    if(ferramenta === 'texto') btns[0].classList.add('active');
+    if(ferramenta === 'marcador') btns[1].classList.add('active');
 };
 
-let startX, startY, tempBox;
+// --- INTERAÇÃO: CRIAR ELEMENTOS (CLIQUE) ---
 
-function iniciarDesenho(e) {
-    if (!modoMapeamento) return;
+window.cliqueNaFicha = function(e) {
+    // Se clicou num input ou marcador existente, não cria outro por cima
+    if(e.target.classList.contains('user-input') || 
+       e.target.classList.contains('delete-handle') || 
+       e.target.classList.contains('user-marker')) return;
+
+    const container = document.getElementById('sheet-container');
+    const rect = container.getBoundingClientRect();
     
-    const rect = e.currentTarget.getBoundingClientRect();
-    startX = e.clientX - rect.left;
-    startY = e.clientY - rect.top;
+    // Calcula posição relativa em % (Crucial para responsividade!)
+    // Se a tela mudar de tamanho, o input continua no lugar certo.
+    const xPct = ((e.clientX - rect.left) / rect.width) * 100;
+    const yPct = ((e.clientY - rect.top) / rect.height) * 100;
     
-    // Cria box visual
-    tempBox = document.createElement('div');
-    tempBox.style.position = 'absolute';
-    tempBox.style.border = '2px solid red';
-    tempBox.style.background = 'rgba(255, 0, 0, 0.3)';
-    tempBox.style.left = startX + 'px';
-    tempBox.style.top = startY + 'px';
-    document.getElementById('sheet-inputs-layer').appendChild(tempBox);
+    const idUnico = 'el_' + Date.now() + Math.floor(Math.random() * 1000);
+
+    const novoElemento = {
+        id: idUnico,
+        tipo: ferramentaAtual,
+        x: xPct,
+        y: yPct,
+        pagina: paginaFichaAtual,
+        valor: ferramentaAtual === 'texto' ? '' : true
+    };
+
+    // Salva imediatamente no Firebase (o listener vai desenhar na tela)
+    salvarElementoNoFirebase(novoElemento);
+};
+
+// --- FIREBASE: SALVAR E CARREGAR ---
+
+function salvarElementoNoFirebase(elemento) {
+    // Usa as globais window.nomeJogador e window.db do script.js
+    if (!window.nomeJogador || !window.db) {
+        console.error("Erro: Jogador não identificado ou DB desconectado.");
+        return;
+    }
     
-    document.onmousemove = (ev) => redimensionar(ev, rect);
-    document.onmouseup = (ev) => finalizarDesenho(ev, rect);
+    // Caminho: mesa_rpg/jogadores/NOME/ficha/ID
+    const refPath = `mesa_rpg/jogadores/${window.nomeJogador}/ficha/${elemento.id}`;
+    window.set(window.ref(window.db, refPath), elemento);
 }
 
-function redimensionar(e, rect) {
-    if (!tempBox) return;
-    const currentX = e.clientX - rect.left;
-    const currentY = e.clientY - rect.top;
-    tempBox.style.width = (currentX - startX) + 'px';
-    tempBox.style.height = (currentY - startY) + 'px';
+function deletarElementoNoFirebase(id) {
+    if (!window.nomeJogador || !window.db) return;
+    const refPath = `mesa_rpg/jogadores/${window.nomeJogador}/ficha/${id}`;
+    window.remove(window.ref(window.db, refPath));
 }
 
-function finalizarDesenho(e, rect) {
-    document.onmousemove = null;
-    document.onmouseup = null;
-    if (!tempBox) return;
+function carregarElementosDoFirebase() {
+    if (!window.nomeJogador || !window.db) return;
+
+    const refPath = `mesa_rpg/jogadores/${window.nomeJogador}/ficha`;
     
-    // Calcula porcentagens (Responsividade)
-    const wPct = (parseFloat(tempBox.style.width) / rect.width) * 100;
-    const hPct = (parseFloat(tempBox.style.height) / rect.height) * 100;
-    const xPct = (startX / rect.width) * 100;
-    const yPct = (startY / rect.height) * 100;
-    
-    const tipo = prompt("Tipo do campo:\n1 para TEXTO (Nome, Atributos)\n2 para CHECKBOX (Bolinhas, Quadrados)");
-    if (!tipo) { tempBox.remove(); return; }
-    
-    const idCampo = prompt("ID do campo (ex: forca, pericia_fuga, vida_max):");
-    if (!idCampo) { tempBox.remove(); return; }
-    
-    const tipoStr = tipo === '1' ? 'texto' : 'check';
-    
-    // GERA O CÓDIGO NO CONSOLE
-    const codigoJSON = `{ id: '${idCampo}', tipo: '${tipoStr}', top: ${yPct.toFixed(2)}, left: ${xPct.toFixed(2)}, width: ${wPct.toFixed(2)}, height: ${hPct.toFixed(2)} },`;
-    
-    console.log(`%c COPIE A LINHA ABAIXO PARA A PÁGINA ${paginaFichaAtual} DE ${classeFichaAtual}:`, 'color: yellow; font-size: 14px;');
-    console.log(codigoJSON);
-    
-    // Deixa verde para confirmar
-    tempBox.style.border = '2px solid #00ff00';
-    tempBox.style.background = 'rgba(0, 255, 0, 0.3)';
-    tempBox.innerText = idCampo;
-    tempBox.style.fontSize = '10px';
-    tempBox.style.color = '#000';
-    tempBox = null;
+    // Ouve mudanças em tempo real (qualquer alteração no banco reflete aqui)
+    window.onValue(window.ref(window.db, refPath), (snapshot) => {
+        if (snapshot.exists()) {
+            elementosFicha = snapshot.val();
+        } else {
+            elementosFicha = {};
+        }
+        renderizarElementosNaTela();
+    });
 }
+
+// --- RENDERIZAÇÃO (DESENHAR NA TELA) ---
+
+function renderizarElementosNaTela() {
+    const layer = document.getElementById('sheet-inputs-layer');
+    layer.innerHTML = ''; // Limpa tela para redesenhar
+
+    Object.values(elementosFicha).forEach(el => {
+        // Só desenha se o elemento pertencer à página atual
+        if (el.pagina !== paginaFichaAtual) return;
+
+        if (el.tipo === 'texto') {
+            criarVisualTexto(el, layer);
+        } else if (el.tipo === 'marcador') {
+            criarVisualMarcador(el, layer);
+        }
+    });
+}
+
+function criarVisualTexto(dados, container) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'user-input-wrapper';
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = dados.x + '%';
+    wrapper.style.top = dados.y + '%';
+
+    // Campo de texto
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'user-input';
+    input.value = dados.valor;
+    input.placeholder = "Digitar...";
+    
+    // Foca automaticamente se acabou de criar (estiver vazio)
+    if(dados.valor === '') {
+        setTimeout(() => input.focus(), 50);
+    }
+    
+    // Salva ao digitar (Debounce para não sobrecarregar o banco)
+    let timeout;
+    input.oninput = (e) => {
+        // Atualiza cache local visualmente
+        dados.valor = e.target.value;
+        
+        clearTimeout(timeout);
+        timeout = setTimeout(() => {
+            salvarElementoNoFirebase(dados);
+        }, 500); // Salva 0.5s depois de parar de digitar
+    };
+
+    // Botão X para deletar
+    const delBtn = document.createElement('div');
+    delBtn.className = 'delete-handle';
+    delBtn.innerText = 'x';
+    delBtn.onclick = () => deletarElementoNoFirebase(dados.id);
+
+    wrapper.appendChild(input);
+    wrapper.appendChild(delBtn);
+    container.appendChild(wrapper);
+}
+
+function criarVisualMarcador(dados, container) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'user-marker-wrapper';
+    wrapper.style.position = 'absolute';
+    wrapper.style.left = dados.x + '%';
+    wrapper.style.top = dados.y + '%';
+
+    // Bolinha preta
+    const marker = document.createElement('div');
+    marker.className = 'user-marker';
+    
+    // Botão X para deletar
+    const delBtn = document.createElement('div');
+    delBtn.className = 'delete-handle';
+    delBtn.innerText = 'x';
+    delBtn.style.top = '-15px'; // Um pouco acima da bolinha
+    delBtn.onclick = (e) => {
+        e.stopPropagation(); // Não clica na ficha
+        deletarElementoNoFirebase(dados.id);
+    };
+
+    wrapper.appendChild(marker);
+    wrapper.appendChild(delBtn);
+    container.appendChild(wrapper);
+}
+
+// Limpar tudo da página atual
+window.limparPaginaAtual = function() {
+    if(!confirm("Tem certeza que deseja apagar TUDO desta página?")) return;
+    
+    Object.values(elementosFicha).forEach(el => {
+        if (el.pagina === paginaFichaAtual) {
+            deletarElementoNoFirebase(el.id);
+        }
+    });
+};

@@ -1,50 +1,46 @@
 /* =========================================================
-   ESTILOS DA FICHA DE PERSONAGEM
+   ESTILOS DA FICHA - MODO PRANCHETA DIGITAL
    ========================================================= */
 
-/* Modal Fundo Escuro */
-#sheet-modal {
-    display: none; /* Controlado via JS */
-    z-index: 8000; /* Acima de tudo */
+   #sheet-modal {
+    display: none;
+    z-index: 8000;
     background: rgba(0, 0, 0, 0.95);
     align-items: center;
     justify-content: center;
 }
 
-/* Moldura da Ficha */
 .sheet-content {
-    width: 95vh; 
-    aspect-ratio: 1 / 1.414; /* Proporção papel A4 */
+    width: 95vh;
+    aspect-ratio: 1 / 1.414; /* Proporção A4 */
     max-width: 900px;
     height: 90vh;
-    background: #111;
+    background: #222;
     border: 3px solid var(--gold);
-    border-radius: 10px;
     display: flex;
     flex-direction: column;
     position: relative;
     box-shadow: 0 0 50px rgba(0,0,0,0.8);
 }
 
-/* Container da Imagem + Inputs */
 .sheet-container {
     position: relative;
     width: 100%;
     flex-grow: 1;
     overflow: hidden;
-    background: #fff; /* Fundo branco caso a imagem demore */
+    background: #fff;
+    cursor: crosshair; /* Cursor de "mira" para indicar edição */
 }
 
-/* Imagem de Fundo (A Ficha em si) */
 #sheet-bg {
     width: 100%;
     height: 100%;
-    object-fit: fill; /* Força preencher o espaço exato */
-    pointer-events: none; /* Permite clicar nos inputs por cima */
+    object-fit: fill;
+    pointer-events: none;
     user-select: none;
 }
 
-/* Camada onde ficam os campos de texto */
+/* Camada onde os inputs são desenhados */
 #sheet-inputs-layer {
     position: absolute;
     top: 0;
@@ -53,99 +49,144 @@
     height: 100%;
 }
 
-/* --- ESTILOS DOS CAMPOS --- */
+/* --- BARRA DE FERRAMENTAS FLUTUANTE --- */
+.sheet-toolbar {
+    position: absolute;
+    top: 20px;
+    left: -60px; /* Fica fora da folha, na esquerda */
+    background: #222;
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 9000;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+}
 
-/* Campo de Texto (Input) */
-.ficha-input {
+/* Ajuste para telas pequenas: barra vai para o topo */
+@media (max-width: 1100px) {
+    .sheet-toolbar {
+        top: 10px;
+        left: 10px;
+        flex-direction: row;
+    }
+}
+
+.tool-btn {
+    background: #444;
+    color: #fff;
+    border: 1px solid #666;
+    width: 40px;
+    height: 40px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tool-btn:hover { background: #555; }
+
+.tool-btn.active {
+    background: var(--gold);
+    color: #000;
+    border-color: #fff;
+    box-shadow: 0 0 10px var(--gold);
+    transform: scale(1.1);
+}
+
+/* --- ELEMENTOS DINÂMICOS (CRIADOS PELO JOGADOR) --- */
+
+/* Caixa de Texto */
+.user-input {
     position: absolute;
     background: transparent;
-    border: none;
-    color: #000; /* Texto preto (tinta) */
-    font-family: 'Courier New', monospace; /* Estilo máquina de escrever */
+    border: 1px dashed transparent; /* Invisível até passar o mouse */
+    color: #000;
+    font-family: 'Courier New', monospace; /* Fonte estilo máquina de escrever */
     font-weight: bold;
-    font-size: 1.8vh; /* Tamanho responsivo */
-    padding: 0 5px;
-    resize: none;
-    overflow: hidden;
-    line-height: 1.2;
+    font-size: 1.6vh;
+    padding: 2px 5px;
+    min-width: 30px;
+    outline: none;
     z-index: 10;
+    transition: border 0.2s, background 0.2s;
 }
 
-.ficha-input:focus {
-    background: rgba(255, 255, 0, 0.2); /* Marca-texto amarelo ao editar */
-    outline: 1px dashed blue;
+.user-input:hover, .user-input:focus {
+    border: 1px dashed rgba(0, 0, 255, 0.5);
+    background: rgba(255, 255, 0, 0.15); /* Leve amarelo ao focar */
 }
 
-/* Campo Checkbox (Bolinhas/Quadrados) */
-.ficha-check {
+/* Marcador (Bolinha/X) */
+.user-marker {
     position: absolute;
+    width: 2.2vh;
+    height: 2.2vh;
+    background-color: #000;
+    border-radius: 50%;
+    transform: translate(-50%, -50%); /* Centraliza no clique */
     cursor: pointer;
     z-index: 10;
-}
-
-.ficha-check:hover {
-    background: rgba(255, 0, 0, 0.1);
-}
-
-/* Quando marcado */
-.ficha-check.marcado {
-    background-color: #000; /* Preenchimento preto */
-    border-radius: 50%; /* Bolinha */
     box-shadow: 0 0 2px #fff;
 }
 
-/* Estilo X (para quadrados) */
-.ficha-check.tipo-x.marcado {
-    background-color: transparent;
-    border-radius: 0;
-}
-.ficha-check.tipo-x.marcado::after {
-    content: "✖";
-    color: red;
-    font-size: 1.5vh;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-weight: bold;
+.user-marker:hover {
+    transform: translate(-50%, -50%) scale(1.2);
+    background-color: #333;
 }
 
-/* Rodapé com Navegação */
+/* Botão de Excluir (aparece no hover) */
+.delete-handle {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    display: none; /* Escondido por padrão */
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.user-input-wrapper:hover .delete-handle,
+.user-marker-wrapper:hover .delete-handle {
+    display: flex; /* Aparece ao passar o mouse */
+}
+
+/* Footer Navegação */
 .sheet-footer {
-    height: 60px;
+    height: 50px;
     background: #222;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 20px;
-    border-top: 2px solid var(--gold);
+    justify-content: center;
+    gap: 20px;
+    border-top: 1px solid #444;
+    color: #fff;
 }
 
-.btn-sheet-nav {
-    background: #444;
-    color: var(--gold);
-    border: 1px solid var(--gold);
-    padding: 8px 15px;
+.nav-simple-btn {
+    background: none;
+    border: 1px solid #666;
+    color: #ccc;
+    padding: 5px 15px;
     cursor: pointer;
     font-family: 'MedievalSharp', cursive;
-    border-radius: 5px;
+    border-radius: 4px;
 }
-.btn-sheet-nav:hover { background: #555; }
-
-/* Botão Mapear (Construtor) */
-.btn-mapear {
-    background: #8b0000;
-    color: #fff;
-    border: 1px solid red;
-    font-size: 0.8rem;
-    padding: 5px 10px;
-    margin-left: auto;
+.nav-simple-btn:hover { 
+    border-color: var(--gold); 
+    color: var(--gold); 
 }
-.btn-mapear.ativo {
-    background: #00ff00;
-    color: #000;
-    border-color: #000;
-    animation: piscar 1s infinite;
-}
-
-@keyframes piscar { 50% { opacity: 0.5; } }

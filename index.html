@@ -133,19 +133,31 @@
     </div>
 
     <div id="sheet-modal" class="modal">
+        <div class="sheet-toolbar">
+            <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Ferramenta de Texto (T)">
+                T
+            </button>
+            <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador (Bolinha)">
+                ●
+            </button>
+            <div style="height: 1px; background: #444; margin: 5px 0;"></div>
+            <button class="tool-btn" onclick="limparPaginaAtual()" title="Limpar Página" style="color: #ff6666;">
+                🗑️
+            </button>
+        </div>
+
         <div class="sheet-content">
-            <div class="sheet-container" id="sheet-container">
+            <button class="close-btn" onclick="fecharFicha()" style="position: absolute; top: 10px; right: 10px; z-index: 9999;">X</button>
+            
+            <div class="sheet-container" id="sheet-container" onmousedown="cliqueNaFicha(event)">
                 <img id="sheet-bg" src="" alt="Ficha">
                 <div id="sheet-inputs-layer"></div>
             </div>
             
             <div class="sheet-footer">
-                <button class="btn-sheet-nav" onclick="mudarPaginaFicha(-1)">❮ Anterior</button>
-                <span id="sheet-page-indicator" style="color: #fff;">Página 1</span>
-                <button class="btn-sheet-nav" onclick="mudarPaginaFicha(1)">Próxima ❯</button>
-                
-                <button class="btn-mapear" onclick="ativarModoMapeamento()">🛠️ Mapear</button>
-                <button class="close-btn" onclick="fecharFicha()" style="margin-left: 10px;">Fechar</button>
+                <button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮ Anterior</button>
+                <span id="sheet-page-indicator">Página 1</span>
+                <button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">Próxima ❯</button>
             </div>
         </div>
     </div>
