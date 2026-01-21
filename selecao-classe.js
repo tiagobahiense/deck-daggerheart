@@ -1,8 +1,6 @@
 /**
  * SISTEMA DE SELEÇÃO DE CLASSES - Daggerheart
- * Correções: 
- * 1. Preload de imagens (sem delay na troca)
- * 2. Transição direta para a mesa (sem reload/login)
+ * Versão Otimizada: Preload + Transição Direta + Ativação de Aura (Corrigido)
  */
 
 // CONFIGURAÇÃO DAS CLASSES
@@ -72,7 +70,6 @@ const CLASSES = [
 
 let indiceAtual = 0;
 let paginaPdfAtual = 0;
-// Array para guardar as imagens pré-carregadas na memória
 let imagensPrecarregadas = []; 
 
 // ================================================================
@@ -81,50 +78,41 @@ let imagensPrecarregadas = [];
 window.inicializarSelecaoClasse = function() {
     console.log("⚔️ Inicializando Seleção de Classe...");
     
-    // 1. Esconde telas anteriores
     const loginScreen = document.getElementById('login-screen');
     const appContainer = document.getElementById('app-container');
     
     if (loginScreen) loginScreen.style.display = 'none';
     if (appContainer) appContainer.style.display = 'none';
     
-    // 2. Mostra modal de seleção
     const modal = document.getElementById('classe-selection-modal');
     if (modal) {
         modal.style.display = 'flex';
         modal.classList.add('ativo');
     }
     
-    // 3. PRELOAD: Carrega todas as imagens de perfil agora
     precarregarImagens();
-
-    // 4. Renderiza a primeira classe
     gerarDots();
     atualizarInterfaceClasse();
 
-    // 5. Ativa controles de teclado
     document.addEventListener('keydown', controleTeclado);
 };
 
-// Função mágica para evitar delay no carrossel
 function precarregarImagens() {
-    console.log("🔄 Iniciando preload das imagens de perfil...");
+    console.log("🔄 Precarregando imagens...");
     CLASSES.forEach(cls => {
         const img = new Image();
         img.src = cls.perfil;
-        // Armazena no array global para o Garbage Collector não limpar
         imagensPrecarregadas.push(img);
     });
 }
 
 // ================================================================
-// LÓGICA DO CARROSSEL (PERFIL)
+// LÓGICA DO CARROSSEL
 // ================================================================
 
 window.mudarClasse = function(direcao) {
     indiceAtual += direcao;
     
-    // Loop infinito do carrossel
     if (indiceAtual < 0) {
         indiceAtual = CLASSES.length - 1;
     } else if (indiceAtual >= CLASSES.length) {
@@ -143,21 +131,17 @@ window.irParaClasse = function(index) {
 
 function atualizarInterfaceClasse() {
     const classe = CLASSES[indiceAtual];
-    
     const imgPerfil = document.getElementById('img-classe-perfil');
     const lblNome = document.getElementById('nome-classe-selecao');
     const btnNome = document.getElementById('btn-nome-classe');
     
     if (!imgPerfil) return;
 
-    // 1. Inicia o Fade Out (Desaparece suavemente)
     imgPerfil.style.opacity = 0;
     lblNome.style.opacity = 0;
     if (btnNome) btnNome.style.opacity = 0;
     
-    // 2. Aguarda um pouquinho (150ms) para a animação do CSS acontecer
     setTimeout(() => {
-        // 3. Troca o conteúdo (A imagem já está em cache graças ao preload)
         imgPerfil.src = classe.perfil;
         lblNome.innerText = classe.nome;
         if (btnNome) {
@@ -165,13 +149,11 @@ function atualizarInterfaceClasse() {
             btnNome.style.opacity = 1;
         }
         
-        // Atualiza os pontos de navegação
         document.querySelectorAll('.dot').forEach((d, i) => {
             if (i === indiceAtual) d.classList.add('active');
             else d.classList.remove('active');
         });
         
-        // 4. Inicia o Fade In (Aparece suavemente)
         imgPerfil.style.opacity = 1;
         lblNome.style.opacity = 1;
     }, 150);
@@ -194,7 +176,6 @@ function controleTeclado(e) {
     const modalSelecao = document.getElementById('classe-selection-modal');
     const modalDetalhes = document.getElementById('modal-detalhes-classe');
 
-    // Se estiver lendo o PDF
     if (modalDetalhes && modalDetalhes.style.display === 'flex') {
         if (e.key === 'ArrowLeft') window.mudarPaginaPDF(-1);
         if (e.key === 'ArrowRight') window.mudarPaginaPDF(1);
@@ -203,7 +184,6 @@ function controleTeclado(e) {
         return;
     }
 
-    // Se estiver no carrossel
     if (modalSelecao && modalSelecao.style.display !== 'none') {
         if (e.key === 'ArrowLeft') window.mudarClasse(-1);
         if (e.key === 'ArrowRight') window.mudarClasse(1);
@@ -212,7 +192,7 @@ function controleTeclado(e) {
 }
 
 // ================================================================
-// LÓGICA DE DETALHES (PDF MULTIPAGINA)
+// LÓGICA DE DETALHES (PDF)
 // ================================================================
 
 window.verDetalhesClasse = function() {
@@ -221,10 +201,8 @@ window.verDetalhesClasse = function() {
     
     if (!modalDetalhes) return;
     
-    // Reseta para a primeira página ao abrir
     paginaPdfAtual = 0;
     atualizarImagemPDF();
-    
     modalDetalhes.style.display = 'flex';
 };
 
@@ -254,7 +232,6 @@ function atualizarImagemPDF() {
     
     if (contador) contador.innerText = `Página ${paginaPdfAtual + 1} de ${totalPaginas}`;
     
-    // Esconde botões se não houver páginas anteriores/próximas
     if (btnPrev) btnPrev.style.visibility = paginaPdfAtual === 0 ? 'hidden' : 'visible';
     if (btnNext) btnNext.style.visibility = paginaPdfAtual === totalPaginas - 1 ? 'hidden' : 'visible';
 }
@@ -269,7 +246,7 @@ window.confirmarSelecaoClasseDeDentro = function() {
 };
 
 // ================================================================
-// SALVAMENTO E TRANSIÇÃO DIRETA (A MÁGICA ACONTECE AQUI)
+// SALVAMENTO E TRANSIÇÃO DIRETA
 // ================================================================
 
 window.confirmarSelecaoClasse = async function() {
@@ -279,12 +256,11 @@ window.confirmarSelecaoClasse = async function() {
         return;
     }
     
-    // Remove listener para evitar conflitos de teclas na mesa
     document.removeEventListener('keydown', controleTeclado);
 
     if (window.nomeJogador && window.db) {
         try {
-            // 1. Salvar no Firebase
+            // 1. Salvar no Banco
             const caminho = `mesa_rpg/jogadores/${window.nomeJogador}/slots/Fundamental`;
             const dadosClasse = {
                 categoria: "Classes",
@@ -296,27 +272,28 @@ window.confirmarSelecaoClasse = async function() {
             await window.set(window.ref(window.db, caminho), dadosClasse);
             localStorage.setItem('profissaoSelecionada', classeSelecionada.nome);
             
-            console.log("✅ Classe salva e confirmada. Iniciando transição direta...");
+            console.log("✅ Classe salva. Iniciando jogo...");
 
-            // 2. TRANSIÇÃO DIRETA PARA A MESA (Sem Recarregar)
-            
-            // a) Esconde o modal de seleção
+            // 2. Transição Visual
             const modal = document.getElementById('classe-selection-modal');
             if (modal) {
                 modal.style.display = 'none';
                 modal.classList.remove('ativo');
             }
 
-            // b) Mostra a Mesa de Jogo (App Container)
             const appContainer = document.getElementById('app-container');
             if (appContainer) {
                 appContainer.style.display = 'flex';
-                // Delay minúsculo para permitir a animação CSS de opacity
                 setTimeout(() => appContainer.style.opacity = '1', 50);
             }
 
-            // c) Inicializa as mecânicas do jogo
-            // Chama as funções globais do script.js para conectar ao Firebase em tempo real
+            // 3. ATIVAR EFEITOS DA CLASSE (AURA E COR) -> AQUI ESTÁ A CORREÇÃO!
+            if (typeof window.ativarProfissao === 'function') {
+                console.log(`✨ Ativando aura para: ${classeSelecionada.nome}`);
+                window.ativarProfissao(classeSelecionada.nome);
+            }
+
+            // 4. Inicializar mecânicas do jogo
             if (typeof window.monitorarEstadoEmTempoReal === 'function') {
                 window.monitorarEstadoEmTempoReal();
             }
@@ -324,30 +301,25 @@ window.confirmarSelecaoClasse = async function() {
                 window.renderizar();
             }
             
-            // d) Toca a música e configura o botão de som
+            // 5. Música
             const audio = document.getElementById('bg-music');
             if (audio && audio.paused) {
                 audio.volume = 0.05;
-                // Autoplay pode ser bloqueado, tratamos o erro silenciosamente
-                audio.play().catch(e => console.log("Áudio: Autoplay requer interação prévia."));
-                
+                audio.play().catch(e => console.log("Audio autoplay bloqueado"));
                 const btnMusic = document.getElementById('btn-music');
                 if(btnMusic) btnMusic.innerText = '🔊';
             }
-
-            // Sucesso! Sem reload.
 
         } catch (error) {
             console.error("❌ Erro ao salvar:", error);
             alert("Erro ao salvar: " + error.message);
         }
     } else {
-        alert("Erro crítico de sessão. Tente logar novamente.");
-        window.location.reload(); // Só recarrega em caso de falha crítica
+        alert("Erro de sessão. Tente logar novamente.");
+        window.location.reload();
     }
 };
 
-// Função auxiliar para compatibilidade
 window.obterProfissaoSelecionada = function() {
     return localStorage.getItem('profissaoSelecionada');
 };
