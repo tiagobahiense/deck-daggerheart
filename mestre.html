@@ -33,27 +33,26 @@
 
         #painel {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 5px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 8px;
             height: 85vh;
             overflow-y: auto;
-            overflow-x: visible;
-            padding: 15px 10px 50px 15px;
+            overflow-x: hidden;
+            padding: 12px 12px 50px 12px;
             align-content: start;
+            align-items: start;
         }
 
         .card-jogador {
             background: rgba(0, 0, 0, 0.6);
             border: 1px solid var(--gold);
-            border-radius: 8px;
-            padding: 8px;
-            min-width: 170px;
-            max-width: 220px;
-            max-height: 600px;
-            overflow-y: auto;
+            border-radius: 6px;
+            padding: 5px;
             position: relative;
             z-index: 1;
-            overflow-x: visible;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
         }
 
         .card-jogador:hover {
@@ -63,23 +62,25 @@
         .card-jogador .nome {
             font-weight: bold;
             color: var(--gold);
-            margin-bottom: 5px;
-            font-size: 0.85rem;
+            margin: 0;
+            font-size: 0.75rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .card-jogador .label {
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             color: #999;
-            margin-top: 5px;
-            margin-bottom: 3px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .card-jogador .grid-mini {
             display: flex;
             flex-wrap: wrap;
             gap: 2px;
-            min-height: 25px;
-            overflow: visible;
         }
 
         #controles-mestre {
