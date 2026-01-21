@@ -298,9 +298,10 @@
                                     characters: {},
                                     status: 'active'
                                 });
-                                alert("Usuário criado: " + email);
+                                alert("✅ Usuário criado: " + email);
                                 document.getElementById('new-user-email').value = "";
                                 document.getElementById('new-user-pass').value = "";
+                                carregarUsuarios();
                             })
                             .catch((error) => {
                                 alert("Erro ao criar: " + error.message);
@@ -325,6 +326,9 @@
                     if (data.status === 'inactive') return; // Não mostra contas inativas
 
                     const chars = data.characters ? Object.keys(data.characters) : [];
+                    const charCount = chars.length;
+                    const charLimit = 3;
+                    const isAtLimit = charCount >= charLimit;
 
                     let charHtml = "";
                     chars.forEach(charName => {
@@ -336,17 +340,23 @@
                         `;
                     });
 
+                    let countColor = charCount >= 3 ? '#ff6b6b' : charCount >= 2 ? '#ffa94d' : '#4CAF50';
+
                     const div = document.createElement('div');
                     div.className = 'player-card-admin';
                     div.innerHTML = `
                         <div class="player-email">
                             ${data.email}
-                            <button class="btn-main" onclick="abrirTrocarSenha('${uid}', '${data.email}')">🔐 Trocar Senha</button>
-                            <button class="btn-banir" onclick="removerConta('${uid}', '${data.email}')">💀 Desativar Conta</button>
+                            <div style="margin-top: 8px; font-size: 0.85rem; color: ${countColor}; font-weight: bold;">
+                                📊 Personagens: ${charCount}/${charLimit}
+                            </div>
+                            ${isAtLimit ? `<div style="margin-top: 5px; font-size: 0.75rem; color: #ff6b6b;">⚠️ Limite atingido! Remova um personagem para criar novo.</div>` : ''}
                         </div>
                         <ul class="char-list" style="list-style: none; padding: 0;">
                             ${charHtml || '<li style="font-style:italic">Sem personagens</li>'}
                         </ul>
+                        <button class="btn-main" onclick="abrirTrocarSenha('${uid}', '${data.email}')" style="margin-right: 5px;">🔐 Trocar Senha</button>
+                        <button class="btn-banir" onclick="removerConta('${uid}', '${data.email}')">💀 Desativar Conta</button>
                     `;
                     list.appendChild(div);
                 });

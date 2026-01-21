@@ -436,8 +436,29 @@ window.iniciarExperiencia = async function() {
     nomeJogador = input.value.trim().toUpperCase();
 
     if (currentUser) {
-        await set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
-        await set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
+        try {
+            // Verifica quantos personagens já existem
+            const accountRef = ref(db, `mesa_rpg/accounts/${currentUser.uid}`);
+            const snapshot = await get(accountRef);
+            
+            if (snapshot.exists()) {
+                const accountData = snapshot.val();
+                const existingChars = accountData.characters ? Object.keys(accountData.characters) : [];
+                
+                // Se já tem 3 personagens, impede criação de novo
+                if (existingChars.length >= 3) {
+                    alert("⚠️ LIMITE ATINGIDO!\n\nVocê já possui 3 personagens no máximo permitido.\n\nPeça ao Narrador para deletar um personagem antes de criar outro.");
+                    return;
+                }
+            }
+            
+            // Se passou na validação, cria o personagem
+            await set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/email`), currentUser.email);
+            await set(ref(db, `mesa_rpg/accounts/${currentUser.uid}/characters/${nomeJogador}`), true);
+        } catch (error) {
+            alert("Erro ao verificar limite de personagens: " + error.message);
+            return;
+        }
     }
 
     document.getElementById('login-screen').style.display = 'none';
@@ -536,24 +557,35 @@ function salvarUsoDeCartaNaNuvem() {
     
     console.log(`📤 Salvando uso de carta: ${carta.nome} - ${nomeJogador}`);
     
-    // Toca o som de uso de carta
-    const soundUseCard = document.getElementById('use-card-sound');
-    if (soundUseCard) {
-        try {
+    // Toca o som de uso de carta com melhor tratamento
+    try {
+        const soundUseCard = document.getElementById('use-card-sound');
+        if (soundUseCard) {
             soundUseCard.volume = 0.35;
             soundUseCard.currentTime = 0;
+            
             const playPromise = soundUseCard.play();
             
             if (playPromise !== undefined) {
                 playPromise
-                    .then(() => console.log('🔊 Som de uso da carta tocando'))
-                    .catch(err => console.warn('❌ Erro ao tocar som:', err.message));
+                    .then(() => {
+                        console.log('🔊 Som de uso da carta tocando com sucesso!');
+                    })
+                    .catch(err => {
+                        console.warn('⚠️ Não foi possível tocar o som:', err.name, err.message);
+                        // Autoplay policy restrictive - som foi bloqueado pelo navegador
+                        if (err.name === 'NotAllowedError') {
+                            console.warn('💡 Dica: O navegador bloqueou o som. Interaja com a página primeiro.');
+                        }
+                    });
+            } else {
+                console.log('🔊 play() retornou undefined - som tocando');
             }
-        } catch (e) {
-            console.error('❌ Erro ao tentar tocar som:', e);
+        } else {
+            console.warn('⚠️ Elemento #use-card-sound não encontrado no DOM!');
         }
-    } else {
-        console.warn('⚠️ Elemento de áudio não encontrado!');
+    } catch (e) {
+        console.error('❌ Erro ao tentar tocar som:', e.message);
     }
     
     // Registra o uso da carta no Firebase

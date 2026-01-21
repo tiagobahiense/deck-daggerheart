@@ -33,12 +33,12 @@
 
         #painel {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 5px;
             height: 85vh;
             overflow-y: auto;
             overflow-x: visible;
-            padding: 20px 10px 50px 15px;
+            padding: 15px 10px 50px 15px;
             align-content: start;
         }
 
@@ -46,12 +46,14 @@
             background: rgba(0, 0, 0, 0.6);
             border: 1px solid var(--gold);
             border-radius: 8px;
-            padding: 12px;
-            min-width: 220px;
-            max-width: 280px;
+            padding: 8px;
+            min-width: 170px;
+            max-width: 220px;
+            max-height: 600px;
+            overflow-y: auto;
             position: relative;
             z-index: 1;
-            overflow: visible;
+            overflow-x: visible;
         }
 
         .card-jogador:hover {
@@ -61,22 +63,22 @@
         .card-jogador .nome {
             font-weight: bold;
             color: var(--gold);
-            margin-bottom: 8px;
-            font-size: 0.9rem;
+            margin-bottom: 5px;
+            font-size: 0.85rem;
         }
 
         .card-jogador .label {
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             color: #999;
-            margin-top: 8px;
-            margin-bottom: 5px;
+            margin-top: 5px;
+            margin-bottom: 3px;
         }
 
         .card-jogador .grid-mini {
             display: flex;
             flex-wrap: wrap;
-            gap: 3px;
-            min-height: 30px;
+            gap: 2px;
+            min-height: 25px;
             overflow: visible;
         }
 
