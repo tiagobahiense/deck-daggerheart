@@ -587,7 +587,7 @@ function renderizar() {
 // Expor renderizar globalmente para ser usada por outros scripts
 window.renderizar = renderizar;
 
-// Função para carregar lista de personagens
+// Função para carregar lista de personagens (CORRIGIDA PARA ASPAS NO NOME)
 async function carregarListaPersonagens() {
     if (!currentUser) return;
     
@@ -608,6 +608,10 @@ async function carregarListaPersonagens() {
             let html = '<div style="display: flex; flex-direction: column; gap: 10px;">';
             
             for (const charName of characters) {
+                // TRATAMENTO DE ASPAS NO NOME
+                // Substitui ' por \' para não quebrar o HTML do onclick
+                const safeName = charName.replace(/'/g, "\\'");
+
                 // Buscar classe do personagem
                 const charDataRef = ref(db, `mesa_rpg/jogadores/${charName}/slots/Fundamental`);
                 const charDataSnap = await get(charDataRef);
@@ -618,7 +622,7 @@ async function carregarListaPersonagens() {
                 }
                 
                 html += `
-                    <button type="button" class="btn-personagem" onclick="selecionarPersonagem('${charName}')" style="
+                    <button type="button" class="btn-personagem" onclick="selecionarPersonagem('${safeName}')" style="
                         width: 100%;
                         padding: 15px;
                         background: rgba(212, 175, 55, 0.1);

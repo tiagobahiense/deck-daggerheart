@@ -1,10 +1,11 @@
 /* =========================================================
-   ESTILOS DA FICHA - MODO PRANCHETA DIGITAL
+   ESTILOS DA FICHA - MODO PRANCHETA DIGITAL (CORRIGIDO FINAL)
    ========================================================= */
 
-   #sheet-modal {
+/* Garante que o modal da ficha fique por cima de tudo */
+#sheet-modal {
     display: none;
-    z-index: 8000;
+    z-index: 9999 !important; /* Força ficar no topo */
     background: rgba(0, 0, 0, 0.95);
     position: fixed;
     top: 0;
@@ -15,9 +16,10 @@
     justify-content: center;
 }
 
+/* Caixa principal da ficha */
 .sheet-content {
     width: 95vh;
-    aspect-ratio: 1 / 1.414; /* Proporção A4 */
+    aspect-ratio: 1 / 1.414;
     max-width: 900px;
     height: 90vh;
     background: #222;
@@ -27,18 +29,18 @@
     position: relative;
     box-shadow: 0 0 50px rgba(0,0,0,0.8);
     
-    /* --- CORREÇÃO PRINCIPAL --- */
-    /* Permite que a barra de ferramentas e o botão X apareçam fora da caixa */
+    /* ESSENCIAL: Permite que botões saiam da caixa */
     overflow: visible !important; 
 }
 
+/* Container interno da imagem (esse sim esconde o excesso) */
 .sheet-container {
     position: relative;
     width: 100%;
     flex-grow: 1;
-    overflow: hidden; /* A imagem deve ficar contida aqui */
+    overflow: hidden; 
     background: #fff;
-    cursor: crosshair; /* Cursor de "mira" */
+    cursor: crosshair;
     border-radius: 4px 4px 0 0;
 }
 
@@ -62,16 +64,16 @@
 .sheet-toolbar {
     position: absolute;
     top: 20px;
-    left: -60px; /* Joga para a esquerda, fora da folha */
+    left: -60px; /* Joga para fora na esquerda */
     width: 50px;
     background: #222;
     border: 2px solid var(--gold);
     border-radius: 8px;
-    padding: 10px 5px;
+    padding: 10px 0;
     display: flex;
     flex-direction: column;
     gap: 15px;
-    z-index: 9005;
+    z-index: 10000; /* Muito alto para garantir */
     box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     align-items: center;
 }
@@ -85,10 +87,10 @@
     border-radius: 5px;
     cursor: pointer;
     font-size: 1.2rem;
-    transition: all 0.2s;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 0.2s;
 }
 
 .tool-btn:hover { background: #666; border-color: #fff; }
@@ -104,10 +106,10 @@
 /* --- BOTÃO DE FECHAR (FLUTUANTE) --- */
 .btn-close-sheet {
     position: absolute;
-    top: -10px;
-    right: -50px; /* Joga para a direita, fora da folha */
-    width: 40px;
-    height: 40px;
+    top: -15px;
+    right: -55px; /* Joga para fora na direita */
+    width: 45px;
+    height: 45px;
     background: #8b0000;
     color: #fff;
     border: 2px solid #fff;
@@ -115,7 +117,7 @@
     font-weight: bold;
     font-size: 1.2rem;
     cursor: pointer;
-    z-index: 9010;
+    z-index: 10000;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -128,21 +130,19 @@
     transform: scale(1.1) rotate(90deg);
 }
 
-/* --- ELEMENTOS CRIADOS PELO JOGADOR --- */
-
+/* --- ELEMENTOS DO JOGADOR --- */
 .user-input-wrapper, .user-marker-wrapper {
     position: absolute;
     z-index: 100;
 }
 
-/* Input de Texto */
 .user-input {
     background: transparent;
     border: 1px solid transparent; 
     color: #000;
     font-family: 'Courier New', monospace;
     font-weight: bold;
-    font-size: 1.6vh; /* Tamanho relativo à altura da tela */
+    font-size: 1.6vh;
     padding: 2px 5px;
     min-width: 30px;
     outline: none;
@@ -151,26 +151,24 @@
 
 .user-input:hover, .user-input:focus {
     border: 1px dashed blue;
-    background: rgba(255, 255, 0, 0.2); /* Marca-texto ao focar */
+    background: rgba(255, 255, 0, 0.2);
 }
 
-/* Marcador (Bolinha) */
 .user-marker {
     width: 2.2vh;
     height: 2.2vh;
     background-color: #000;
     border-radius: 50%;
-    transform: translate(-50%, -50%); /* Centraliza no clique */
+    transform: translate(-50%, -50%);
     cursor: pointer;
     box-shadow: 0 0 2px #fff;
 }
 
 .user-marker:hover {
     background-color: #333;
-    transform: translate(-50%, -50%) scale(1.2);
+    transform: scale(1.2) translate(-40%, -40%);
 }
 
-/* Botão X para deletar itens (só aparece no hover) */
 .delete-handle {
     position: absolute;
     top: -15px;
@@ -187,7 +185,6 @@
     align-items: center;
     justify-content: center;
     z-index: 200;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .user-input-wrapper:hover .delete-handle,
@@ -195,7 +192,7 @@
     display: flex;
 }
 
-/* Footer Navegação */
+/* Footer */
 .sheet-footer {
     height: 50px;
     background: #222;
@@ -219,8 +216,8 @@
 }
 .nav-simple-btn:hover { border-color: var(--gold); color: var(--gold); }
 
-/* Responsividade para telas menores */
-@media (max-width: 1200px) {
+/* Responsividade - Ajuste para telas pequenas */
+@media (max-width: 1100px) {
     .sheet-toolbar {
         top: -60px; /* Move para cima */
         left: 0;
@@ -228,12 +225,14 @@
         height: 50px;
         flex-direction: row;
         justify-content: center;
+        padding: 0;
     }
     .btn-close-sheet {
         top: -60px;
         right: 0;
     }
     .sheet-content {
-        margin-top: 50px;
+        margin-top: 60px; /* Espaço para a barra */
+        height: 80vh; /* Reduz altura para caber */
     }
 }
