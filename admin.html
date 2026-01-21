@@ -192,7 +192,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        // ADICIONADO: inMemoryPersistence na importação abaixo
+        // IMPORTANTE: inMemoryPersistence incluído e checado
         import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, inMemoryPersistence, setPersistence, fetchSignInMethodsForEmail, updatePassword, sendPasswordResetEmail, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -210,25 +210,34 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
         
+        // --- CORREÇÃO 1: Variável Global ---
+        // Definida aqui fora para que todas as funções enxerguem
+        let isCreatingUser = false;
+        // -----------------------------------
+
         // Auth secundário para criar usuários sem derrubar a sessão do Mestre
         const secondaryApp = initializeApp(firebaseConfig, "secondary-auth-creator");
         const secondaryAuth = getAuth(secondaryApp);
         
-        // CORREÇÃO: Usar inMemoryPersistence em vez de string 'none'
-        // Isso impede o erro de "Internal Assertion Failed"
-        setPersistence(secondaryAuth, inMemoryPersistence).catch((error) => {
-            console.error("Erro ao definir persistência do auth secundário:", error);
-        });
+        // --- CORREÇÃO 2: Persistência do Auth Secundário ---
+        // Garante que o usuário criado via secondaryAuth não salve cookies nem substitua o mestre
+        setPersistence(secondaryAuth, inMemoryPersistence)
+            .then(() => console.log("Persistência secundária: Memória (OK)"))
+            .catch((error) => {
+                console.warn("Aviso: Falha ao definir persistência secundária. Tentando fallback.", error);
+                // Se der erro no inMemory, tenta session para não quebrar, mas ideal é inMemory
+                setPersistence(secondaryAuth, browserSessionPersistence);
+            });
 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
-        // Configura persistência do login principal
+        // Configura persistência do login principal (Mestre)
         setPersistence(auth, browserSessionPersistence)
             .then(() => {
                 console.log("Persistência de autenticação configurada com sucesso.");
-                let isCreatingUser = false;
                 
                 onAuthStateChanged(auth, user => {
+                    // Se estivermos criando usuário, ignora mudanças de estado para não recarregar a tela
                     if (isCreatingUser) {
                         console.log("⏳ Mudança de auth ignorada (criação de usuário em progresso)");
                         return;
@@ -283,6 +292,7 @@
             });
         }
 
+        // Variável para backup de segurança
         let mestreSessionBackup = null;
 
         window.criarUsuario = function() {
@@ -324,7 +334,7 @@
                                 }
                             }
 
-                            // Marca que estamos criando usuário
+                            // Marca flag global
                             isCreatingUser = true;
                             
                             createUserWithEmailAndPassword(secondaryAuth, email, pass)
@@ -339,6 +349,7 @@
                                 }).then(() => {
                                     console.log("✅ Dados salvos no Realtime Database");
                                     
+                                    // Logout forçado do secundário com delay de segurança
                                     return new Promise((resolve) => {
                                         setTimeout(() => {
                                             signOut(secondaryAuth)
@@ -350,13 +361,15 @@
                                                     console.warn("⚠️ Erro ao fazer logout do secondaryAuth:", err);
                                                     resolve();
                                                 });
-                                        }, 100);
+                                        }, 200);
                                     });
                                 }).then(() => {
-                                    return new Promise((resolve) => setTimeout(resolve, 300));
+                                    // Aguarda estabilização
+                                    return new Promise((resolve) => setTimeout(resolve, 500));
                                 }).then(() => {
                                     isCreatingUser = false;
                                     
+                                    // Verificação final de segurança
                                     const currentAuthUser = auth.currentUser;
                                     if (!currentAuthUser || currentAuthUser.email !== EMAIL_MESTRE) {
                                         console.error("❌ Sessão do mestre foi afetada!");
@@ -373,10 +386,13 @@
                                 });
                             })
                             .catch((error) => {
+                                // Em caso de erro, tenta limpar sessão secundária
                                 signOut(secondaryAuth).catch(() => {});
+                                
                                 setTimeout(() => {
                                     isCreatingUser = false;
                                     
+                                    // Verifica integridade da sessão do mestre
                                     const currentAuthUser = auth.currentUser;
                                     if (!currentAuthUser || currentAuthUser.email !== EMAIL_MESTRE) {
                                         console.warn("⚠️ Sessão do mestre foi afetada após erro!");
@@ -397,10 +413,12 @@
                                 }, 500);
                             });
                         }).catch((error) => {
+                            isCreatingUser = false; // Garante reset da flag
                             alert("Erro ao verificar contas: " + error.message);
                         });
                     })
                     .catch((error) => {
+                        isCreatingUser = false; // Garante reset da flag
                         alert("Erro ao verificar e-mail: " + error.message);
                     });
             });
