@@ -292,25 +292,57 @@
                             return;
                         }
 
-                        // Se não existir, cria a conta (em auth secundário)
-                        createUserWithEmailAndPassword(secondaryAuth, email, pass)
+                        // Verifica também se já existe no Realtime Database
+                        get(ref(db, 'mesa_rpg/accounts')).then(accountsSnap => {
+                            if (accountsSnap.exists()) {
+                                const accounts = accountsSnap.val();
+                                const emailJaExiste = Object.values(accounts).some(acc => acc.email === email);
+                                if (emailJaExiste) {
+                                    alert("Este e-mail já está registrado. Use outro e-mail.");
+                                    return;
+                                }
+                            }
+
+                            // Se não existir, cria a conta
+                            createUserWithEmailAndPassword(auth, email, pass)
                             .then((cred) => {
                                 const uid = cred.user.uid;
-                                set(ref(db, `mesa_rpg/accounts/${uid}`), {
+                                // Salva no Realtime Database
+                                return set(ref(db, `mesa_rpg/accounts/${uid}`), {
                                     email: email,
                                     characters: {},
                                     status: 'active'
+                                }).then(() => {
+                                    // Faz logout e login novamente como mestre para manter sessão
+                                    signOut(auth).then(() => {
+                                        signInWithEmailAndPassword(auth, EMAIL_MESTRE, document.getElementById('narrador-pass')?.value || prompt("Senha do mestre:"))
+                                        .then(() => {
+                                            alert("✅ Usuário criado: " + email);
+                                            document.getElementById('new-user-email').value = "";
+                                            document.getElementById('new-user-pass').value = "";
+                                            carregarUsuarios();
+                                        })
+                                        .catch(() => {
+                                            alert("✅ Usuário criado: " + email + "\n⚠️ Faça login novamente como mestre.");
+                                            window.location.reload();
+                                        });
+                                    });
                                 });
-                                // Evita trocar a sessão do mestre: desloga do auth secundário
-                                signOut(secondaryAuth).catch(() => {});
-                                alert("✅ Usuário criado: " + email);
-                                document.getElementById('new-user-email').value = "";
-                                document.getElementById('new-user-pass').value = "";
-                                carregarUsuarios();
                             })
                             .catch((error) => {
-                                alert("Erro ao criar: " + error.message);
+                                let msg = "Erro ao criar: " + error.message;
+                                if (error.code === 'auth/email-already-in-use') {
+                                    msg = "Este e-mail já está em uso.";
+                                } else if (error.code === 'auth/invalid-email') {
+                                    msg = "E-mail inválido.";
+                                } else if (error.code === 'auth/weak-password') {
+                                    msg = "Senha muito fraca. Use pelo menos 6 caracteres.";
+                                }
+                                alert(msg);
                             });
+                        }).catch((error) => {
+                            alert("Erro ao verificar contas: " + error.message);
+                        });
                     })
                     .catch((error) => {
                         alert("Erro ao verificar e-mail: " + error.message);

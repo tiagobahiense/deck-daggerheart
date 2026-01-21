@@ -195,20 +195,27 @@ window.confirmarSelecaoClasse = async function() {
     classeSelectionState.profissaoAtualSelecionada = profissaoSelecionada;
     localStorage.setItem('profissaoSelecionada', profissaoSelecionada);
     
-    // Salvar profissão no Firebase (no slot Fundamental se não existir)
+    // Salvar profissão no Firebase (no slot Fundamental)
     if (typeof window.nomeJogador !== 'undefined' && window.nomeJogador) {
         try {
-            const { getDatabase, ref, get, set } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
-            const db = getDatabase();
-            const slotRef = ref(db, `mesa_rpg/jogadores/${window.nomeJogador}/slots/Fundamental`);
-            const slotSnap = await get(slotRef);
-            
-            if (!slotSnap.exists() || !slotSnap.val().profissao) {
-                // Salvar apenas a profissão no slot Fundamental para referência
-                await set(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}/profissao`), profissaoSelecionada);
+            // Usa o db global do script.js
+            if (typeof window.db !== 'undefined' && typeof window.ref !== 'undefined' && typeof window.set !== 'undefined') {
+                const slotRef = window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}/slots/Fundamental`);
+                
+                // Verifica se já tem slot Fundamental
+                const { get } = await import("https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js");
+                const slotSnap = await get(slotRef);
+                
+                // Se não tem slot ou não tem profissão, cria/atualiza
+                if (!slotSnap.exists() || !slotSnap.val().profissao) {
+                    await window.set(slotRef, { profissao: profissaoSelecionada });
+                    console.log(`✅ Profissão ${profissaoSelecionada} salva para ${window.nomeJogador}`);
+                }
+            } else {
+                console.warn("⚠️ Firebase não disponível globalmente para salvar profissão");
             }
         } catch (error) {
-            console.error("Erro ao salvar profissão no Firebase:", error);
+            console.error("❌ Erro ao salvar profissão no Firebase:", error);
         }
     }
     

@@ -18,6 +18,12 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
+// Expor db, ref, set globalmente para selecao-classe.js
+window.db = db;
+window.ref = ref;
+window.set = set;
+window.get = get;
+
 // Configuração global
 const EMAIL_MESTRE = "tgbahiense@gmail.com";
 let currentUser = null;
@@ -319,10 +325,17 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
         }
 
         // Se estiver preenchendo um slot específico (Fundamental/Especializacao/Maestria),
-        // filtra pelos “prefixos” do nome/caminho.
+        // filtra pelos "prefixos" do nome/caminho.
         if (slotDestinoAtual && ['Fundamental', 'Especializacao', 'Maestria'].includes(slotDestinoAtual)) {
-            const prefixo = `${slotDestinoAtual} -`;
-            lista = lista.filter(c => (c.nome && c.nome.startsWith(prefixo)) || (c.caminho && c.caminho.includes(`/Classes/${prefixo}`)));
+            // Normaliza: "Especializacao" -> aceita "Especialização" e "Especializacao"
+            const prefixoVariacoes = slotDestinoAtual === 'Especializacao' 
+                ? ['Especialização -', 'Especializacao -']
+                : [`${slotDestinoAtual} -`];
+            lista = lista.filter(c => {
+                const nomeMatch = c.nome && prefixoVariacoes.some(pref => c.nome.startsWith(pref));
+                const caminhoMatch = c.caminho && prefixoVariacoes.some(pref => c.caminho.includes(pref.replace(' -', '')));
+                return nomeMatch || caminhoMatch;
+            });
         }
     } else {
         titulo.innerText = `Selecionar: ${tipo}`;
@@ -720,13 +733,21 @@ function adicionarNaMao(carta) {
 
 // Função para salvar na nuvem
 function salvarNaNuvem() {
-    if (!nomeJogador || !currentUser) return;
+    if (!nomeJogador || !currentUser) {
+        console.warn("⚠️ Tentativa de salvar sem nomeJogador ou currentUser:", { nomeJogador, currentUser: !!currentUser });
+        return;
+    }
     set(ref(db, 'mesa_rpg/jogadores/' + nomeJogador), {
         mao: maoDoJogador,
         reserva: reservaDoJogador,
         slots: slotsFixos,
         ultimoAcesso: Date.now()
-    }).catch((e) => console.error("Erro ao salvar:", e));
+    }).catch((e) => {
+        console.error("❌ Erro ao salvar:", e);
+        if (e.code === 'PERMISSION_DENIED') {
+            alert("⚠️ Erro de permissão no Firebase. Verifique as regras de segurança do Realtime Database.\n\nContate o administrador para corrigir.");
+        }
+    });
 }
 
 function salvarUsoDeCartaNaNuvem() {
