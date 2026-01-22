@@ -43,8 +43,9 @@ const LIMITE_MAO = 5;
 // Variáveis para Leitor de PDF
 let paginaAtualPDF = 1;
 let totalPaginasPDF = 1;
-let tipoAtualPDF = ""; // 'Ancestralidade' ou 'Comunidade'
-
+let tipoAtualPDF = "";
+let zoomLevelPDF = 1.0;
+ // Adicionando a variável do zoom
 window.togglePassword = function(id) { const input = document.getElementById(id); if (input) input.type = input.type === "password" ? "text" : "password"; };
 
 // Funções de Modal
@@ -573,11 +574,16 @@ window.setVolume = function() { document.getElementById('bg-music').volume = par
 
 // --- FUNÇÕES DE LEITURA DE PDF (ANCESTRALIDADE/COMUNIDADE) ---
 
+// --- FUNÇÕES DE LEITURA DE PDF ATUALIZADAS COM ZOOM ---
+
 window.abrirLeitorPDF = function(tipo) {
-    tipoAtualPDF = tipo; // 'Ancestralidade' ou 'Comunidade'
+    tipoAtualPDF = tipo;
     paginaAtualPDF = 1;
     
-    // Define total com base na pasta (hardcoded conforme pedido baseado nos arquivos)
+    // Reseta o zoom sempre que abrir
+    zoomLevelPDF = 1.0;
+    setTimeout(aplicarZoomPDF, 50); // Pequeno delay para garantir que o CSS carregou
+
     if (tipo === 'Ancestralidade') {
         totalPaginasPDF = 20; 
     } else {
@@ -594,6 +600,10 @@ window.fecharLeitorPDF = function() {
 };
 
 window.mudarPaginaLeitor = function(direcao) {
+    // Reseta o zoom ao mudar de página para não ficar estranho
+    zoomLevelPDF = 1.0;
+    aplicarZoomPDF();
+
     const novaPagina = paginaAtualPDF + direcao;
     if (novaPagina >= 1 && novaPagina <= totalPaginasPDF) {
         paginaAtualPDF = novaPagina;
@@ -604,21 +614,62 @@ window.mudarPaginaLeitor = function(direcao) {
 function atualizarImagemLeitor() {
     const imgElement = document.getElementById('img-leitor-pdf');
     const contador = document.getElementById('leitor-page-counter');
-    
-    // Formata o número com zeros à esquerda (001, 002...)
     const numFormatado = String(paginaAtualPDF).padStart(3, '0');
     
     let caminho = "";
     if (tipoAtualPDF === 'Ancestralidade') {
-        // Pasta: img/ancestralidade-pdf/
-        // Arquivo: Ancestralidades_pag_XXX.jpg (PLURAL no arquivo, conforme print)
         caminho = `img/ancestralidade-pdf/Ancestralidades_pag_${numFormatado}.jpg`;
     } else {
-        // Pasta: img/comunidade-pdf/
-        // Arquivo: Comunidade_pag_XXX.jpg (SINGULAR no arquivo, conforme print)
         caminho = `img/comunidade-pdf/Comunidade_pag_${numFormatado}.jpg`;
     }
     
     imgElement.src = caminho;
     contador.innerText = `${paginaAtualPDF}/${totalPaginasPDF}`;
+}
+
+// --- LÓGICA DO ZOOM (RODINHA DO MOUSE) ---
+// Adicione isso logo após as funções acima
+
+const containerPdfElement = document.querySelector('.pdf-container');
+
+if(containerPdfElement) {
+    containerPdfElement.addEventListener('wheel', function(e) {
+        // Só ativa se o modal estiver visível
+        if(document.getElementById('modal-leitor-pdf').style.display === 'none') return;
+
+        e.preventDefault(); // Impede a página de rolar, foca no zoom
+
+        // Roda pra cima (negativo) = Zoom In (+), Baixo = Zoom Out (-)
+        const direction = e.deltaY > 0 ? -0.2 : 0.2;
+        zoomLevelPDF += direction;
+
+        // Limites: Mínimo 1x (tela cheia), Máximo 3x
+        if (zoomLevelPDF < 1) zoomLevelPDF = 1;
+        if (zoomLevelPDF > 3) zoomLevelPDF = 3;
+
+        aplicarZoomPDF();
+    }, { passive: false });
+}
+
+function aplicarZoomPDF() {
+    const img = document.getElementById('img-leitor-pdf');
+    const container = document.querySelector('.pdf-container');
+
+    if (!img || !container) return;
+
+    if (zoomLevelPDF <= 1) {
+        // RESET: Encaixa na tela
+        img.style.width = 'auto';
+        img.style.maxWidth = '100%';
+        img.style.maxHeight = '88vh'; // Trava a altura
+        container.style.cursor = 'zoom-in';
+        container.style.alignItems = 'center'; // Centraliza verticalmente
+    } else {
+        // ZOOM ATIVO: Libera tamanho
+        img.style.maxHeight = 'none';
+        img.style.maxWidth = 'none';
+        img.style.width = `${zoomLevelPDF * 100}%`;
+        container.style.cursor = 'grab';
+        container.style.alignItems = 'flex-start'; // Permite scrolar até o topo/fundo
+    }
 }
