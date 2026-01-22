@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get, child, remove, update, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, set, get, child, remove, update, onValue, onDisconnect, push, query, limitToLast, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence, fetchSignInMethodsForEmail } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // Configuração do Firebase
@@ -21,9 +21,11 @@ const auth = getAuth(app);
 // Persistência de sessão
 setPersistence(auth, browserSessionPersistence).catch(console.error);
 
-// Exportações globais
+// === CORREÇÃO 1: EXPORTAR FUNÇÕES DO FIREBASE PARA DADOS.JS ===
 window.db = db; window.ref = ref; window.set = set; window.get = get;
 window.remove = remove; window.onValue = onValue; window.onDisconnect = onDisconnect;
+window.push = push; window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
+// =============================================================
 
 // Configuração global
 const EMAIL_MESTRE = "tgbahiense@gmail.com";
@@ -165,7 +167,7 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
     modal.style.display = 'flex';
 };
 
-// Renderizar Slots e Mão
+// Renderizar Slots e Mão (COM CORREÇÃO DA RESERVA)
 function renderizar() {
     // Slots Fixos
     Object.keys(slotsFixos).forEach(id => {
@@ -207,21 +209,54 @@ function renderizar() {
         imageObserver.observe(el);
     });
 
-    // Reserva
+    // === CORREÇÃO 2: VISUALIZAÇÃO DA RESERVA ===
     const divRes = document.getElementById('cartas-reserva');
     divRes.innerHTML = '';
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0.3';
+    
     if(reservaDoJogador.length > 0) {
-        const con = document.createElement('div'); con.className='reserva-container'; con.style.cssText="position:relative;width:100%;height:100%;cursor:pointer;";
-        for(let i=0; i<Math.min(3, reservaDoJogador.length); i++) {
-            const el = document.createElement('div'); el.className='carta-reserva-stacked lazy-card'; el.dataset.src=reservaDoJogador[i].caminho;
-            el.style.cssText=`background-color:#1a1a1a;position:absolute;width:100%;height:100%;top:${i*4}px;left:${i*4}px;z-index:${i};pointer-events:none;`;
-            con.appendChild(el); imageObserver.observe(el);
+        const con = document.createElement('div');
+        con.className='reserva-container';
+        con.style.cssText="position:relative;width:100%;height:100%;cursor:pointer;";
+        
+        // Renderiza as 3 ÚLTIMAS cartas (Topo da pilha)
+        const total = reservaDoJogador.length;
+        const mostrarAte = Math.min(3, total);
+        
+        // Loop reverso para garantir a ordem visual correta (mais recente no topo)
+        for(let i = 0; i < mostrarAte; i++) {
+            // Se tem 5 cartas: Indices 4, 3, 2
+            const indexReal = total - 1 - i; 
+            const carta = reservaDoJogador[indexReal];
+            
+            const el = document.createElement('div'); 
+            el.className='carta-reserva-stacked lazy-card'; 
+            el.dataset.src = carta.caminho;
+            
+            // Offset visual invertido: a do fundo fica deslocada
+            // Mas vamos simplificar: empilha uma sobre a outra com leve rotação
+            // i=0 é a do topo (z-index maior). i=2 é a do fundo.
+            const offset = (mostrarAte - 1 - i) * 4; 
+            
+            el.style.cssText=`
+                background-color:#1a1a1a;
+                position:absolute;
+                width:100%; height:100%;
+                top:${offset}px; left:${offset}px;
+                z-index:${mostrarAte - i};
+                pointer-events:none;
+                border: 1px solid #333;
+                box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            `;
+            con.appendChild(el); 
+            imageObserver.observe(el);
         }
-        con.innerHTML += `<div style="position:absolute;bottom:8px;right:8px;background:rgba(218,165,32,0.9);color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold;z-index:10">${reservaDoJogador.length}</div>`;
+        
+        con.innerHTML += `<div style="position:absolute;bottom:8px;right:8px;background:rgba(218,165,32,0.9);color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold;z-index:100">${total}</div>`;
         con.onclick = window.abrirReserva;
         divRes.appendChild(con);
     }
+    // ===============================================
 
     if (typeof window.monitorarClasseFundamental === 'function') window.monitorarClasseFundamental();
 }
