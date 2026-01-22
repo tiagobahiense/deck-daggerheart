@@ -179,10 +179,18 @@
     <div id="hover-preview-slot" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 600px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
 
     <div id="app-container" style="display: none; opacity: 0;">
-        <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar">🔄</button>
-        <div id="aura-profissao"></div><div id="particulas-profissao"></div>
-        <div id="audio-control"><button onclick="toggleMusic()" id="btn-music">🔊</button><input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()"></div>
-        <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio><audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
+        
+        <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar Mesa">🔄</button>
+
+        <div id="aura-profissao"></div>
+        <div id="particulas-profissao"></div>
+
+        <div id="audio-control">
+            <button onclick="toggleMusic()" id="btn-music">🔊</button>
+            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()">
+        </div>
+        <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio>
+        <audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
         <div id="system-message"></div>
 
         <div id="area-inimigos"></div>
@@ -252,340 +260,106 @@
         <div id="carta-tabuleiro-animada" class="carta-tabuleiro-animada"></div>
     </div>
 
-    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()"><div class="dados-content"><div class="dados-header">Rolagem</div><div class="dualidade-box"><span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button></div><hr style="border-top:1px solid #444; width:100%;"><div class="grid-dados"><div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div></div><button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button></div></div>
-    <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar</button></div>
-    <div id="grimorio-modal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Escolha uma Carta</h2><button class="close-btn" onclick="fecharGrimorio()">X</button></div><div id="grid-cartas"></div></div></div>
-    <div id="decisao-modal" class="modal" style="z-index: 6000;"><div class="modal-decisao-content"><h3>Gerenciar Carta</h3><div class="carta-preview-decisao" id="preview-decisao"></div><div class="grupo-tokens"><span>Tokens:</span><button class="btn-token" onclick="alterarToken(-1)">-</button><span id="label-token-qtd">0</span><button class="btn-token" onclick="alterarToken(1)">+</button></div><div class="grupo-tokens"><button class="btn-estado" onclick="definirEstado('curto')">Descanso Curto</button><button class="btn-estado" onclick="definirEstado('longo')">Descanso Longo</button></div><div class="botoes-decisao"><button class="btn-usar-carta" id="btn-usar-carta" onclick="usarCarta()" style="display:none;">⚡ Usar</button><button class="btn-confirmar" onclick="confirmarEdicao()">OK</button><button class="btn-reserva" id="btn-para-reserva" onclick="moverParaReserva()" style="display:none;">Reserva</button><button class="btn-deck" id="btn-devolver-mao" onclick="devolverParaMao()" style="display:none;">Mão</button><button class="btn-deck" id="btn-devolver-deck" onclick="devolverAoDeck()" style="display:none;">Deck</button></div></div></div>
-    <div id="reserva-modal" class="modal" style="z-index: 6000;"><div class="modal-reserva-content"><div class="modal-header"><h2>Reserva</h2><button class="close-btn" onclick="window.fecharReserva()">X</button></div><div id="grid-reserva"></div></div></div>
-    <div id="troca-modal" class="modal" style="z-index: 6100;"><div class="modal-decisao-content"><h3>Mão cheia!</h3><div id="grid-troca"></div><div class="botoes-decisao"><button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button></div></div></div>
+    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
+        <div class="dados-content">
+            <div class="dados-header">Rolagem de Dados</div>
+            <div class="dualidade-box">
+                <span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span>
+                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
+            <div class="grid-dados">
+                <div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div>
+            </div>
+            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
+        </div>
+    </div>
 
-    <script type="module" src="script.js?v=10.2"></script> <script type="module">
-        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    <div id="overlay-rolagem">
+        <div id="quem-rolou-label"></div>
+        <div id="container-dados-rolando"></div>
+        <button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button>
+    </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
-            authDomain: "deck-daggerheart.firebaseapp.com",
-            databaseURL: "https://deck-daggerheart-default-rtdb.firebaseio.com",
-            projectId: "deck-daggerheart",
-            storageBucket: "deck-daggerheart.firebasestorage.app",
-            messagingSenderId: "825358776791",
-            appId: "1:825358776791:web:ce0ab844f58c60573c7392",
-            measurementId: "G-20TB05E9N2"
-        };
+    <div id="grimorio-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-titulo">Escolha uma Carta</h2>
+                <button class="close-btn" onclick="fecharGrimorio()">X</button>
+            </div>
+            <div id="grid-cartas"></div>
+        </div>
+    </div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
+    <div id="decisao-modal" class="modal" style="z-index: 6000;">
+        <div class="modal-decisao-content">
+            <h3>Gerenciar Carta</h3>
+            <div class="carta-preview-decisao" id="preview-decisao"></div>
+            <div class="grupo-tokens">
+                <span>Tokens:</span>
+                <button class="btn-token" onclick="alterarToken(-1)">-</button>
+                <span id="label-token-qtd">0</span>
+                <button class="btn-token" onclick="alterarToken(1)">+</button>
+            </div>
+            <div class="grupo-tokens">
+                <button class="btn-estado" onclick="definirEstado('curto')">Descanso Curto</button>
+                <button class="btn-estado" onclick="definirEstado('longo')">Descanso Longo</button>
+            </div>
+            <div class="botoes-decisao">
+                <button class="btn-usar-carta" id="btn-usar-carta" onclick="usarCarta()" style="display: none;">⚡ Usar Carta</button>
+                <button class="btn-confirmar" onclick="confirmarEdicao()">OK / Voltar</button>
+                <button class="btn-reserva" id="btn-para-reserva" onclick="moverParaReserva()" style="display: none;">Para Reserva</button>
+                <button class="btn-deck" id="btn-devolver-mao" onclick="devolverParaMao()" style="display: none;">Devolver à Mão</button>
+                <button class="btn-deck" id="btn-devolver-deck" onclick="devolverAoDeck()" style="display: none;">Devolver ao Deck</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reserva-modal" class="modal" style="z-index: 6000;">
+        <div class="modal-reserva-content">
+            <div class="modal-header">
+                <h2 id="modal-titulo-reserva">Cartas em Reserva</h2>
+                <button class="close-btn" onclick="window.fecharReserva()">X</button>
+            </div>
+            <div id="grid-reserva"></div>
+        </div>
+    </div>
+
+    <div id="troca-modal" class="modal" style="z-index: 6100;">
+        <div class="modal-decisao-content">
+            <h3>Sua mão está cheia!</h3>
+            <p style="color: #aaa; margin: 10px 0;">Escolha qual carta descartar:</p>
+            <div id="grid-troca" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0; max-height: 300px; overflow-y: auto;"></div>
+            <div class="botoes-decisao">
+                <button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="script.js?v=10.2"></script>
+    <script type="module">
+        // EXPOSIÇÃO GLOBAL CRÍTICA
+        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
-        // Garante que a autenticação persista apenas na sessão
-        setPersistence(auth, browserSessionPersistence).catch(console.error);
+        window.db = getDatabase(); 
+        window.ref = ref;
+        window.push = push;
+        window.query = query;
+        window.limitToLast = limitToLast;
+        window.onChildAdded = onChildAdded;
+        window.set = set;
+        window.get = get;
+        window.remove = remove;
+        window.onValue = onValue;
+        window.update = update;
+        window.off = off;
 
-        // Exportações globais
-        window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
-        window.onValue = onValue; window.push = push; window.update = update; window.off = off; window.onDisconnect = onDisconnect;
-        window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
-        
-        // === RESTAURAÇÃO DA LÓGICA DO JOGADOR (MANUAL PARA GARANTIR FUNCIONAMENTO) ===
-        // Isso garante que mesmo se o script.js falhar ou demorar, a lógica crítica de jogo esteja aqui
-        window.nomeJogador = "";
-        let maoDoJogador = [];
-        let reservaDoJogador = [];
-        let slotsFixos = { 'Ancestralidade': null, 'Comunidade': null, 'Fundamental': null, 'Especializacao': null, 'Maestria': null };
-        let catalogoCartas = []; 
-        let catalogoCartasClasses = [];
-        let cartaEmTransitoIndex = null;
-        let origemTransito = null;
-        let slotDestinoAtual = null;
-        const LIMITE_MAO = 5;
-
-        // Função de Debug
-        function debug(msg, data) { console.log(msg, data||""); }
-
-        // Carrega cartas (JSON)
-        async function carregarDados() {
-            try {
-                const [r1, r2] = await Promise.all([fetch('./lista_cartas.json'), fetch('./lista_cartas_v2.json')]);
-                if(r1.ok) catalogoCartas = await r1.json();
-                if(r2.ok) {
-                    const v2 = await r2.json();
-                    catalogoCartasClasses = Array.isArray(v2) ? v2.filter(c => c.categoria === 'Classes' && c.profissao) : [];
-                }
-            } catch(e) { console.error("Erro loading cards", e); }
-        }
-
-        // Funções de Interface (GRIMÓRIO)
-        window.abrirGrimorio = async function(tipo, slotDestino = null) {
-            const modal = document.getElementById('grimorio-modal');
-            const grid = document.getElementById('grid-cartas');
-            const titulo = document.getElementById('modal-titulo');
-            slotDestinoAtual = slotDestino;
-            grid.innerHTML = '';
-
-            if(catalogoCartas.length === 0) await carregarDados();
-
-            let lista = [];
-            if (tipo === 'Geral') {
-                titulo.innerText = "Grimório Principal";
-                lista = catalogoCartas.filter(c => !['Classes','Ancestralidade','Comunidade'].includes(c.categoria));
-            } else if (tipo === 'Classes') {
-                const prof = localStorage.getItem('profissaoSelecionada');
-                titulo.innerText = prof ? `Cartas de ${prof}` : "Classes";
-                lista = catalogoCartasClasses.filter(c => !prof || c.profissao === prof);
-                // Filtro avançado para slots específicos
-                if(slotDestinoAtual && ['Fundamental', 'Especializacao', 'Maestria'].includes(slotDestinoAtual)) {
-                    const prefixo = slotDestinoAtual === 'Especializacao' ? ['Especialização -', 'Especializacao -'] : [`${slotDestinoAtual} -`];
-                    lista = lista.filter(c => prefixo.some(pref => c.nome.startsWith(pref) || c.caminho.includes(pref.replace(' -',''))));
-                }
-            } else {
-                titulo.innerText = `Selecionar: ${tipo}`;
-                lista = catalogoCartas.filter(c => c.categoria === tipo);
-            }
-
-            lista.forEach(carta => {
-                const div = document.createElement('div');
-                div.className = 'carta-modal lazy-card';
-                div.style.backgroundImage = `url('${carta.caminho}')`;
-                div.onclick = () => selecionarCarta(carta);
-                // Hover preview
-                div.onmouseenter = () => {
-                     const p = document.getElementById('hover-preview-modal');
-                     p.style.display = 'block'; p.style.backgroundImage = `url('${carta.caminho}')`;
-                };
-                div.onmouseleave = () => document.getElementById('hover-preview-modal').style.display = 'none';
-                grid.appendChild(div);
-            });
-            modal.style.display = 'flex';
-        };
-
-        window.fecharGrimorio = function() { document.getElementById('grimorio-modal').style.display = 'none'; };
-
-        function selecionarCarta(carta) {
-            window.fecharGrimorio();
-            if(slotDestinoAtual) window.preencherSlotFixo(carta, slotDestinoAtual);
-            else adicionarNaMao(carta);
-            slotDestinoAtual = null;
-        }
-
-        function adicionarNaMao(carta) {
-            if(maoDoJogador.length < LIMITE_MAO) {
-                carta.tokens = 0; carta.estado = 'ativo';
-                maoDoJogador.push(carta);
-                salvarNaNuvem(); renderizar();
-            } else { alert("Mão cheia! Remova uma carta ou envie para reserva."); }
-        }
-
-        window.preencherSlotFixo = function(carta, idSlot) {
-            slotsFixos[idSlot] = carta;
-            salvarNaNuvem(); renderizar();
-        };
-
-        window.limparSlot = function(idSlot, evt) {
-            if(evt) evt.stopPropagation();
-            slotsFixos[idSlot] = null;
-            salvarNaNuvem(); renderizar();
-        };
-
-        // Renderização Principal (Mão e Mesa)
-        window.renderizar = function() {
-            const divMao = document.getElementById('cartas-mao');
-            const divRes = document.getElementById('cartas-reserva');
-            if(!divMao) return;
-
-            // Renderiza Slots
-            Object.keys(slotsFixos).forEach(id => {
-                const div = document.getElementById(`slot-${id}`);
-                if(div) {
-                    const carta = slotsFixos[id];
-                    const oldImg = div.querySelector('img'); if(oldImg) oldImg.remove();
-                    const btn = div.querySelector('.btn-limpar'); if(btn) btn.style.display = carta ? 'flex' : 'none';
-                    
-                    if(carta) {
-                        const img = document.createElement('img');
-                        img.src = carta.caminho;
-                        div.appendChild(img);
-                        img.onmouseenter = () => { const p = document.getElementById('hover-preview-slot'); p.style.display='block'; p.style.backgroundImage=`url('${img.src}')`; };
-                        img.onmouseleave = () => document.getElementById('hover-preview-slot').style.display='none';
-                    }
-                }
-            });
-
-            // Renderiza Mão
-            divMao.innerHTML = '';
-            maoDoJogador.forEach((c, i) => {
-                const el = document.createElement('div');
-                el.className = 'carta lazy-card';
-                el.style.backgroundImage = `url('${c.caminho}')`;
-                
-                // Rotação da mão
-                const centro = (maoDoJogador.length - 1) / 2;
-                el.style.transform = `rotate(${(i - centro) * 4}deg)`;
-
-                if(c.estado === 'curto' || c.estado === 'longo') {
-                    el.classList.add('indisponivel');
-                    const icon = document.createElement('div'); icon.className = 'icone-descanso';
-                    icon.innerHTML = c.estado==='curto' ? '<img src="img/meia-lua.png">' : '<img src="img/lua-cheia.png">';
-                    el.appendChild(icon);
-                }
-                if(c.tokens > 0) {
-                    const badge = document.createElement('div'); badge.className = `token-badge token-${c.tokens}`;
-                    badge.innerText = c.tokens; el.appendChild(badge);
-                }
-
-                el.onclick = () => window.abrirDecisao(i);
-                // Hover Mão
-                el.onmouseenter = () => { const p = document.getElementById('hover-preview'); p.style.display='block'; p.style.backgroundImage=`url('${c.caminho}')`; };
-                el.onmouseleave = () => document.getElementById('hover-preview').style.display='none';
-                
-                divMao.appendChild(el);
-            });
-
-            // Renderiza Reserva
-            divRes.innerHTML = '';
-            if(reservaDoJogador.length > 0) {
-                const container = document.createElement('div'); container.className = 'reserva-container';
-                container.onclick = window.abrirReserva;
-                // Empilha cartas visualmente
-                for(let i=0; i<Math.min(3, reservaDoJogador.length); i++) {
-                    const c = document.createElement('div'); c.className = 'carta-reserva-stacked';
-                    c.style.backgroundImage = `url('${reservaDoJogador[i].caminho}')`;
-                    c.style.top = `${i*4}px`; c.style.left = `${i*4}px`;
-                    container.appendChild(c);
-                }
-                divRes.appendChild(container);
-            }
-        };
-
-        // Modal de Decisão (Usar, Tokens, Descanso)
-        window.abrirDecisao = function(idx) {
-            cartaEmTransitoIndex = idx; origemTransito = 'mao';
-            const c = maoDoJogador[idx];
-            const modal = document.getElementById('decisao-modal');
-            const preview = document.getElementById('preview-decisao');
-            const label = document.getElementById('label-token-qtd');
-            
-            // Configura botões
-            document.getElementById('btn-usar-carta').style.display = 'inline-block';
-            document.getElementById('btn-para-reserva').style.display = 'inline-block';
-            document.getElementById('btn-devolver-mao').style.display = 'none';
-
-            preview.style.backgroundImage = `url('${c.caminho}')`;
-            label.innerText = c.tokens || 0;
-            modal.style.display = 'flex';
-        };
-
-        window.fecharDecisao = function() { document.getElementById('decisao-modal').style.display = 'none'; };
-        window.confirmarEdicao = function() { window.fecharDecisao(); renderizar(); };
-
-        window.alterarToken = function(delta) {
-            if(origemTransito === 'mao') {
-                const c = maoDoJogador[cartaEmTransitoIndex];
-                c.tokens = Math.max(0, Math.min(5, (c.tokens||0) + delta));
-                document.getElementById('label-token-qtd').innerText = c.tokens;
-                salvarNaNuvem();
-            }
-        };
-
-        window.definirEstado = function(estado) {
-            if(origemTransito === 'mao') {
-                maoDoJogador[cartaEmTransitoIndex].estado = estado;
-                salvarNaNuvem();
-            }
-        };
-
-        window.usarCarta = function() {
-            const c = maoDoJogador[cartaEmTransitoIndex];
-            window.fecharDecisao();
-            // Animação Simples
-            const anim = document.getElementById('carta-tabuleiro-animada');
-            anim.style.backgroundImage = `url('${c.caminho}')`;
-            anim.classList.add('ativa');
-            setTimeout(() => anim.classList.remove('ativa'), 2000);
-            
-            // Toca som e salva uso
-            const audio = document.getElementById('use-card-sound'); if(audio) audio.play();
-            set(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}/cartaUsada`), {
-                caminho: c.caminho, nome: c.nome, timestamp: Date.now()
-            });
-        };
-
-        window.moverParaReserva = function() {
-            const c = maoDoJogador.splice(cartaEmTransitoIndex, 1)[0];
-            reservaDoJogador.push(c);
-            salvarNaNuvem(); renderizar(); window.fecharDecisao();
-        };
-
-        // Reserva Logic
-        window.abrirReserva = function() {
-            const modal = document.getElementById('reserva-modal');
-            const grid = document.getElementById('grid-reserva');
-            grid.innerHTML = '';
-            reservaDoJogador.forEach((c, idx) => {
-                const div = document.createElement('div'); div.className = 'carta-modal';
-                div.style.backgroundImage = `url('${c.caminho}')`;
-                div.onclick = () => {
-                    // Devolver para mão
-                    if(maoDoJogador.length < LIMITE_MAO) {
-                        maoDoJogador.push(reservaDoJogador.splice(idx, 1)[0]);
-                        salvarNaNuvem(); renderizar(); window.fecharReserva();
-                    } else { alert("Mão cheia!"); }
-                };
-                grid.appendChild(div);
-            });
-            modal.style.display = 'flex';
-        };
-        window.fecharReserva = function() { document.getElementById('reserva-modal').style.display = 'none'; };
-
-        // Save
-        function salvarNaNuvem() {
-            if(window.nomeJogador) {
-                set(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}`), {
-                    mao: maoDoJogador, reserva: reservaDoJogador, slots: slotsFixos
-                });
-            }
-        }
-
-        // --- SISTEMA DE PRESENÇA (CORREÇÃO FINAL: HEARTBEAT) ---
-        window.registrarPresenca = function(nomePersonagem) {
-            if (!nomePersonagem) return;
-            const presencaRef = ref(db, `mesa_rpg/presenca/${nomePersonagem}`);
-            set(presencaRef, true);
-            onDisconnect(presencaRef).remove();
-        };
-
-        // INTERCEPTA A SELEÇÃO
-        const originalSelecionar = window.selecionarPersonagem;
-        window.selecionarPersonagem = async function(charName) {
-            window.nomeJogador = charName.toUpperCase();
-            
-            // Carrega dados do Firebase para popular variáveis locais
-            const snap = await get(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}`));
-            if(snap.exists()) {
-                const d = snap.val();
-                maoDoJogador = d.mao || [];
-                reservaDoJogador = d.reserva || [];
-                if(d.slots) slotsFixos = d.slots;
-            }
-
-            await originalSelecionar(charName); // Lógica visual de esconder login
-            
-            window.registrarPresenca(window.nomeJogador);
-            
-            // Inicia sistemas externos e renderização
-            await carregarDados();
-            renderizar();
-            
-            if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-            
-            // HEARTBEAT
-            if (window.presencaInterval) clearInterval(window.presencaInterval);
-            window.presencaInterval = setInterval(() => {
-                if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
-            }, 30000);
-        };
-
-        // REFRESH MANUAL
+        // FUNÇÃO DE RESSINCRONIZAÇÃO MANUAL
         window.atualizarSincronia = function() {
             const btn = document.querySelector('.btn-refresh-player');
             if(btn) btn.classList.add('spin-anim');
@@ -594,19 +368,18 @@
             const container = document.getElementById('area-inimigos');
             if(container) container.innerHTML = "";
             
-            // Reload lógica
+            // Reinicia sistemas
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
             if(window.escutarRolagens) window.escutarRolagens();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-            renderizar();
-
-            // REFORÇA PRESENÇA
-            if (window.nomeJogador) window.registrarPresenca(window.nomeJogador);
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // REINICIA MEDO
+            
+            // Se tiver função de renderizar cartas (script.js), chama também
+            if(window.renderizar) window.renderizar();
 
             setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
         };
 
-        // LOADER DE SCRIPTS
+        // LOADER DE SCRIPTS DINÂMICOS
         function loadScript(src) {
             const script = document.createElement('script');
             script.src = src + "?t=" + Date.now();
@@ -624,10 +397,7 @@
         setTimeout(() => {
             if(window.escutarRolagens) window.escutarRolagens();
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-            
-            // Se já tiver personagem carregado, registra presença agora
-            if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // INICIA MEDO
         }, 2000);
     </script>
 </body>
