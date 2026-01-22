@@ -108,56 +108,28 @@
                 <img id="sheet-bg">
                 <div id="sheet-inputs-layer"></div>
             </div>
-
-            <div id="tutorial-overlay">
-                <div class="tutorial-box">
-                    <button class="close-tutorial-btn" onclick="toggleTutorial()">×</button>
-                    <div class="tutorial-scroll">
-                        <h2 style="color: var(--gold); text-align: center; border-bottom: 1px solid var(--gold); padding-bottom: 10px;">Guia de Preenchimento</h2>
-                        
-                        <h3>1. Escolha de Classe e Nível</h3>
-                        <ul>
-                            <li><strong>Classe:</strong> Anote no topo da ficha.</li>
-                            <li><strong>Subclasse:</strong> Escolha a carta <strong>Fundamental</strong>.</li>
-                            <li><strong>Nível:</strong> Anote <strong>1</strong>.</li>
-                        </ul>
-
-                        <h3>2. Herança</h3>
-                        <ul>
-                            <li><strong>Ancestralidade:</strong> Concede <strong>duas</strong> habilidades.</li>
-                            <li><strong>Comunidade:</strong> Concede <strong>uma</strong> habilidade.</li>
-                        </ul>
-
-                        <h3>3. Atributos</h3>
-                        <p>Distribua os seguintes modificadores:</p>
-                        <p style="text-align: center; font-weight: bold; color: var(--gold); background: rgba(0,0,0,0.3); padding: 5px;">+2, +1, +1, 0, 0, –1</p>
-
-                        <h3>4. Combate e Vida</h3>
-                        <ul>
-                            <li><strong>Evasão:</strong> Valor fixo da Classe (ex: Bardo 10).</li>
-                            <li><strong>PV:</strong> Valor fixo da Classe.</li>
-                            <li><strong>Fadiga:</strong> 6 espaços.</li>
-                            <li><strong>Esperança:</strong> 2 marcados.</li>
-                        </ul>
-
-                        <h3>5. Equipamento</h3>
-                        <p><strong>Armadura:</strong> Valor base (ex: Couro = 3).</p>
-                        <p><strong>Limiares de Dano:</strong> Armadura + Nível.</p>
-                        <p><strong>Armas:</strong> Primária e Secundária. Marque Proficiência 1.</p>
-
-                        <h3>6. Experiências</h3>
-                        <p>Crie duas frases (+2 para ambas).</p>
-
-                        <h3>7. Cartas de Domínio</h3>
-                        <p>Duas cartas de nível 1.</p>
-                    </div>
-                </div>
-            </div>
             
             <div class="sheet-footer">
                 <button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button>
                 <span id="sheet-page-indicator">1</span>
                 <button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="tutorial-overlay">
+        <div class="tutorial-box">
+            <button class="close-tutorial-btn" onclick="toggleTutorial()">×</button>
+            <div class="tutorial-scroll">
+                <h2 style="color: var(--gold); text-align: center; border-bottom: 1px solid var(--gold); padding-bottom: 10px;">Guia de Preenchimento</h2>
+                <h3>1. Escolha de Classe e Nível</h3>
+                <ul><li><strong>Classe:</strong> Anote no topo.</li><li><strong>Subclasse:</strong> Escolha a carta Fundamental.</li><li><strong>Nível:</strong> Anote 1.</li></ul>
+                <h3>2. Herança</h3>
+                <ul><li><strong>Ancestralidade:</strong> Duas habilidades.</li><li><strong>Comunidade:</strong> Uma habilidade.</li></ul>
+                <h3>3. Atributos</h3>
+                <p>Distribua: +2, +1, +1, 0, 0, –1</p>
+                <h3>4. Combate</h3>
+                <ul><li><strong>Evasão:</strong> Valor fixo da Classe.</li><li><strong>PV:</strong> Valor fixo.</li><li><strong>Fadiga:</strong> 6 espaços.</li><li><strong>Esperança:</strong> 2 marcados.</li></ul>
             </div>
         </div>
     </div>
@@ -167,7 +139,9 @@
     <div id="hover-preview-slot" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:600px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
 
     <div id="app-container" style="display: none; opacity: 0;">
+        
         <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar Mesa">🔄</button>
+
         <div id="aura-profissao"></div>
         <div id="particulas-profissao"></div>
 
@@ -178,7 +152,6 @@
         
         <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio>
         <audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
-        
         <audio id="sound-medo-add"><source src="audio/sound-recolhe-medo.mp3" type="audio/mpeg"></audio>
         <audio id="sound-medo-use"><source src="audio/sound-usa-medo.mp3" type="audio/mpeg"></audio>
 
@@ -201,21 +174,20 @@
 
     <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()"><div class="dados-content"><div class="dados-header">Rolagem</div><div class="dualidade-box"><span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button></div><hr style="border-top:1px solid #444; width:100%;"><div class="grid-dados"><div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div></div><button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button></div></div>
     <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar</button></div>
+    <div id="grimorio-modal" class="modal"><div class="modal-content"><div class="modal-header"><h2 id="modal-titulo">Escolha uma Carta</h2><button class="close-btn" onclick="fecharGrimorio()">X</button></div><div id="grid-cartas"></div></div></div>
+    <div id="decisao-modal" class="modal" style="z-index: 6000;"><div class="modal-decisao-content"><h3>Gerenciar Carta</h3><div class="carta-preview-decisao" id="preview-decisao"></div><div class="grupo-tokens"><span>Tokens:</span><button class="btn-token" onclick="alterarToken(-1)">-</button><span id="label-token-qtd">0</span><button class="btn-token" onclick="alterarToken(1)">+</button></div><div class="grupo-tokens"><button class="btn-estado" onclick="definirEstado('curto')">Descanso Curto</button><button class="btn-estado" onclick="definirEstado('longo')">Descanso Longo</button></div><div class="botoes-decisao"><button class="btn-usar-carta" id="btn-usar-carta" onclick="usarCarta()" style="display:none;">⚡ Usar</button><button class="btn-confirmar" onclick="confirmarEdicao()">OK</button><button class="btn-reserva" id="btn-para-reserva" onclick="moverParaReserva()" style="display:none;">Reserva</button><button class="btn-deck" id="btn-devolver-mao" onclick="devolverParaMao()" style="display:none;">Mão</button><button class="btn-deck" id="btn-devolver-deck" onclick="devolverAoDeck()" style="display:none;">Deck</button></div></div></div>
     <div id="reserva-modal" class="modal" style="z-index: 6000;"><div class="modal-reserva-content"><div class="modal-header"><h2>Reserva</h2><button class="close-btn" onclick="window.fecharReserva()">X</button></div><div id="grid-reserva"></div></div></div>
     <div id="troca-modal" class="modal" style="z-index: 6100;"><div class="modal-decisao-content"><h3>Mão cheia!</h3><div id="grid-troca"></div><div class="botoes-decisao"><button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button></div></div></div>
-    <div id="decisao-modal" class="modal" style="z-index: 6000;"><div class="modal-decisao-content"><h3>Gerenciar Carta</h3><div class="carta-preview-decisao" id="preview-decisao"></div><div class="grupo-tokens"><span>Tokens:</span><button class="btn-token" onclick="alterarToken(-1)">-</button><span id="label-token-qtd">0</span><button class="btn-token" onclick="alterarToken(1)">+</button></div><div class="grupo-tokens"><button class="btn-estado" onclick="definirEstado('curto')">Descanso Curto</button><button class="btn-estado" onclick="definirEstado('longo')">Descanso Longo</button></div><div class="botoes-decisao"><button class="btn-usar-carta" id="btn-usar-carta" onclick="usarCarta()" style="display:none;">⚡ Usar</button><button class="btn-confirmar" onclick="confirmarEdicao()">OK</button><button class="btn-reserva" id="btn-para-reserva" onclick="moverParaReserva()" style="display:none;">Reserva</button><button class="btn-deck" id="btn-devolver-mao" onclick="devolverParaMao()" style="display:none;">Mão</button><button class="btn-deck" id="btn-devolver-deck" onclick="devolverAoDeck()" style="display:none;">Deck</button></div></div></div>
 
-    <script type="module" src="script.js?v=12.0"></script>
+    <script type="module" src="script.js?v=12.2"></script>
     
     <script>
-        // Função utilitária para carregar scripts dinamicamente
         function loadScript(src) {
             const script = document.createElement('script');
             script.src = src + "?t=" + Date.now();
             document.body.appendChild(script);
         }
 
-        // Carrega os módulos adicionais após o principal
         window.addEventListener('load', () => {
             setTimeout(() => {
                 loadScript("profissao.js");
