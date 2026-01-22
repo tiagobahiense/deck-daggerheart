@@ -8,23 +8,11 @@
     <link rel="stylesheet" href="ficha.css?v=5.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="medo.css?v=1.0"> <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; margin: 0; overflow: hidden; }
         
-        /* LOADING SCREEN - Z-INDEX MAXIMO PARA BLOQUEAR TUDO ATE LOGAR */
-        #loading-screen { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: #000; z-index: 99999; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            color: var(--gold); font-family: 'MedievalSharp', cursive; font-size: 1.5rem; 
-            gap: 15px;
-        }
-        .loading-spinner {
-            width: 40px; height: 40px;
-            border: 4px solid #333; border-top: 4px solid var(--gold);
-            border-radius: 50%; animation: spin 1s linear infinite;
-        }
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: flex; align-items: center; justify-content: center; color: var(--gold); font-family: 'MedievalSharp', cursive; font-size: 2rem; }
 
         #container-principal { display: flex; flex: 1; overflow: hidden; gap: 0; }
         
@@ -36,7 +24,6 @@
         .card-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:5px; }
         .nome { color: var(--gold); font-weight: bold; font-size: 0.9rem; }
         .tag-classe { font-size: 0.65rem; color: #aaa; background: #222; padding: 1px 4px; border-radius: 4px; }
-        
         .btn-abrir-ficha-mestre { background: var(--gold); color: #000; border: none; border-radius: 15px; padding: 2px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-left:5px; }
         .btn-expandir-mesa { background: #333; color: #ccc; border: 1px solid #555; width: 100%; padding: 4px; cursor: pointer; font-size: 0.75rem; margin-top:5px; border-radius: 4px; }
         .btn-expandir-mesa:hover { background: #444; color: #fff; }
@@ -47,7 +34,8 @@
         /* 2. ÁREA DE BATALHA (CENTRO) */
         #area-batalha-gm { flex-grow: 1; background: url('img/background_epico.png') no-repeat center center; background-size: cover; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         #titulo-batalha { background: rgba(0,0,0,0.8); color: var(--gold); text-align: center; padding: 5px; font-family: 'MedievalSharp', cursive; border-bottom: 1px solid var(--gold); }
-        
+        #area-inimigos { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 15px; }
+
         /* 3. ESCUDO E DADOS (DIREITA) */
         #sidebar-escudo { width: 280px; flex-shrink: 0; background: #0f0f0f; border-left: 2px solid var(--gold); padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .escudo-topicos { display: flex; flex-direction: column; gap: 5px; }
@@ -88,10 +76,9 @@
 </head>
 <body>
     
-    <div id="loading-screen">
-        <div class="loading-spinner"></div>
-        <div>Verificando Acesso do Mestre...</div>
-    </div>
+    <div id="loading-screen">Carregando Mesa...</div>
+
+    <div id="medo-overlay-msg"></div>
 
     <div id="preview-carta-mestre"></div>
 
@@ -126,7 +113,20 @@
         </div>
 
         <div id="sidebar-escudo">
-            <h3 style="color:var(--gold); text-align:center; border-bottom:1px solid #333; padding-bottom:5px; margin-top:0;">ESCUDO GM</h3>
+            
+            <div id="medo-container">
+                <div class="medo-header">
+                    <div class="medo-titulo">👁️ MEDO</div>
+                    <div class="medo-botoes">
+                        <button class="btn-medo btn-medo-add" onclick="adicionarMedo()">Adicionar</button>
+                        <button class="btn-medo btn-medo-use" onclick="usarMedo()">Usar</button>
+                    </div>
+                </div>
+                <div class="medo-grid" id="medo-grid-slots">
+                    </div>
+            </div>
+
+            <h3 style="color:var(--gold); text-align:center; border-bottom:1px solid #333; padding-bottom:5px; margin-top:20px;">ESCUDO GM</h3>
             <div class="escudo-topicos">
                 <button class="btn-topico" onclick="exibirTopico('testes')">🎲 Testes & Dualidade</button>
                 <button class="btn-topico" onclick="exibirTopico('recursos')">💎 Recursos</button>
@@ -141,83 +141,17 @@
         </div>
     </div>
 
-    <div id="modal-criar-inimigo">
-        <div class="modal-criar-content">
-            <h2 style="color:var(--gold); text-align:center; margin-top:0;">Invocar Inimigo</h2>
-            <div class="form-grid">
-                <div class="form-group form-full"><label>Nome</label><input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz"></div>
-                <div class="form-group form-full">
-                    <label>Imagem (Upload ou Link)</label>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="new-enemy-img" placeholder="URL ou Upload..." style="flex:1">
-                        <label for="upload-file-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer; color:white;">📁</label>
-                        <input type="file" id="upload-file-input" accept="image/*" style="display:none" onchange="processarUploadImagem()">
-                        <img id="preview-img-mini" style="width:30px; height:30px; display:none; border:1px solid #555;">
-                    </div>
-                </div>
-                <div class="form-group"><label>PV Max</label><input type="number" id="new-enemy-pv" value="4"></div>
-                <div class="form-group"><label>Estresse (PF)</label><input type="number" id="new-enemy-pf" value="0"></div>
-                <div class="form-group"><label>Dificuldade</label><input type="number" id="new-enemy-dif" value="12"></div>
-                <div class="form-group"><label>Ataque</label><input type="text" id="new-enemy-atk" value="+2"></div>
-                <div class="form-group"><label>Dano</label><input type="text" id="new-enemy-dmg" value="1d6+2"></div>
-                <div class="form-group"><label>Limiares</label><input type="text" id="new-enemy-limiares" placeholder="5/10"></div>
-                <div class="form-group form-full"><label>Habilidades</label><textarea id="new-enemy-desc" rows="3"></textarea></div>
-            </div>
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn-rest btn-invocar" style="background:#4CAF50; flex:1;" onclick="salvarNovoInimigo()">Invocar</button>
-                <button class="btn-rest" style="background:#f44336; flex:1;" onclick="fecharCriadorInimigo()">Cancelar</button>
-            </div>
-        </div>
-    </div>
+    <div id="modal-criar-inimigo"><div class="modal-criar-content"><h2 style="color:var(--gold); text-align:center; margin-top:0;">Invocar Inimigo</h2><div class="form-grid"><div class="form-group form-full"><label>Nome</label><input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz"></div><div class="form-group form-full"><label>Imagem</label><div style="display:flex; gap:5px;"><input type="text" id="new-enemy-img" placeholder="URL ou Upload..." style="flex:1"><label for="upload-file-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer; color:white;">📁</label><input type="file" id="upload-file-input" accept="image/*" style="display:none" onchange="processarUploadImagem()"><img id="preview-img-mini" style="width:30px; height:30px; display:none; border:1px solid #555;"></div></div><div class="form-group"><label>PV Max</label><input type="number" id="new-enemy-pv" value="4"></div><div class="form-group"><label>Estresse (PF)</label><input type="number" id="new-enemy-pf" value="0"></div><div class="form-group"><label>Dificuldade</label><input type="number" id="new-enemy-dif" value="12"></div><div class="form-group"><label>Ataque</label><input type="text" id="new-enemy-atk" value="+2"></div><div class="form-group"><label>Dano</label><input type="text" id="new-enemy-dmg" value="1d6+2"></div><div class="form-group"><label>Limiares</label><input type="text" id="new-enemy-limiares" placeholder="5/10"></div><div class="form-group form-full"><label>Habilidades</label><textarea id="new-enemy-desc" rows="3"></textarea></div></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-rest btn-invocar" style="background:#4CAF50; flex:1;" onclick="salvarNovoInimigo()">Invocar</button><button class="btn-rest" style="background:#f44336; flex:1;" onclick="fecharCriadorInimigo()">Cancelar</button></div></div></div>
 
-    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
-        <div class="dados-content">
-            <div class="dados-header">Rolagem de Dados</div>
-            <div class="dualidade-box">
-                <span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span>
-                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button>
-            </div>
-            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
-            <div class="grid-dados">
-                <div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div>
-            </div>
-            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
-        </div>
-    </div>
-
-    <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button></div>
-
-    <div id="modal-escudo">
-        <div class="modal-escudo-content">
-            <button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button>
-            <div id="escudo-conteudo"></div>
-        </div>
-    </div>
-
-    <div id="sheet-modal" class="modal">
-        <div class="sheet-content">
-            <div class="sheet-toolbar">
-                <button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button>
-                <button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button>
-                <button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button>
-            </div>
-            <button class="btn-close-sheet" onclick="fecharFicha()">X</button>
-            <div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div>
-            <div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div>
-        </div>
-    </div>
-
-    <div id="carta-usada-animada" class="carta-tabuleiro-animada"></div>
+    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()"><div class="dados-content"><div class="dados-header">Rolagem</div><div class="dualidade-box"><span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button></div><hr style="border-top:1px solid #444; width:100%;"><div class="grid-dados"><div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div></div><button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button></div></div>
+    <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar</button></div>
+    <div id="modal-escudo"><div class="modal-escudo-content"><button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button><div id="escudo-conteudo"></div></div></div>
+    <div id="sheet-modal" class="modal"><div class="sheet-content"><div class="sheet-toolbar"><button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button><button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button><button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button></div><button class="btn-close-sheet" onclick="fecharFicha()">X</button><div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div><div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get, onChildChanged, push, query, limitToLast, onChildAdded, update, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -233,11 +167,8 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
-        
-        // Garante persistência (Correção de logout)
-        setPersistence(auth, browserSessionPersistence).catch(console.error);
 
-        // Exportações globais
+        // Exports Globais
         window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
         window.onValue = onValue; window.push = push; window.update = update; window.off = off;
         window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
@@ -264,23 +195,17 @@
             if(el) el.classList.toggle('ativo');
         };
 
-        // FUNÇÃO DE RESSINCRONIZAÇÃO
         window.atualizarSincronia = function() {
             const btn = document.querySelector('.btn-refresh');
             if(btn) btn.classList.add('spin-anim');
-            
-            // Limpa visualmente para dar feedback
             document.getElementById('painel').innerHTML = '<p style="color:#666;text-align:center">Ressincronizando...</p>';
             document.getElementById('area-inimigos').innerHTML = '';
             
-            // Reinicia sistemas
             iniciarPainelJogadores();
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.escutarRolagens) window.escutarRolagens();
-            
-            setTimeout(() => {
-                if(btn) btn.classList.remove('spin-anim');
-            }, 1000);
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // REFRESH DO MEDO
+
+            setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
         };
 
         function iniciarPainelJogadores() {
@@ -301,7 +226,7 @@
                     const card = document.createElement('div');
                     card.className = 'card-jogador';
                     const safeName = nome.replace(/'/g, "\\'");
-
+                    
                     let htmlMao = "";
                     if(p.mao && p.mao.length > 0) {
                         p.mao.forEach(c => {
@@ -347,13 +272,11 @@
                 if (snap.exists()) { snap.forEach(c => { const d = c.val(); if (d.status !== 'inactive' && d.characters) Object.keys(d.characters).forEach(n => setNomes.add(String(n).toUpperCase())); }); }
                 nomesDePersonagens = setNomes; render();
             });
-
             onValue(jogadoresRef, (snap) => {
                 cacheJogadores = snap.exists() ? snap.val() : {};
                 Object.keys(cacheJogadores).forEach(n => nomesDePersonagens.add(String(n).toUpperCase()));
                 render();
             });
-            
             onChildChanged(jogadoresRef, (snap) => {
                 const n = snap.key; const d = snap.val();
                 if(d.cartaUsada) animarCartaEspecifica(n, d.cartaUsada);
@@ -411,17 +334,17 @@
         document.getElementById('modal-escudo').addEventListener('click', function(e) { if(e.target===this) fecharEscudo(); });
 
         onAuthStateChanged(auth, u => {
-            // SEGURANÇA: Se não estiver logado, não tira a tela de loading e redireciona
-            if(!u || u.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { 
-                window.location.href="index.html"; 
-                return; 
-            }
-            // SUCESSO: Remove a tela de loading
             document.getElementById('loading-screen').style.display = 'none';
+            if(!u || u.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { window.location.href="index.html"; return; }
             iniciarPainelJogadores();
+            setTimeout(() => {
+                if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
+                if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // INICIA O MEDO
+                if(window.escutarRolagens) window.escutarRolagens();
+            }, 1000);
         });
 
-        // LOADER DE SCRIPTS COM TIMESTAMP (ANTI-CACHE)
+        // LOADER DE SCRIPTS
         function loadScript(src) {
             const script = document.createElement('script');
             script.src = src + "?t=" + Date.now();
@@ -431,23 +354,19 @@
         loadScript("ficha.js");
         loadScript("dados.js");
         loadScript("inimigos.js");
+        loadScript("medo.js"); // NOVO SCRIPT
 
-        // Hover Preview (Detecta cartas na mão, na mesa expandida e na reserva)
+        // Hover Preview (Updated)
         document.addEventListener('mouseover', (e) => {
-            // Seletor abrangente para cartas
             const c = e.target.closest('.mini-carta, .slot-ativo, .carta-reserva-visual');
             if (c && !c.classList.contains('status-vazio')) {
                 const p = document.getElementById('preview-carta-mestre');
-                
-                // Tenta pegar imagem do estilo inline (Mão) ou computado (Mesa)
                 let bg = c.style.backgroundImage;
                 if (!bg || bg === 'none') {
                      bg = window.getComputedStyle(c).backgroundImage;
                 }
-                
                 if (bg && bg !== 'none') {
                     p.style.backgroundImage = bg;
-                    // Limpa conteúdo anterior (como tokens da mão) para cartas da mesa
                     p.innerHTML = c.classList.contains('mini-carta') ? c.innerHTML : '';
                     p.style.display = 'flex';
                 }

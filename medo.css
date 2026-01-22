@@ -1,0 +1,152 @@
+/* =========================================================
+   SISTEMA DE MEDO (FEAR) - DAGGERHEART
+   ========================================================= */
+
+/* --- O GRID NO PAINEL DO MESTRE --- */
+#medo-container {
+    background: rgba(10, 5, 15, 0.95);
+    border: 1px solid #6a0dad; /* Roxo */
+    border-radius: 8px;
+    padding: 10px;
+    margin-top: 15px;
+    box-shadow: 0 0 15px rgba(75, 0, 130, 0.3);
+}
+
+.medo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+}
+
+.medo-titulo {
+    color: #d896ff;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1rem;
+    text-shadow: 0 0 5px #6a0dad;
+}
+
+.medo-botoes {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-medo {
+    border: none;
+    border-radius: 4px;
+    padding: 4px 10px;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: 0.2s;
+    color: #fff;
+}
+
+.btn-medo-add {
+    background: #4b0082;
+    border: 1px solid #8a2be2;
+    box-shadow: 0 0 5px #4b0082;
+}
+.btn-medo-add:hover { background: #8a2be2; box-shadow: 0 0 15px #8a2be2; }
+
+.btn-medo-use {
+    background: #2a0040;
+    border: 1px solid #ff4444;
+    color: #ffcccc;
+}
+.btn-medo-use:hover { background: #500000; box-shadow: 0 0 10px red; }
+
+/* O Grid de Slots */
+.medo-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 2 linhas de 5 */
+    gap: 8px;
+    justify-items: center;
+}
+
+.medo-slot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px dashed #333;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* A ESFERA ROXA FLAMEJANTE */
+.medo-token {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #e0b0ff, #800080, #2a0040);
+    box-shadow: 
+        0 0 10px #8a2be2, 
+        0 0 20px #4b0082, 
+        inset 0 0 5px rgba(255, 255, 255, 0.5);
+    cursor: pointer;
+    animation: chama-roxa 2s infinite alternate;
+    transition: transform 0.2s;
+}
+
+.medo-token:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 25px #bf00ff;
+}
+
+@keyframes chama-roxa {
+    0% { box-shadow: 0 0 8px #8a2be2; transform: scale(0.95); }
+    100% { box-shadow: 0 0 18px #bf00ff; transform: scale(1.05); }
+}
+
+/* --- MENSAGEM SOMBRIA NA TELA (OVERLAY) --- */
+#medo-overlay-msg {
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'MedievalSharp', cursive;
+    text-align: center;
+    pointer-events: none; /* Deixa clicar através */
+    z-index: 10000;
+    opacity: 0; /* Invisível por padrão */
+    width: 100%;
+}
+
+.msg-medo-texto {
+    font-size: 2.5rem;
+    color: #e0b0ff;
+    text-shadow: 
+        0 0 10px #000, 
+        0 0 20px #4b0082, 
+        0 0 40px #800080;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 20px;
+    border-top: 2px solid #8a2be2;
+    border-bottom: 2px solid #8a2be2;
+    box-shadow: 0 0 50px rgba(0,0,0,0.9);
+    letter-spacing: 2px;
+}
+
+/* Animação de Entrada e Saída */
+.anim-medo-aparecer {
+    animation: medoFade 4s ease-in-out forwards;
+}
+
+@keyframes medoFade {
+    0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
+    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -60%); }
+}
+
+/* Cor diferente para "Gastou Medo" */
+.msg-medo-gasto {
+    color: #ff9999;
+    border-color: #8b0000;
+    text-shadow: 0 0 20px red;
+}

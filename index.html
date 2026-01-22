@@ -11,13 +11,13 @@
     <link rel="stylesheet" href="ficha.css?v=5.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="medo.css?v=1.0"> <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
-        /* Botão Refresh do Jogador */
+        /* Estilos do Botão Refresh para Jogador (Fixo no canto superior) */
         .btn-refresh-player {
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 20px;
+            right: 20px;
             background: rgba(0, 0, 0, 0.7);
             border: 2px solid #555;
             color: #aaa;
@@ -48,6 +48,8 @@
     </style>
 </head>
 <body>
+
+    <div id="medo-overlay-msg"></div>
 
     <div id="login-screen">
         <div class="login-box" id="fase-selecao">
@@ -341,7 +343,7 @@
 
     <script type="module" src="script.js?v=10.2"></script>
     <script type="module">
-        // EXPOSIÇÃO GLOBAL CRÍTICA PARA DADOS.JS, FICHA.JS e INIMIGOS.JS
+        // EXPOSIÇÃO GLOBAL CRÍTICA
         import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
         window.db = getDatabase(); 
@@ -369,6 +371,7 @@
             // Reinicia sistemas
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
             if(window.escutarRolagens) window.escutarRolagens();
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // REINICIA MEDO
             
             // Se tiver função de renderizar cartas (script.js), chama também
             if(window.renderizar) window.renderizar();
@@ -388,11 +391,13 @@
         loadScript("ficha.js");
         loadScript("dados.js");
         loadScript("inimigos.js");
+        loadScript("medo.js"); // CARREGA MEDO
 
         // GARANTE A INICIALIZAÇÃO IMEDIATA
         setTimeout(() => {
             if(window.escutarRolagens) window.escutarRolagens();
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // INICIA MEDO
         }, 2000);
     </script>
 </body>
