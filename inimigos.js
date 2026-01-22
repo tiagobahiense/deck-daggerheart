@@ -1,5 +1,5 @@
 // =========================================================
-// SISTEMA DE INIMIGOS V3.5 (CONTROLES DE PF INCLUÍDOS)
+// SISTEMA DE INIMIGOS V3.7 (CORREÇÃO BARRA PF)
 // =========================================================
 
 // --- FUNÇÕES DE CONTROLE (MESTRE) ---
@@ -20,6 +20,7 @@ window.salvarNovoInimigo = function() {
     const pvMax = parseInt(document.getElementById('new-enemy-pv').value) || 1;
     const pfMax = parseInt(document.getElementById('new-enemy-pf').value) || 0;
     const dif = parseInt(document.getElementById('new-enemy-dif').value) || 12;
+    
     const limiares = document.getElementById('new-enemy-limiares').value || "-";
     const ataque = document.getElementById('new-enemy-atk').value || "+0";
     const dano = document.getElementById('new-enemy-dmg').value || "-";
@@ -35,7 +36,7 @@ window.salvarNovoInimigo = function() {
         ataque: ataque,
         dano: dano,
         detalhes: desc,
-        visivel: false,
+        visivel: false, 
         efeitoVisual: null
     };
 
@@ -56,7 +57,7 @@ window.alterarStatusInimigo = function(id, tipo, delta) {
         const data = snap.val();
         
         const max = tipo === 'pv_atual' ? data.pv_max : data.pf_max;
-        let novo = data[tipo] + delta;
+        let novo = (data[tipo] || 0) + delta;
         
         if(novo < 0) novo = 0;
         if(novo > max) novo = max;
@@ -112,7 +113,7 @@ window.iniciarSistemaInimigos = function() {
         const inimigos = snap.val();
         Object.keys(inimigos).forEach(key => {
             const data = inimigos[key];
-            if (!isGM && !data.visivel) return; // Jogador não vê invisível
+            if (!isGM && !data.visivel) return; 
             container.appendChild(criarTokenInimigo(key, data, isGM));
         });
     });
@@ -134,7 +135,18 @@ function criarTokenInimigo(id, data, isGM) {
     const pfPct = data.pf_max > 0 ? (data.pf_atual / data.pf_max) * 100 : 0;
     const imgSrc = data.imagem && data.imagem.length > 10 ? data.imagem : 'img/monsters/default.png';
 
-    // CONTROLES GM
+    // === GERAÇÃO DOS BOTÕES DE PF ===
+    let pfControlsHTML = '';
+    if (data.pf_max > 0) {
+        pfControlsHTML = `
+            <div class="gm-btn-row">
+                <div class="btn-gm-mini btn-gm-est-dano" onclick="alterarStatusInimigo('${id}', 'pf_atual', -1)" title="-PF (Estresse)">-</div>
+                <div class="btn-gm-mini btn-gm-est-cura" onclick="alterarStatusInimigo('${id}', 'pf_atual', 1)" title="+PF (Estresse)">+</div>
+            </div>
+        `;
+    }
+
+    // === HTML DO MESTRE ===
     let gmHTML = '';
     if(isGM) {
         gmHTML = `
@@ -143,11 +155,7 @@ function criarTokenInimigo(id, data, isGM) {
                     <div class="btn-gm-mini btn-gm-dano" onclick="alterarStatusInimigo('${id}', 'pv_atual', -1)" title="-PV">-</div>
                     <div class="btn-gm-mini btn-gm-cura" onclick="alterarStatusInimigo('${id}', 'pv_atual', 1)" title="+PV">+</div>
                 </div>
-                ${data.pf_max > 0 ? `
-                <div class="gm-btn-row">
-                    <div class="btn-gm-mini btn-gm-est-dano" onclick="alterarStatusInimigo('${id}', 'pf_atual', 1)" title="+PF (Estresse)">+</div>
-                    <div class="btn-gm-mini btn-gm-est-cura" onclick="alterarStatusInimigo('${id}', 'pf_atual', -1)" title="-PF (Estresse)">-</div>
-                </div>` : ''}
+                ${pfControlsHTML}
                 <div class="gm-btn-row">
                     <div class="btn-gm-mini btn-gm-eye ${data.visivel ? 'ativo' : ''}" onclick="toggleVisibilidadeInimigo('${id}')" title="Visibilidade">👁️</div>
                     <div class="btn-gm-mini btn-gm-info" onclick="toggleDetalhesToken('${id}')" title="Detalhes">i</div>
@@ -169,7 +177,7 @@ function criarTokenInimigo(id, data, isGM) {
                 <div class="fill-pv" style="width: ${pvPct}%"></div>
             </div>
             ${data.pf_max > 0 ? `
-            <div class="barra-mini" style="margin-top:1px;" title="Estresse: ${data.pf_atual}/${data.pf_max}">
+            <div class="barra-mini" style="margin-top:2px;" title="Estresse: ${data.pf_atual}/${data.pf_max}">
                 <div class="fill-pf" style="width: ${pfPct}%"></div>
             </div>` : ''}
         </div>
