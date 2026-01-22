@@ -8,8 +8,7 @@
     <link rel="stylesheet" href="style.css?v=10.2">
     <link rel="stylesheet" href="profissao.css?v=1.0">
     <link rel="stylesheet" href="selecao-classe.css?v=3.0">
-    <link rel="stylesheet" href="ficha.css?v=5.1">
-    <link rel="stylesheet" href="dados.css?v=2.0">
+    <link rel="stylesheet" href="ficha.css?v=6.0"> <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
     <link rel="stylesheet" href="medo.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
@@ -81,11 +80,6 @@
                 <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador">●</button>
                 <button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;" title="Limpar Tudo">🗑️</button>
                 
-                <div class="color-separator"></div>
-                <button class="tool-btn color-btn active-color" onclick="mudarCorTexto('black')" style="background:#000" title="Preto"></button>
-                <button class="tool-btn color-btn" onclick="mudarCorTexto('red')" style="background:#cc0000" title="Vermelho"></button>
-                <button class="tool-btn color-btn" onclick="mudarCorTexto('white')" style="background:#fff" title="Branco"></button>
-
                 <div class="color-separator" style="height: 1px; width: 20px; background: #555; margin: 5px 0;"></div>
                 <button class="tool-btn btn-guia" onclick="toggleTutorial()" title="Guia de Preenchimento">Guia</button>
             </div>
@@ -189,7 +183,7 @@
     <div id="reserva-modal" class="modal" style="z-index: 6000;"><div class="modal-reserva-content"><div class="modal-header"><h2>Reserva</h2><button class="close-btn" onclick="window.fecharReserva()">X</button></div><div id="grid-reserva"></div></div></div>
     <div id="troca-modal" class="modal" style="z-index: 6100;"><div class="modal-decisao-content"><h3>Mão cheia!</h3><div id="grid-troca"></div><div class="botoes-decisao"><button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button></div></div></div>
 
-    <script type="module" src="script.js?v=11.2"></script>
+    <script type="module" src="script.js?v=11.3"></script>
     
     <script>
         // Função utilitária para carregar scripts dinamicamente
