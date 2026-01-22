@@ -11,8 +11,7 @@
     <link rel="stylesheet" href="ficha.css?v=5.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
-    <link rel="stylesheet" href="medo.css?v=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="medo.css?v=1.0"> <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         /* Estilos do Botão Refresh para Jogador (Fixo no canto superior) */
         .btn-refresh-player {
@@ -108,123 +107,506 @@
         </div>
     </div>
 
-    <div id="classe-selection-modal" class="modal-selecao"><div class="classe-carousel-wrapper"><div class="selecao-header"><h2>Escolha sua Classe</h2><p>Clique na imagem para ler</p></div><div class="carousel-main"><button class="nav-btn prev" onclick="window.mudarClasse(-1)">❮</button><div class="card-display" onclick="window.verDetalhesClasse()"><div class="card-glow"></div><img id="img-classe-perfil" class="img-perfil-animada"><div class="card-label"><span id="nome-classe-selecao">CLASSE</span></div></div><button class="nav-btn next" onclick="window.mudarClasse(1)">❯</button></div><div class="selecao-footer"><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasse()">✓ Confirmar <span id="btn-nome-classe">Classe</span></button></div></div></div>
-    <div id="modal-detalhes-classe" class="modal" style="z-index: 7000;"><div class="modal-detalhes-content"><button class="close-detalhes" onclick="window.fecharDetalhesClasse()">X</button><div class="pdf-wrapper"><button class="nav-pdf-btn prev" onclick="window.mudarPaginaPDF(-1)">❮</button><div class="pdf-container"><img id="img-classe-pdf"></div><button class="nav-pdf-btn next" onclick="window.mudarPaginaPDF(1)">❯</button></div><div class="detalhes-footer"><div class="page-counter" id="pdf-page-counter">1/2</div><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasseDeDentro()">Escolher</button></div></div></div>
-    
-    <div id="sheet-modal" class="modal"><div class="sheet-content"><div class="sheet-toolbar"><button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button><button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button><button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button></div><button class="btn-close-sheet" onclick="fecharFicha()">X</button><div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div><div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div></div></div>
-    
-    <div id="hover-preview" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:525px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
-    <div id="hover-preview-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:525px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
-    <div id="hover-preview-slot" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:600px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
+    <div id="classe-selection-modal" class="modal-selecao">
+        <div class="classe-carousel-wrapper">
+            <div class="selecao-header">
+                <h2>Escolha sua Classe</h2>
+                <p>Clique na imagem para ler as habilidades</p>
+            </div>
+            <div class="carousel-main">
+                <button class="nav-btn prev" onclick="window.mudarClasse(-1)">❮</button>
+                <div class="card-display" onclick="window.verDetalhesClasse()">
+                    <div class="card-glow"></div>
+                    <img id="img-classe-perfil" src="" alt="Imagem da Classe" class="img-perfil-animada">
+                    <div class="card-label">
+                        <span id="nome-classe-selecao">CLASSE</span>
+                    </div>
+                    <div class="click-hint">🔍 Clique para ver Habilidades</div>
+                </div>
+                <button class="nav-btn next" onclick="window.mudarClasse(1)">❯</button>
+            </div>
+            <div class="selecao-footer">
+                <div class="carousel-dots" id="carousel-dots"></div>
+                <button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasse()">
+                    ✓ Confirmar <span id="btn-nome-classe">Classe</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-detalhes-classe" class="modal" style="z-index: 7000;">
+        <div class="modal-detalhes-content">
+            <button class="close-detalhes" onclick="window.fecharDetalhesClasse()">X</button>
+            <div class="pdf-wrapper">
+                <button class="nav-pdf-btn prev" id="btn-pdf-prev" onclick="window.mudarPaginaPDF(-1)">❮</button>
+                <div class="pdf-container">
+                    <img id="img-classe-pdf" src="" alt="Detalhes da Classe">
+                </div>
+                <button class="nav-pdf-btn next" id="btn-pdf-next" onclick="window.mudarPaginaPDF(1)">❯</button>
+            </div>
+            <div class="detalhes-footer">
+                <div class="page-counter" id="pdf-page-counter">Página 1 de 2</div>
+                <button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasseDeDentro()">
+                    Escolher esta Classe
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sheet-modal" class="modal">
+        <div class="sheet-content">
+            <div class="sheet-toolbar">
+                <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Texto (T)">T</button>
+                <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador (Bolinha)">●</button>
+                <div style="height: 1px; background: #444; width: 100%; margin: 5px 0;"></div>
+                <button class="tool-btn" onclick="limparPaginaAtual()" title="Limpar Página" style="color: #ff6666;">🗑️</button>
+            </div>
+            <button class="btn-close-sheet" onclick="fecharFicha()" title="Fechar">X</button>
+            <div class="sheet-container" id="sheet-container">
+                <img id="sheet-bg" src="" alt="Ficha">
+                <div id="sheet-inputs-layer"></div>
+            </div>
+            <div class="sheet-footer">
+                <button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮ Anterior</button>
+                <span id="sheet-page-indicator">Página 1</span>
+                <button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">Próxima ❯</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="hover-preview" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 525px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(255, 215, 0, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
+    <div id="hover-preview-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 525px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
+    <div id="hover-preview-slot" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 600px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
 
     <div id="app-container" style="display: none; opacity: 0;">
-        
         <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar">🔄</button>
-
-        <div id="aura-profissao"></div>
-        <div id="particulas-profissao"></div>
-
-        <div id="audio-control">
-            <button onclick="toggleMusic()" id="btn-music">🔊</button>
-            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()">
-        </div>
-        <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio>
-        <audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
+        <div id="aura-profissao"></div><div id="particulas-profissao"></div>
+        <div id="audio-control"><button onclick="toggleMusic()" id="btn-music">🔊</button><input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()"></div>
+        <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio><audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
         <div id="system-message"></div>
-        
+
         <div id="area-inimigos"></div>
-        
+
         <div id="area-jogo">
             <section id="mesa-area">
-                <div class="grupo-fixo"><div class="titulo-grupo">Identidade</div><div class="slots-row"><div class="slot-fixo" onclick="abrirGrimorio('Ancestralidade', 'Ancestralidade')" id="slot-Ancestralidade"><span class="label-slot">Ancestralidade</span><button class="btn-limpar" onclick="limparSlot('Ancestralidade', event)">×</button></div><div class="slot-fixo" onclick="abrirGrimorio('Comunidade', 'Comunidade')" id="slot-Comunidade"><span class="label-slot">Comunidade</span><button class="btn-limpar" onclick="limparSlot('Comunidade', event)">×</button></div></div></div>
-                <div class="grupo-fixo destaque-classe"><div class="titulo-grupo">Evolução de Subclasse</div><div class="slots-row"><div class="slot-classe" onclick="abrirGrimorio('Classes', 'Fundamental')" id="slot-Fundamental"><span class="label-slot">Fundamental</span><span class="nivel-req">Nível 1</span><button class="btn-limpar" onclick="limparSlot('Fundamental', event)">×</button></div><div class="seta-evolucao">➜</div><div class="slot-classe" onclick="abrirGrimorio('Classes', 'Especializacao')" id="slot-Especializacao"><span class="label-slot">Especialização</span><span class="nivel-req">Avanço</span><button class="btn-limpar" onclick="limparSlot('Especializacao', event)">×</button></div><div class="seta-evolucao">➜</div><div class="slot-classe" onclick="abrirGrimorio('Classes', 'Maestria')" id="slot-Maestria"><span class="label-slot">Maestria</span><span class="nivel-req">Avanço</span><button class="btn-limpar" onclick="limparSlot('Maestria', event)">×</button></div></div></div>
+                <div class="grupo-fixo">
+                    <div class="titulo-grupo">Identidade</div>
+                    <div class="slots-row">
+                        <div class="slot-fixo" onclick="abrirGrimorio('Ancestralidade', 'Ancestralidade')" id="slot-Ancestralidade">
+                            <span class="label-slot">Ancestralidade</span>
+                            <button class="btn-limpar" onclick="limparSlot('Ancestralidade', event)">×</button>
+                        </div>
+                        <div class="slot-fixo" onclick="abrirGrimorio('Comunidade', 'Comunidade')" id="slot-Comunidade">
+                            <span class="label-slot">Comunidade</span>
+                            <button class="btn-limpar" onclick="limparSlot('Comunidade', event)">×</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="grupo-fixo destaque-classe">
+                    <div class="titulo-grupo">Evolução de Subclasse</div>
+                    <div class="slots-row">
+                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Fundamental')" id="slot-Fundamental">
+                            <span class="label-slot">Fundamental</span> <span class="nivel-req">Nível 1</span>
+                            <button class="btn-limpar" onclick="limparSlot('Fundamental', event)">×</button>
+                        </div>
+                        <div class="seta-evolucao">➜</div>
+                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Especializacao')" id="slot-Especializacao">
+                            <span class="label-slot">Especialização</span> <span class="nivel-req">Avanço</span>
+                            <button class="btn-limpar" onclick="limparSlot('Especializacao', event)">×</button>
+                        </div>
+                        <div class="seta-evolucao">➜</div>
+                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Maestria')" id="slot-Maestria">
+                            <span class="label-slot">Maestria</span> <span class="nivel-req">Avanço</span>
+                            <button class="btn-limpar" onclick="limparSlot('Maestria', event)">×</button>
+                        </div>
+                    </div>
+                </div>
             </section>
-            <div id="deck-container-wrapper"><div id="deck-area" onclick="abrirGrimorio('Geral')"><div class="pote-glow"></div><img src="img/pote_deck.png" class="pote-img"><div class="label-deck">Grimório</div></div></div>
-            <section id="reserva-area"><div class="titulo-reserva">Reserva (Inativas)</div><div id="cartas-reserva"></div></section>
+            <div id="deck-container-wrapper">
+                <div id="deck-area" onclick="abrirGrimorio('Geral')">
+                    <div class="pote-glow"></div>
+                    <img src="img/pote_deck.png" alt="Deck" class="pote-img">
+                    <div class="label-deck">Grimório</div>
+                </div>
+            </div>
+            <section id="reserva-area">
+                <div class="titulo-reserva">Reserva (Inativas)</div>
+                <div id="cartas-reserva"></div>
+            </section>
         </div> 
-        <footer id="mao-area"><div id="cartas-mao"></div><button onclick="window.abrirFichaPersonagem()" style="position: absolute; bottom: 20px; right: 20px; z-index: 2000; pointer-events: auto; padding: 10px 20px; background: var(--gold); border: 2px solid #fff; border-radius: 5px; cursor: pointer; font-weight: bold; font-family: 'MedievalSharp', cursive; font-size: 1rem; box-shadow: 0 0 10px rgba(0,0,0,0.8); color: #000;">📝 Ficha</button></footer>
+        <footer id="mao-area">
+            <div id="cartas-mao"></div>
+            
+            <button onclick="window.abrirFichaPersonagem()" style="
+                position: absolute; bottom: 20px; right: 20px; z-index: 2000; pointer-events: auto;
+                padding: 10px 20px; background: var(--gold); border: 2px solid #fff; border-radius: 5px;
+                cursor: pointer; font-weight: bold; font-family: 'MedievalSharp', cursive;
+                font-size: 1rem; box-shadow: 0 0 10px rgba(0,0,0,0.8); color: #000;
+            ">
+                📝 Ficha
+            </button>
+        </footer>
+        
         <div id="btn-abrir-dados" onclick="abrirSeletorDados()" title="Rolar Dados">🎲</div>
+        
         <div id="carta-tabuleiro-animada" class="carta-tabuleiro-animada"></div>
     </div>
 
     <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()"><div class="dados-content"><div class="dados-header">Rolagem</div><div class="dualidade-box"><span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button></div><hr style="border-top:1px solid #444; width:100%;"><div class="grid-dados"><div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div></div><button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button></div></div>
-    <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button></div>
+    <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar</button></div>
     <div id="grimorio-modal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Escolha uma Carta</h2><button class="close-btn" onclick="fecharGrimorio()">X</button></div><div id="grid-cartas"></div></div></div>
     <div id="decisao-modal" class="modal" style="z-index: 6000;"><div class="modal-decisao-content"><h3>Gerenciar Carta</h3><div class="carta-preview-decisao" id="preview-decisao"></div><div class="grupo-tokens"><span>Tokens:</span><button class="btn-token" onclick="alterarToken(-1)">-</button><span id="label-token-qtd">0</span><button class="btn-token" onclick="alterarToken(1)">+</button></div><div class="grupo-tokens"><button class="btn-estado" onclick="definirEstado('curto')">Descanso Curto</button><button class="btn-estado" onclick="definirEstado('longo')">Descanso Longo</button></div><div class="botoes-decisao"><button class="btn-usar-carta" id="btn-usar-carta" onclick="usarCarta()" style="display:none;">⚡ Usar</button><button class="btn-confirmar" onclick="confirmarEdicao()">OK</button><button class="btn-reserva" id="btn-para-reserva" onclick="moverParaReserva()" style="display:none;">Reserva</button><button class="btn-deck" id="btn-devolver-mao" onclick="devolverParaMao()" style="display:none;">Mão</button><button class="btn-deck" id="btn-devolver-deck" onclick="devolverAoDeck()" style="display:none;">Deck</button></div></div></div>
     <div id="reserva-modal" class="modal" style="z-index: 6000;"><div class="modal-reserva-content"><div class="modal-header"><h2>Reserva</h2><button class="close-btn" onclick="window.fecharReserva()">X</button></div><div id="grid-reserva"></div></div></div>
     <div id="troca-modal" class="modal" style="z-index: 6100;"><div class="modal-decisao-content"><h3>Mão cheia!</h3><div id="grid-troca"></div><div class="botoes-decisao"><button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button></div></div></div>
 
-    <script type="module" src="script.js?v=10.2"></script>
-    <script type="module">
+    <script type="module" src="script.js?v=10.2"></script> <script type="module">
         import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        
-        window.db = getDatabase(); window.ref = ref; window.push = push; window.query = query;
-        window.limitToLast = limitToLast; window.onChildAdded = onChildAdded; window.set = set;
-        window.get = get; window.remove = remove; window.onValue = onValue; window.update = update; window.off = off; window.onDisconnect = onDisconnect;
+        import { getAuth, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // --- SISTEMA DE PRESENÇA (NOVO) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
+            authDomain: "deck-daggerheart.firebaseapp.com",
+            databaseURL: "https://deck-daggerheart-default-rtdb.firebaseio.com",
+            projectId: "deck-daggerheart",
+            storageBucket: "deck-daggerheart.firebasestorage.app",
+            messagingSenderId: "825358776791",
+            appId: "1:825358776791:web:ce0ab844f58c60573c7392",
+            measurementId: "G-20TB05E9N2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        
+        // Garante que a autenticação persista apenas na sessão
+        setPersistence(auth, browserSessionPersistence).catch(console.error);
+
+        // Exportações globais
+        window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
+        window.onValue = onValue; window.push = push; window.update = update; window.off = off; window.onDisconnect = onDisconnect;
+        window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
+        
+        // === RESTAURAÇÃO DA LÓGICA DO JOGADOR (MANUAL PARA GARANTIR FUNCIONAMENTO) ===
+        // Isso garante que mesmo se o script.js falhar ou demorar, a lógica crítica de jogo esteja aqui
+        window.nomeJogador = "";
+        let maoDoJogador = [];
+        let reservaDoJogador = [];
+        let slotsFixos = { 'Ancestralidade': null, 'Comunidade': null, 'Fundamental': null, 'Especializacao': null, 'Maestria': null };
+        let catalogoCartas = []; 
+        let catalogoCartasClasses = [];
+        let cartaEmTransitoIndex = null;
+        let origemTransito = null;
+        let slotDestinoAtual = null;
+        const LIMITE_MAO = 5;
+
+        // Função de Debug
+        function debug(msg, data) { console.log(msg, data||""); }
+
+        // Carrega cartas (JSON)
+        async function carregarDados() {
+            try {
+                const [r1, r2] = await Promise.all([fetch('./lista_cartas.json'), fetch('./lista_cartas_v2.json')]);
+                if(r1.ok) catalogoCartas = await r1.json();
+                if(r2.ok) {
+                    const v2 = await r2.json();
+                    catalogoCartasClasses = Array.isArray(v2) ? v2.filter(c => c.categoria === 'Classes' && c.profissao) : [];
+                }
+            } catch(e) { console.error("Erro loading cards", e); }
+        }
+
+        // Funções de Interface (GRIMÓRIO)
+        window.abrirGrimorio = async function(tipo, slotDestino = null) {
+            const modal = document.getElementById('grimorio-modal');
+            const grid = document.getElementById('grid-cartas');
+            const titulo = document.getElementById('modal-titulo');
+            slotDestinoAtual = slotDestino;
+            grid.innerHTML = '';
+
+            if(catalogoCartas.length === 0) await carregarDados();
+
+            let lista = [];
+            if (tipo === 'Geral') {
+                titulo.innerText = "Grimório Principal";
+                lista = catalogoCartas.filter(c => !['Classes','Ancestralidade','Comunidade'].includes(c.categoria));
+            } else if (tipo === 'Classes') {
+                const prof = localStorage.getItem('profissaoSelecionada');
+                titulo.innerText = prof ? `Cartas de ${prof}` : "Classes";
+                lista = catalogoCartasClasses.filter(c => !prof || c.profissao === prof);
+                // Filtro avançado para slots específicos
+                if(slotDestinoAtual && ['Fundamental', 'Especializacao', 'Maestria'].includes(slotDestinoAtual)) {
+                    const prefixo = slotDestinoAtual === 'Especializacao' ? ['Especialização -', 'Especializacao -'] : [`${slotDestinoAtual} -`];
+                    lista = lista.filter(c => prefixo.some(pref => c.nome.startsWith(pref) || c.caminho.includes(pref.replace(' -',''))));
+                }
+            } else {
+                titulo.innerText = `Selecionar: ${tipo}`;
+                lista = catalogoCartas.filter(c => c.categoria === tipo);
+            }
+
+            lista.forEach(carta => {
+                const div = document.createElement('div');
+                div.className = 'carta-modal lazy-card';
+                div.style.backgroundImage = `url('${carta.caminho}')`;
+                div.onclick = () => selecionarCarta(carta);
+                // Hover preview
+                div.onmouseenter = () => {
+                     const p = document.getElementById('hover-preview-modal');
+                     p.style.display = 'block'; p.style.backgroundImage = `url('${carta.caminho}')`;
+                };
+                div.onmouseleave = () => document.getElementById('hover-preview-modal').style.display = 'none';
+                grid.appendChild(div);
+            });
+            modal.style.display = 'flex';
+        };
+
+        window.fecharGrimorio = function() { document.getElementById('grimorio-modal').style.display = 'none'; };
+
+        function selecionarCarta(carta) {
+            window.fecharGrimorio();
+            if(slotDestinoAtual) window.preencherSlotFixo(carta, slotDestinoAtual);
+            else adicionarNaMao(carta);
+            slotDestinoAtual = null;
+        }
+
+        function adicionarNaMao(carta) {
+            if(maoDoJogador.length < LIMITE_MAO) {
+                carta.tokens = 0; carta.estado = 'ativo';
+                maoDoJogador.push(carta);
+                salvarNaNuvem(); renderizar();
+            } else { alert("Mão cheia! Remova uma carta ou envie para reserva."); }
+        }
+
+        window.preencherSlotFixo = function(carta, idSlot) {
+            slotsFixos[idSlot] = carta;
+            salvarNaNuvem(); renderizar();
+        };
+
+        window.limparSlot = function(idSlot, evt) {
+            if(evt) evt.stopPropagation();
+            slotsFixos[idSlot] = null;
+            salvarNaNuvem(); renderizar();
+        };
+
+        // Renderização Principal (Mão e Mesa)
+        window.renderizar = function() {
+            const divMao = document.getElementById('cartas-mao');
+            const divRes = document.getElementById('cartas-reserva');
+            if(!divMao) return;
+
+            // Renderiza Slots
+            Object.keys(slotsFixos).forEach(id => {
+                const div = document.getElementById(`slot-${id}`);
+                if(div) {
+                    const carta = slotsFixos[id];
+                    const oldImg = div.querySelector('img'); if(oldImg) oldImg.remove();
+                    const btn = div.querySelector('.btn-limpar'); if(btn) btn.style.display = carta ? 'flex' : 'none';
+                    
+                    if(carta) {
+                        const img = document.createElement('img');
+                        img.src = carta.caminho;
+                        div.appendChild(img);
+                        img.onmouseenter = () => { const p = document.getElementById('hover-preview-slot'); p.style.display='block'; p.style.backgroundImage=`url('${img.src}')`; };
+                        img.onmouseleave = () => document.getElementById('hover-preview-slot').style.display='none';
+                    }
+                }
+            });
+
+            // Renderiza Mão
+            divMao.innerHTML = '';
+            maoDoJogador.forEach((c, i) => {
+                const el = document.createElement('div');
+                el.className = 'carta lazy-card';
+                el.style.backgroundImage = `url('${c.caminho}')`;
+                
+                // Rotação da mão
+                const centro = (maoDoJogador.length - 1) / 2;
+                el.style.transform = `rotate(${(i - centro) * 4}deg)`;
+
+                if(c.estado === 'curto' || c.estado === 'longo') {
+                    el.classList.add('indisponivel');
+                    const icon = document.createElement('div'); icon.className = 'icone-descanso';
+                    icon.innerHTML = c.estado==='curto' ? '<img src="img/meia-lua.png">' : '<img src="img/lua-cheia.png">';
+                    el.appendChild(icon);
+                }
+                if(c.tokens > 0) {
+                    const badge = document.createElement('div'); badge.className = `token-badge token-${c.tokens}`;
+                    badge.innerText = c.tokens; el.appendChild(badge);
+                }
+
+                el.onclick = () => window.abrirDecisao(i);
+                // Hover Mão
+                el.onmouseenter = () => { const p = document.getElementById('hover-preview'); p.style.display='block'; p.style.backgroundImage=`url('${c.caminho}')`; };
+                el.onmouseleave = () => document.getElementById('hover-preview').style.display='none';
+                
+                divMao.appendChild(el);
+            });
+
+            // Renderiza Reserva
+            divRes.innerHTML = '';
+            if(reservaDoJogador.length > 0) {
+                const container = document.createElement('div'); container.className = 'reserva-container';
+                container.onclick = window.abrirReserva;
+                // Empilha cartas visualmente
+                for(let i=0; i<Math.min(3, reservaDoJogador.length); i++) {
+                    const c = document.createElement('div'); c.className = 'carta-reserva-stacked';
+                    c.style.backgroundImage = `url('${reservaDoJogador[i].caminho}')`;
+                    c.style.top = `${i*4}px`; c.style.left = `${i*4}px`;
+                    container.appendChild(c);
+                }
+                divRes.appendChild(container);
+            }
+        };
+
+        // Modal de Decisão (Usar, Tokens, Descanso)
+        window.abrirDecisao = function(idx) {
+            cartaEmTransitoIndex = idx; origemTransito = 'mao';
+            const c = maoDoJogador[idx];
+            const modal = document.getElementById('decisao-modal');
+            const preview = document.getElementById('preview-decisao');
+            const label = document.getElementById('label-token-qtd');
+            
+            // Configura botões
+            document.getElementById('btn-usar-carta').style.display = 'inline-block';
+            document.getElementById('btn-para-reserva').style.display = 'inline-block';
+            document.getElementById('btn-devolver-mao').style.display = 'none';
+
+            preview.style.backgroundImage = `url('${c.caminho}')`;
+            label.innerText = c.tokens || 0;
+            modal.style.display = 'flex';
+        };
+
+        window.fecharDecisao = function() { document.getElementById('decisao-modal').style.display = 'none'; };
+        window.confirmarEdicao = function() { window.fecharDecisao(); renderizar(); };
+
+        window.alterarToken = function(delta) {
+            if(origemTransito === 'mao') {
+                const c = maoDoJogador[cartaEmTransitoIndex];
+                c.tokens = Math.max(0, Math.min(5, (c.tokens||0) + delta));
+                document.getElementById('label-token-qtd').innerText = c.tokens;
+                salvarNaNuvem();
+            }
+        };
+
+        window.definirEstado = function(estado) {
+            if(origemTransito === 'mao') {
+                maoDoJogador[cartaEmTransitoIndex].estado = estado;
+                salvarNaNuvem();
+            }
+        };
+
+        window.usarCarta = function() {
+            const c = maoDoJogador[cartaEmTransitoIndex];
+            window.fecharDecisao();
+            // Animação Simples
+            const anim = document.getElementById('carta-tabuleiro-animada');
+            anim.style.backgroundImage = `url('${c.caminho}')`;
+            anim.classList.add('ativa');
+            setTimeout(() => anim.classList.remove('ativa'), 2000);
+            
+            // Toca som e salva uso
+            const audio = document.getElementById('use-card-sound'); if(audio) audio.play();
+            set(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}/cartaUsada`), {
+                caminho: c.caminho, nome: c.nome, timestamp: Date.now()
+            });
+        };
+
+        window.moverParaReserva = function() {
+            const c = maoDoJogador.splice(cartaEmTransitoIndex, 1)[0];
+            reservaDoJogador.push(c);
+            salvarNaNuvem(); renderizar(); window.fecharDecisao();
+        };
+
+        // Reserva Logic
+        window.abrirReserva = function() {
+            const modal = document.getElementById('reserva-modal');
+            const grid = document.getElementById('grid-reserva');
+            grid.innerHTML = '';
+            reservaDoJogador.forEach((c, idx) => {
+                const div = document.createElement('div'); div.className = 'carta-modal';
+                div.style.backgroundImage = `url('${c.caminho}')`;
+                div.onclick = () => {
+                    // Devolver para mão
+                    if(maoDoJogador.length < LIMITE_MAO) {
+                        maoDoJogador.push(reservaDoJogador.splice(idx, 1)[0]);
+                        salvarNaNuvem(); renderizar(); window.fecharReserva();
+                    } else { alert("Mão cheia!"); }
+                };
+                grid.appendChild(div);
+            });
+            modal.style.display = 'flex';
+        };
+        window.fecharReserva = function() { document.getElementById('reserva-modal').style.display = 'none'; };
+
+        // Save
+        function salvarNaNuvem() {
+            if(window.nomeJogador) {
+                set(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}`), {
+                    mao: maoDoJogador, reserva: reservaDoJogador, slots: slotsFixos
+                });
+            }
+        }
+
+        // --- SISTEMA DE PRESENÇA (CORREÇÃO FINAL: HEARTBEAT) ---
         window.registrarPresenca = function(nomePersonagem) {
             if (!nomePersonagem) return;
             const presencaRef = ref(db, `mesa_rpg/presenca/${nomePersonagem}`);
             set(presencaRef, true);
-            // Remove do banco se fechar a aba
             onDisconnect(presencaRef).remove();
         };
 
-        // --- INTERCEPTAÇÃO DA FUNÇÃO ORIGINAL (HOOK) ---
-        // Espera o script.js carregar a função selecionarPersonagem original e a "embrulha"
-        const hookInterval = setInterval(() => {
-            if (typeof window.selecionarPersonagem === 'function' && !window.isFunctionHooked) {
-                
-                const originalSelecionar = window.selecionarPersonagem;
-                
-                // Sobrescreve a função global
-                window.selecionarPersonagem = async function(charName) {
-                    // 1. Executa a lógica original (cartas, slots, UI)
-                    await originalSelecionar(charName);
-                    
-                    // 2. Registra Presença
-                    window.nomeJogador = charName.toUpperCase();
-                    window.registrarPresenca(window.nomeJogador);
-                    
-                    // 3. Inicia Medo e Inimigos
-                    if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-                    if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-
-                    // 4. Heartbeat (Mantém vivo a cada 30s)
-                    if (window.presencaInterval) clearInterval(window.presencaInterval);
-                    window.presencaInterval = setInterval(() => {
-                        window.registrarPresenca(window.nomeJogador);
-                    }, 30000);
-                };
-                
-                window.isFunctionHooked = true; // Marca que já fizemos o hook
-                clearInterval(hookInterval);
-                console.log("✅ Sistema de Presença Integrado com Sucesso!");
+        // INTERCEPTA A SELEÇÃO
+        const originalSelecionar = window.selecionarPersonagem;
+        window.selecionarPersonagem = async function(charName) {
+            window.nomeJogador = charName.toUpperCase();
+            
+            // Carrega dados do Firebase para popular variáveis locais
+            const snap = await get(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}`));
+            if(snap.exists()) {
+                const d = snap.val();
+                maoDoJogador = d.mao || [];
+                reservaDoJogador = d.reserva || [];
+                if(d.slots) slotsFixos = d.slots;
             }
-        }, 100);
 
-        // FUNÇÃO DE RESSINCRONIZAÇÃO
+            await originalSelecionar(charName); // Lógica visual de esconder login
+            
+            window.registrarPresenca(window.nomeJogador);
+            
+            // Inicia sistemas externos e renderização
+            await carregarDados();
+            renderizar();
+            
+            if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
+            
+            // HEARTBEAT
+            if (window.presencaInterval) clearInterval(window.presencaInterval);
+            window.presencaInterval = setInterval(() => {
+                if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
+            }, 30000);
+        };
+
+        // REFRESH MANUAL
         window.atualizarSincronia = function() {
             const btn = document.querySelector('.btn-refresh-player');
             if(btn) btn.classList.add('spin-anim');
-            document.getElementById('area-inimigos').innerHTML = "";
             
-            // Recarrega sistemas auxiliares
+            // Limpa visualmente para dar feedback
+            const container = document.getElementById('area-inimigos');
+            if(container) container.innerHTML = "";
+            
+            // Reload lógica
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
             if(window.escutarRolagens) window.escutarRolagens();
-            
-            // Se já tem jogador, re-renderiza cartas e reforça presença
-            if (window.nomeJogador) {
-                if(window.renderizar) window.renderizar();
-                window.registrarPresenca(window.nomeJogador);
-            }
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
+            renderizar();
+
+            // REFORÇA PRESENÇA
+            if (window.nomeJogador) window.registrarPresenca(window.nomeJogador);
 
             setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
         };
 
-        // LOADER DINÂMICO
+        // LOADER DE SCRIPTS
         function loadScript(src) {
             const script = document.createElement('script');
             script.src = src + "?t=" + Date.now();
@@ -236,13 +618,17 @@
         loadScript("ficha.js");
         loadScript("dados.js");
         loadScript("inimigos.js");
-        loadScript("medo.js");
+        loadScript("medo.js"); // CARREGA MEDO
 
+        // GARANTE A INICIALIZAÇÃO IMEDIATA
         setTimeout(() => {
             if(window.escutarRolagens) window.escutarRolagens();
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
             if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-        }, 3000);
+            
+            // Se já tiver personagem carregado, registra presença agora
+            if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
+        }, 2000);
     </script>
 </body>
 </html>
