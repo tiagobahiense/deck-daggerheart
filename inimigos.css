@@ -1,81 +1,85 @@
 /* =========================================================
-   SISTEMA DE INIMIGOS - DAGGERHEART
+   SISTEMA DE INIMIGOS - DAGGERHEART (V2.0 - UX FIXED)
    ========================================================= */
 
 /* Área Central onde os inimigos aparecem */
 #area-inimigos {
     position: fixed;
-    top: 50%;
+    top: 55%; /* Um pouco abaixo do centro para não tapar o mestre */
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 80%;
-    height: 60%;
-    pointer-events: none; /* Permite clicar através do vazio */
+    width: 90%;
+    height: auto;
+    max-height: 70%;
+    pointer-events: none; 
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    align-items: center;
-    gap: 20px;
-    z-index: 500; /* Abaixo dos dados (1000+), acima da mesa */
+    align-items: flex-start;
+    gap: 15px;
+    z-index: 500; 
+    overflow-y: auto; /* Permite scroll se tiver muitos inimigos */
+    padding: 10px;
 }
 
 /* CARD DO INIMIGO */
 .inimigo-card {
-    pointer-events: auto; /* Permite interagir com o card */
-    width: 220px;
-    background: rgba(20, 20, 20, 0.95);
-    border: 2px solid #555;
-    border-radius: 10px;
+    pointer-events: auto;
+    width: 240px;
+    background: #111;
+    border: 2px solid #444;
+    border-radius: 8px;
     display: flex;
     flex-direction: column;
     position: relative;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.8);
-    transition: all 0.3s;
-    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.9);
+    transition: transform 0.2s, border-color 0.2s;
+    flex-shrink: 0;
 }
 
 .inimigo-card:hover {
     border-color: var(--gold);
     z-index: 600;
-    transform: scale(1.05);
+    transform: scale(1.02);
 }
 
 /* Header com Imagem e Barras */
 .inimigo-header {
     position: relative;
     width: 100%;
-    height: 150px;
+    height: 160px;
     background-color: #000;
+    border-radius: 6px 6px 0 0;
+    overflow: hidden;
 }
 
 .inimigo-img {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Ajusta imagem sem cortar */
-    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+    object-fit: cover; /* Preenche melhor */
+    object-position: top;
 }
 
-/* Barras sobre a cabeça */
+/* Barras DESTAQUE */
 .barras-container {
     position: absolute;
-    top: -10px; /* Flutuando acima */
-    left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0,0,0,0.6);
+    padding: 5px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    background: rgba(0,0,0,0.8);
-    padding: 2px;
-    border-radius: 4px;
-    border: 1px solid #333;
+    gap: 4px;
+    backdrop-filter: blur(2px);
 }
 
 .barra-wrapper {
     width: 100%;
-    height: 8px;
+    height: 10px; /* Mais grossa */
     background: #333;
-    border-radius: 2px;
+    border: 1px solid #000;
+    border-radius: 3px;
     position: relative;
 }
 
@@ -85,26 +89,29 @@
     transition: width 0.3s ease-in-out;
 }
 
-.barra-pv { background: #d32f2f; box-shadow: 0 0 5px #d32f2f; }
-.barra-pf { background: #1976d2; box-shadow: 0 0 5px #1976d2; }
+.barra-pv { background: linear-gradient(90deg, #d32f2f, #ff5252); }
+.barra-pf { background: linear-gradient(90deg, #1976d2, #42a5f5); }
 
-/* Status Numérico Pequeno */
+/* Status Numérico */
 .status-numerico {
     position: absolute;
     bottom: 0;
     right: 0;
-    background: rgba(0,0,0,0.8);
+    background: rgba(0,0,0,0.85);
     color: #fff;
-    font-size: 0.7rem;
-    padding: 2px 5px;
-    border-top-left-radius: 5px;
-    font-family: monospace;
+    font-size: 0.75rem;
+    padding: 3px 8px;
+    border-top-left-radius: 6px;
+    font-weight: bold;
+    border-top: 1px solid #444;
+    border-left: 1px solid #444;
 }
 
 /* Corpo do Card */
 .inimigo-body {
     padding: 10px;
     color: #fff;
+    background: #1a1a1a;
 }
 
 .inimigo-nome {
@@ -112,104 +119,231 @@
     color: var(--gold);
     font-size: 1.1rem;
     text-align: center;
-    margin-bottom: 5px;
-    border-bottom: 1px solid #444;
+    margin-bottom: 8px;
+    text-shadow: 0 1px 2px #000;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .inimigo-stats-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 5px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: #ccc;
-    margin-bottom: 5px;
+    background: #222;
+    padding: 5px;
+    border-radius: 4px;
+    border: 1px solid #333;
 }
 
 .stat-item strong { color: #fff; }
 
-/* Detalhes (Escondidos por padrão, aparecem no hover ou clique) */
-.inimigo-detalhes {
-    font-size: 0.7rem;
+/* Botão Detalhes (Accordion) */
+.btn-toggle-detalhes {
+    width: 100%;
+    background: #333;
+    border: none;
     color: #aaa;
+    font-size: 0.7rem;
+    padding: 4px;
+    cursor: pointer;
+    margin-top: 5px;
+    border-radius: 3px;
+}
+.btn-toggle-detalhes:hover { background: #444; color: #fff; }
+
+.inimigo-detalhes {
+    font-size: 0.75rem;
+    color: #ddd;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.3s;
+    background: #111;
+    padding: 0 5px;
+    line-height: 1.4;
 }
 
-.inimigo-card:hover .inimigo-detalhes {
-    max-height: 200px; /* Expande */
+.inimigo-detalhes.aberto {
+    max-height: 200px;
     overflow-y: auto;
-    padding-top: 5px;
-    border-top: 1px dashed #444;
+    padding: 5px;
+    border-top: 1px solid #333;
 }
 
-/* Controles do Mestre (Só aparecem para o GM) */
+/* Controles do Mestre - Maiores e Melhores */
 .gm-overlay-controls {
-    display: none; /* JS vai ativar se for mestre */
+    display: none;
     background: #222;
     padding: 5px;
+    gap: 3px;
     border-top: 1px solid #444;
-    gap: 5px;
-    justify-content: center;
-    flex-wrap: wrap;
+}
+
+.linha-botoes {
+    display: flex;
+    gap: 3px;
+    width: 100%;
+    margin-bottom: 3px;
 }
 
 .btn-inimigo {
-    border: none;
-    border-radius: 3px;
+    border: 1px solid #444;
+    border-radius: 4px;
     cursor: pointer;
     font-weight: bold;
-    padding: 3px 8px;
-    font-size: 0.8rem;
+    padding: 8px 0;
+    font-size: 0.9rem;
     color: #fff;
     flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.1s;
 }
 
-.btn-dano { background: #8b0000; border: 1px solid #ff4444; }
-.btn-cura { background: #2e8b57; border: 1px solid #3cb371; }
-.btn-del { background: #000; border: 1px solid #666; max-width: 30px; }
+.btn-inimigo:active { transform: scale(0.95); }
 
-/* Animações de Feedback */
-@keyframes flash-red {
-    0% { box-shadow: 0 0 0 rgba(255,0,0,0); border-color: #555; }
-    50% { box-shadow: 0 0 30px red; border-color: red; background: rgba(50,0,0,0.9); }
-    100% { box-shadow: 0 0 0 rgba(255,0,0,0); border-color: #555; }
+.btn-dano { background: #5a0000; color: #ff9999; }
+.btn-dano:hover { background: #8b0000; }
+
+.btn-cura { background: #004d00; color: #99ff99; }
+.btn-cura:hover { background: #006400; }
+
+.btn-del { 
+    background: #000; 
+    border-color: #666; 
+    color: red;
+    font-size: 1.2rem;
+}
+.btn-del:hover { background: #330000; border-color: red; }
+
+/* Animações */
+.anim-dano { animation: shake-red 0.4s ease-in-out; }
+.anim-cura { animation: pulse-green 0.4s ease-in-out; }
+
+@keyframes shake-red {
+    0% { transform: translateX(0); border-color: #444; }
+    25% { transform: translateX(-5px); border-color: red; box-shadow: 0 0 15px red; }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); border-color: #444; }
 }
 
-@keyframes flash-green {
-    0% { box-shadow: 0 0 0 rgba(0,255,0,0); border-color: #555; }
-    50% { box-shadow: 0 0 30px lime; border-color: lime; background: rgba(0,50,0,0.9); }
-    100% { box-shadow: 0 0 0 rgba(0,255,0,0); border-color: #555; }
+@keyframes pulse-green {
+    0% { transform: scale(1); border-color: #444; }
+    50% { transform: scale(1.05); border-color: lime; box-shadow: 0 0 15px lime; }
+    100% { transform: scale(1); border-color: #444; }
 }
 
-.anim-dano { animation: flash-red 0.5s ease-in-out; }
-.anim-cura { animation: flash-green 0.5s ease-in-out; }
-
-/* MODAL DE CRIAÇÃO */
+/* =========================================================
+   MODAL DE CRIAÇÃO (LAYOUT CORRIGIDO)
+   ========================================================= */
 #modal-criar-inimigo {
     display: none;
     position: fixed;
-    z-index: 8000;
+    z-index: 9000;
     left: 0; top: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.85);
     align-items: center; justify-content: center;
 }
 
 .modal-criar-content {
-    background: #1a1a1a;
+    background: #151515;
     border: 2px solid var(--gold);
-    width: 500px;
-    max-width: 95%;
+    width: 600px;
+    max-width: 90%;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 50px var(--gold);
-    display: flex; flex-direction: column; gap: 10px;
+    border-radius: 12px;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    display: flex; flex-direction: column; gap: 12px;
     max-height: 90vh; overflow-y: auto;
 }
 
-.form-row { display: flex; gap: 10px; }
-.form-group { flex: 1; display: flex; flex-direction: column; }
-.form-group label { color: var(--gold); font-size: 0.8rem; margin-bottom: 3px; }
-.form-group input, .form-group textarea {
-    background: #333; border: 1px solid #555; color: #fff; padding: 8px; border-radius: 4px;
+.modal-criar-content h2 {
+    color: var(--gold); margin: 0; text-align: center;
+    border-bottom: 1px solid #333; padding-bottom: 10px;
 }
+
+/* Grid de Formulário */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.form-full { grid-column: 1 / -1; }
+
+.form-group { display: flex; flex-direction: column; }
+.form-group label { color: #aaa; font-size: 0.8rem; margin-bottom: 4px; font-weight: bold; }
+
+.form-group input, .form-group textarea {
+    background: #222;
+    border: 1px solid #444;
+    color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 1rem;
+}
+.form-group input:focus, .form-group textarea:focus {
+    border-color: var(--gold);
+    outline: none;
+}
+
+/* Inputs de Número Grandes */
+.form-group input[type="number"] {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 1.1rem;
+}
+
+/* Área de Upload */
+.upload-area {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+#btn-upload-img {
+    background: #333; color: #fff;
+    border: 1px solid #555;
+    padding: 8px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+#btn-upload-img:hover { background: #444; border-color: #fff; }
+
+#preview-img-mini {
+    width: 40px; height: 40px;
+    object-fit: cover;
+    border: 1px solid #555;
+    border-radius: 4px;
+    display: none;
+}
+
+/* Botões de Ação */
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #333;
+}
+
+.btn-acao {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1rem;
+    font-family: 'MedievalSharp', cursive;
+}
+.btn-invocar { background: var(--gold); color: #000; }
+.btn-invocar:hover { background: #fff; }
+.btn-cancelar { background: #333; color: #fff; border: 1px solid #555; }
+.btn-cancelar:hover { background: #444; }
