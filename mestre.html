@@ -8,7 +8,8 @@
     <link rel="stylesheet" href="ficha.css?v=5.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
-    <link rel="stylesheet" href="medo.css?v=1.0"> <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="medo.css?v=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; margin: 0; overflow: hidden; }
         
@@ -22,8 +23,22 @@
         
         .card-jogador { width: 100%; background: rgba(20,20,20,0.9); border: 1px solid #444; border-radius:8px; padding:8px; box-sizing: border-box; }
         .card-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:5px; }
+        
+        /* Nome e Status */
+        .nome-wrapper { display: flex; align-items: center; gap: 8px; }
         .nome { color: var(--gold); font-weight: bold; font-size: 0.9rem; }
         .tag-classe { font-size: 0.65rem; color: #aaa; background: #222; padding: 1px 4px; border-radius: 4px; }
+        
+        /* Bolinha de Status */
+        .status-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 5px rgba(0,0,0,0.8);
+            transition: background-color 0.3s;
+        }
+        .status-online { background-color: #00ff00; box-shadow: 0 0 8px #00ff00; }
+        .status-offline { background-color: #ff0000; opacity: 0.4; }
+
         .btn-abrir-ficha-mestre { background: var(--gold); color: #000; border: none; border-radius: 15px; padding: 2px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-left:5px; }
         .btn-expandir-mesa { background: #333; color: #ccc; border: 1px solid #555; width: 100%; padding: 4px; cursor: pointer; font-size: 0.75rem; margin-top:5px; border-radius: 4px; }
         .btn-expandir-mesa:hover { background: #444; color: #fff; }
@@ -141,17 +156,85 @@
         </div>
     </div>
 
-    <div id="modal-criar-inimigo"><div class="modal-criar-content"><h2 style="color:var(--gold); text-align:center; margin-top:0;">Invocar Inimigo</h2><div class="form-grid"><div class="form-group form-full"><label>Nome</label><input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz"></div><div class="form-group form-full"><label>Imagem</label><div style="display:flex; gap:5px;"><input type="text" id="new-enemy-img" placeholder="URL ou Upload..." style="flex:1"><label for="upload-file-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer; color:white;">📁</label><input type="file" id="upload-file-input" accept="image/*" style="display:none" onchange="processarUploadImagem()"><img id="preview-img-mini" style="width:30px; height:30px; display:none; border:1px solid #555;"></div></div><div class="form-group"><label>PV Max</label><input type="number" id="new-enemy-pv" value="4"></div><div class="form-group"><label>Estresse (PF)</label><input type="number" id="new-enemy-pf" value="0"></div><div class="form-group"><label>Dificuldade</label><input type="number" id="new-enemy-dif" value="12"></div><div class="form-group"><label>Ataque</label><input type="text" id="new-enemy-atk" value="+2"></div><div class="form-group"><label>Dano</label><input type="text" id="new-enemy-dmg" value="1d6+2"></div><div class="form-group"><label>Limiares</label><input type="text" id="new-enemy-limiares" placeholder="5/10"></div><div class="form-group form-full"><label>Habilidades</label><textarea id="new-enemy-desc" rows="3"></textarea></div></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-rest btn-invocar" style="background:#4CAF50; flex:1;" onclick="salvarNovoInimigo()">Invocar</button><button class="btn-rest" style="background:#f44336; flex:1;" onclick="fecharCriadorInimigo()">Cancelar</button></div></div></div>
+    <div id="modal-criar-inimigo">
+        <div class="modal-criar-content">
+            <h2 style="color:var(--gold); text-align:center; margin-top:0;">Invocar Inimigo</h2>
+            
+            <div class="form-grid">
+                <div class="form-group form-full"><label>Nome</label><input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz"></div>
+                <div class="form-group form-full">
+                    <label>Imagem (Upload ou Link)</label>
+                    <div style="display:flex; gap:5px;">
+                        <input type="text" id="new-enemy-img" placeholder="URL ou Upload..." style="flex:1">
+                        <label for="upload-file-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer; color:white;">📁</label>
+                        <input type="file" id="upload-file-input" accept="image/*" style="display:none" onchange="processarUploadImagem()">
+                        <img id="preview-img-mini" style="width:30px; height:30px; display:none; border:1px solid #555;">
+                    </div>
+                </div>
+                <div class="form-group"><label>PV Max</label><input type="number" id="new-enemy-pv" value="4"></div>
+                <div class="form-group"><label>Estresse (PF)</label><input type="number" id="new-enemy-pf" value="0"></div>
+                <div class="form-group"><label>Dificuldade</label><input type="number" id="new-enemy-dif" value="12"></div>
+                <div class="form-group"><label>Ataque</label><input type="text" id="new-enemy-atk" value="+2"></div>
+                <div class="form-group"><label>Dano</label><input type="text" id="new-enemy-dmg" value="1d6+2"></div>
+                <div class="form-group"><label>Limiares</label><input type="text" id="new-enemy-limiares" placeholder="5/10"></div>
+                <div class="form-group form-full"><label>Habilidades</label><textarea id="new-enemy-desc" rows="3"></textarea></div>
+            </div>
 
-    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()"><div class="dados-content"><div class="dados-header">Rolagem</div><div class="dualidade-box"><span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button></div><hr style="border-top:1px solid #444; width:100%;"><div class="grid-dados"><div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div></div><button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button></div></div>
-    <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar</button></div>
-    <div id="modal-escudo"><div class="modal-escudo-content"><button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button><div id="escudo-conteudo"></div></div></div>
-    <div id="sheet-modal" class="modal"><div class="sheet-content"><div class="sheet-toolbar"><button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button><button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button><button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button></div><button class="btn-close-sheet" onclick="fecharFicha()">X</button><div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div><div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div></div></div>
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn-rest btn-invocar" style="background:#4CAF50; flex:1;" onclick="salvarNovoInimigo()">Invocar</button>
+                <button class="btn-rest" style="background:#f44336; flex:1;" onclick="fecharCriadorInimigo()">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
+        <div class="dados-content">
+            <div class="dados-header">Rolagem de Dados</div>
+            <div class="dualidade-box">
+                <span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span>
+                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
+            <div class="grid-dados">
+                <div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div>
+            </div>
+            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
+        </div>
+    </div>
+
+    <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button></div>
+
+    <div id="modal-escudo">
+        <div class="modal-escudo-content">
+            <button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button>
+            <div id="escudo-conteudo"></div>
+        </div>
+    </div>
+
+    <div id="sheet-modal" class="modal">
+        <div class="sheet-content">
+            <div class="sheet-toolbar">
+                <button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button>
+                <button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button>
+                <button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button>
+            </div>
+            <button class="btn-close-sheet" onclick="fecharFicha()">X</button>
+            <div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div>
+            <div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div>
+        </div>
+    </div>
+
+    <div id="carta-usada-animada" class="carta-tabuleiro-animada"></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get, onChildChanged, push, query, limitToLast, onChildAdded, update, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -167,8 +250,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
+        
+        // Garante persistência (Correção do logout)
+        setPersistence(auth, browserSessionPersistence).catch(console.error);
 
-        // Exports Globais
+        // Exportações globais
         window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
         window.onValue = onValue; window.push = push; window.update = update; window.off = off;
         window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
@@ -195,6 +281,7 @@
             if(el) el.classList.toggle('ativo');
         };
 
+        // FUNÇÃO DE RESSINCRONIZAÇÃO
         window.atualizarSincronia = function() {
             const btn = document.querySelector('.btn-refresh');
             if(btn) btn.classList.add('spin-anim');
@@ -203,10 +290,54 @@
             
             iniciarPainelJogadores();
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // REFRESH DO MEDO
-
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // Medo Refresh
+            if(window.escutarRolagens) window.escutarRolagens();
+            
             setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
         };
+
+        // VARIÁVEL PARA CACHE DE PRESENÇA
+        let presencaCache = {};
+
+        function iniciarMonitoramentoPresenca() {
+            // Escuta a pasta de presença do Firebase
+            onValue(ref(db, 'mesa_rpg/presenca'), (snap) => {
+                presencaCache = snap.val() || {};
+                // Atualiza visualmente os cards já renderizados
+                const cards = document.querySelectorAll('.card-jogador');
+                cards.forEach(card => {
+                    // Tenta achar o nome dentro do card para atualizar
+                    const nomeEl = card.querySelector('.nome');
+                    if(nomeEl) {
+                        const nome = nomeEl.textContent.trim();
+                        atualizarBolinhaPresenca(card, nome);
+                    }
+                });
+            });
+        }
+
+        function atualizarBolinhaPresenca(cardElement, nomePersonagem) {
+            // Remove bolinha antiga
+            const oldDot = cardElement.querySelector('.status-dot');
+            if(oldDot) oldDot.remove();
+
+            // Verifica se o nome existe no cache de presença (Case insensitive)
+            const isOnline = Object.keys(presencaCache).some(k => k.toUpperCase() === nomePersonagem.toUpperCase());
+            
+            const dot = document.createElement('span');
+            dot.className = isOnline ? 'status-dot status-online' : 'status-dot status-offline';
+            dot.title = isOnline ? 'Online na Mesa' : 'Offline';
+            
+            // Adiciona ao lado do nome (dentro do .nome-wrapper ou pai do nome)
+            const nomeContainer = cardElement.querySelector('.card-header > div');
+            if(nomeContainer) {
+                // Cria um wrapper se não existir para alinhar
+                if(!nomeContainer.classList.contains('nome-wrapper')) {
+                    nomeContainer.classList.add('nome-wrapper');
+                }
+                nomeContainer.appendChild(dot);
+            }
+        }
 
         function iniciarPainelJogadores() {
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
@@ -226,7 +357,7 @@
                     const card = document.createElement('div');
                     card.className = 'card-jogador';
                     const safeName = nome.replace(/'/g, "\\'");
-                    
+
                     let htmlMao = "";
                     if(p.mao && p.mao.length > 0) {
                         p.mao.forEach(c => {
@@ -256,7 +387,7 @@
 
                     card.innerHTML = `
                         <div class="card-header">
-                            <div><div class="nome">${nome}</div>${classeNome ? `<div class="tag-classe">${classeNome}</div>` : ''}</div>
+                            <div class="nome-wrapper"><div class="nome">${nome}</div>${classeNome ? `<div class="tag-classe">${classeNome}</div>` : ''}</div>
                             <button class="btn-abrir-ficha-mestre" onclick="window.abrirFichaDoJogador('${safeName}')">📝</button>
                         </div>
                         <div class="label">Mão</div><div class="grid-mini" data-jogador="${nome}">${htmlMao}</div>
@@ -264,6 +395,9 @@
                         <div id="mesa-${nome}" class="mesa-expandida"><div class="label">Mesa & Reserva</div><div class="grid-mini">${htmlMesa}</div></div>
                     `;
                     painel.appendChild(card);
+                    
+                    // Aplica status inicial
+                    atualizarBolinhaPresenca(card, nome);
                 });
             }
 
@@ -272,11 +406,13 @@
                 if (snap.exists()) { snap.forEach(c => { const d = c.val(); if (d.status !== 'inactive' && d.characters) Object.keys(d.characters).forEach(n => setNomes.add(String(n).toUpperCase())); }); }
                 nomesDePersonagens = setNomes; render();
             });
+
             onValue(jogadoresRef, (snap) => {
                 cacheJogadores = snap.exists() ? snap.val() : {};
                 Object.keys(cacheJogadores).forEach(n => nomesDePersonagens.add(String(n).toUpperCase()));
                 render();
             });
+            
             onChildChanged(jogadoresRef, (snap) => {
                 const n = snap.key; const d = snap.val();
                 if(d.cartaUsada) animarCartaEspecifica(n, d.cartaUsada);
@@ -336,27 +472,30 @@
         onAuthStateChanged(auth, u => {
             document.getElementById('loading-screen').style.display = 'none';
             if(!u || u.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { window.location.href="index.html"; return; }
+            
+            iniciarMonitoramentoPresenca(); // INICIA BOLINHAS
             iniciarPainelJogadores();
+            
+            // FUNÇÃO PARA CARREGAR SCRIPT DINÂMICO
+            function loadScript(src) {
+                const script = document.createElement('script');
+                script.src = src + "?t=" + Date.now();
+                document.body.appendChild(script);
+            }
+            
+            loadScript("ficha.js");
+            loadScript("dados.js");
+            loadScript("inimigos.js");
+            loadScript("medo.js");
+
             setTimeout(() => {
                 if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-                if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // INICIA O MEDO
+                if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
                 if(window.escutarRolagens) window.escutarRolagens();
             }, 1000);
         });
 
-        // LOADER DE SCRIPTS
-        function loadScript(src) {
-            const script = document.createElement('script');
-            script.src = src + "?t=" + Date.now();
-            document.body.appendChild(script);
-        }
-        
-        loadScript("ficha.js");
-        loadScript("dados.js");
-        loadScript("inimigos.js");
-        loadScript("medo.js"); // NOVO SCRIPT
-
-        // Hover Preview (Updated)
+        // Hover Preview (Detecta cartas na mão, na mesa expandida e na reserva)
         document.addEventListener('mouseover', (e) => {
             const c = e.target.closest('.mini-carta, .slot-ativo, .carta-reserva-visual');
             if (c && !c.classList.contains('status-vazio')) {
