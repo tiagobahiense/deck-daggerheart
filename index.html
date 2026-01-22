@@ -8,9 +8,9 @@
     <link rel="stylesheet" href="style.css?v=10.1">
     <link rel="stylesheet" href="profissao.css?v=1.0">
     <link rel="stylesheet" href="selecao-classe.css?v=3.0">
-    <link rel="stylesheet" href="ficha.css?v=4.0">
+    <link rel="stylesheet" href="ficha.css?v=5.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
-    <link rel="stylesheet" href="inimigos.css?v=1.0">
+    <link rel="stylesheet" href="inimigos.css?v=3.6">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -40,7 +40,7 @@
             <button type="button" class="btn-entrar" onclick="fazerLoginJogador()">Entrar</button>
             <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
         </div>
-        
+
         <div class="login-box" id="fase-login-narrador" style="display: none;">
             <h1>Acesso do Narrador</h1>
             <p>Área Restrita</p>
@@ -304,7 +304,7 @@
 
     <script type="module" src="script.js?v=10.2"></script>
     <script type="module">
-        // EXPOSIÇÃO GLOBAL CRÍTICA PARA DADOS.JS, FICHA.JS e INIMIGOS.JS
+        // EXPOSIÇÃO GLOBAL CRÍTICA
         import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
         window.db = getDatabase(); 
@@ -319,17 +319,25 @@
         window.onValue = onValue;
         window.update = update;
 
-        // Inicia escuta de rolagens e inimigos
+        // FUNÇÃO DE CARREGAMENTO DINÂMICO PARA EVITAR CACHE DE SCRIPTS
+        function loadScript(src) {
+            const script = document.createElement('script');
+            script.src = src + "?v=" + Date.now(); // Cache Buster
+            document.body.appendChild(script);
+        }
+
+        // CARREGA OS MÓDULOS EXTERNOS
+        loadScript("profissao.js");
+        loadScript("selecao-classe.js");
+        loadScript("ficha.js");
+        loadScript("dados.js");
+        loadScript("inimigos.js");
+
+        // GARANTE A INICIALIZAÇÃO DEPOIS DE CARREGAR TUDO
         setTimeout(() => {
             if(window.escutarRolagens) window.escutarRolagens();
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-        }, 3000);
+        }, 1500); // Tempo curto para inicializar rápido
     </script>
-    
-    <script src="profissao.js?v=1.0"></script>
-    <script src="selecao-classe.js?v=3.0"></script>
-    <script src="ficha.js?v=4.0"></script>
-    <script src="dados.js?v=2.0"></script>
-    <script src="inimigos.js?v=1.0"></script>
 </body>
 </html>
