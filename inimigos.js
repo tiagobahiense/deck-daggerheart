@@ -1,5 +1,5 @@
 // =========================================================
-// SISTEMA DE INIMIGOS V3.7 (CORREÇÃO BARRA PF)
+// SISTEMA DE INIMIGOS V4.0 (BARRA PF FIX & VISIBILIDADE)
 // =========================================================
 
 // --- FUNÇÕES DE CONTROLE (MESTRE) ---
@@ -18,9 +18,11 @@ window.salvarNovoInimigo = function() {
     const nome = document.getElementById('new-enemy-name').value || "Inimigo";
     const img = document.getElementById('new-enemy-img').value || '';
     const pvMax = parseInt(document.getElementById('new-enemy-pv').value) || 1;
-    const pfMax = parseInt(document.getElementById('new-enemy-pf').value) || 0;
-    const dif = parseInt(document.getElementById('new-enemy-dif').value) || 12;
     
+    // CORREÇÃO: Garante que PF seja número, padrão 0
+    const pfMax = parseInt(document.getElementById('new-enemy-pf').value) || 0;
+    
+    const dif = parseInt(document.getElementById('new-enemy-dif').value) || 12;
     const limiares = document.getElementById('new-enemy-limiares').value || "-";
     const ataque = document.getElementById('new-enemy-atk').value || "+0";
     const dano = document.getElementById('new-enemy-dmg').value || "-";
@@ -30,7 +32,7 @@ window.salvarNovoInimigo = function() {
         nome: nome,
         imagem: img,
         pv_max: pvMax, pv_atual: pvMax,
-        pf_max: pfMax, pf_atual: 0,
+        pf_max: pfMax, pf_atual: 0, // Começa com 0 estresse
         dificuldade: dif,
         limiares: limiares,
         ataque: ataque,
@@ -56,16 +58,26 @@ window.alterarStatusInimigo = function(id, tipo, delta) {
         if(!snap.exists()) return;
         const data = snap.val();
         
-        const max = tipo === 'pv_atual' ? data.pv_max : data.pf_max;
-        let novo = (data[tipo] || 0) + delta;
-        
+        // CORREÇÃO: Lógica para PV vs PF
+        let max = 0;
+        let atual = 0;
+
+        if(tipo === 'pv_atual') {
+            max = data.pv_max;
+            atual = data.pv_atual;
+        } else if(tipo === 'pf_atual') {
+            max = data.pf_max;
+            atual = data.pf_atual;
+        }
+
+        let novo = atual + delta;
         if(novo < 0) novo = 0;
         if(novo > max) novo = max;
         
         const updates = {};
         updates[tipo] = novo;
         
-        // Efeito visual apenas para PV
+        // Efeito visual apenas para PV (Dano/Cura)
         if(tipo === 'pv_atual') {
             updates['efeitoVisual'] = { tipo: delta < 0 ? 'dano' : 'cura', time: Date.now() };
         }
@@ -132,28 +144,36 @@ function criarTokenInimigo(id, data, isGM) {
     }
 
     const pvPct = (data.pv_atual / data.pv_max) * 100;
-    const pfPct = data.pf_max > 0 ? (data.pf_atual / data.pf_max) * 100 : 0;
+    
+    // CORREÇÃO: Tratamento robusto para PF
+    let pfPct = 0;
+    let temPF = false;
+    if (data.pf_max && data.pf_max > 0) {
+        pfPct = (data.pf_atual / data.pf_max) * 100;
+        temPF = true;
+    }
+    
     const imgSrc = data.imagem && data.imagem.length > 10 ? data.imagem : 'img/monsters/default.png';
 
-    // === GERAÇÃO DOS BOTÕES DE PF ===
+    // === GERAÇÃO DOS BOTÕES DE PF (Azuis) ===
     let pfControlsHTML = '';
-    if (data.pf_max > 0) {
+    if (temPF && isGM) {
         pfControlsHTML = `
             <div class="gm-btn-row">
-                <div class="btn-gm-mini btn-gm-est-dano" onclick="alterarStatusInimigo('${id}', 'pf_atual', -1)" title="-PF (Estresse)">-</div>
-                <div class="btn-gm-mini btn-gm-est-cura" onclick="alterarStatusInimigo('${id}', 'pf_atual', 1)" title="+PF (Estresse)">+</div>
+                <div class="btn-gm-mini btn-gm-est-cura" onclick="alterarStatusInimigo('${id}', 'pf_atual', 1)" title="+1 Estresse (Sobe a barra)">+</div>
+                <div class="btn-gm-mini btn-gm-est-dano" onclick="alterarStatusInimigo('${id}', 'pf_atual', -1)" title="-1 Estresse (Desce a barra)">-</div>
             </div>
         `;
     }
 
-    // === HTML DO MESTRE ===
+    // === HTML DO MESTRE (Com Controles Completos) ===
     let gmHTML = '';
     if(isGM) {
         gmHTML = `
             <div class="token-gm-controls">
                 <div class="gm-btn-row">
-                    <div class="btn-gm-mini btn-gm-dano" onclick="alterarStatusInimigo('${id}', 'pv_atual', -1)" title="-PV">-</div>
-                    <div class="btn-gm-mini btn-gm-cura" onclick="alterarStatusInimigo('${id}', 'pv_atual', 1)" title="+PV">+</div>
+                    <div class="btn-gm-mini btn-gm-dano" onclick="alterarStatusInimigo('${id}', 'pv_atual', -1)" title="-1 PV (Dano)">-</div>
+                    <div class="btn-gm-mini btn-gm-cura" onclick="alterarStatusInimigo('${id}', 'pv_atual', 1)" title="+1 PV (Cura)">+</div>
                 </div>
                 ${pfControlsHTML}
                 <div class="gm-btn-row">
@@ -171,15 +191,22 @@ function criarTokenInimigo(id, data, isGM) {
         `;
     }
 
+    // === BARRA DE PF HTML ===
+    let pfBarraHTML = '';
+    if (temPF) {
+        pfBarraHTML = `
+            <div class="barra-mini" style="margin-top:2px;" title="Estresse: ${data.pf_atual}/${data.pf_max}">
+                <div class="fill-pf" style="width: ${pfPct}%"></div>
+            </div>
+        `;
+    }
+
     el.innerHTML = `
         <div class="token-barras">
             <div class="barra-mini" title="Vida: ${data.pv_atual}/${data.pv_max}">
                 <div class="fill-pv" style="width: ${pvPct}%"></div>
             </div>
-            ${data.pf_max > 0 ? `
-            <div class="barra-mini" style="margin-top:2px;" title="Estresse: ${data.pf_atual}/${data.pf_max}">
-                <div class="fill-pf" style="width: ${pfPct}%"></div>
-            </div>` : ''}
+            ${pfBarraHTML}
         </div>
 
         <div class="token-img-wrapper">
@@ -197,7 +224,7 @@ function criarTokenInimigo(id, data, isGM) {
             <h4 style="margin:0 0 8px 0; color:var(--gold); text-align:center;">${data.nome}</h4>
             <p><strong>Ataque:</strong> ${data.ataque} | <strong>Dano:</strong> ${data.dano}</p>
             <p><strong>Limiares:</strong> ${data.limiares}</p>
-            <p><strong>PV:</strong> ${data.pv_atual}/${data.pv_max} | <strong>PF:</strong> ${data.pf_atual}/${data.pf_max}</p>
+            <p><strong>PV:</strong> ${data.pv_atual}/${data.pv_max} | <strong>PF:</strong> ${data.pf_atual}/${data.pf_max || 0}</p>
             <hr style="border-color:#333; margin:8px 0;">
             <div style="white-space: pre-wrap; line-height:1.4;">${data.detalhes}</div>
             <button onclick="toggleDetalhesToken('${id}')" style="width:100%; margin-top:10px; background:#333; color:#fff; border:1px solid #555; padding:5px; cursor:pointer;">Fechar</button>

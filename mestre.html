@@ -7,52 +7,41 @@
     <link rel="stylesheet" href="style.css?v=8.0">
     <link rel="stylesheet" href="ficha.css?v=4.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
-    <link rel="stylesheet" href="inimigos.css?v=3.6">
+    <link rel="stylesheet" href="inimigos.css?v=3.5">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; }
-        
         #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: flex; align-items: center; justify-content: center; color: var(--gold); font-family: 'MedievalSharp', cursive; font-size: 2rem; }
-
         #container-principal { display: flex; flex: 1; overflow: hidden; gap: 0; }
-        
         #area-jogadores { width: 350px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 2px solid var(--gold); background: #0a0a0a; }
         #painel { padding: 10px; overflow-y: auto; height: 100%; display: flex; flex-direction: column; gap: 10px; }
-        
         .card-jogador { width: 100%; background: rgba(20,20,20,0.9); border: 1px solid #444; border-radius:8px; padding:8px; box-sizing: border-box; }
         .card-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:5px; }
         .nome { color: var(--gold); font-weight: bold; font-size: 0.9rem; }
         .tag-classe { font-size: 0.65rem; color: #aaa; background: #222; padding: 1px 4px; border-radius: 4px; }
-        
         .btn-abrir-ficha-mestre { background: var(--gold); color: #000; border: none; border-radius: 15px; padding: 2px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-left:5px; }
         .btn-expandir-mesa { background: #333; color: #ccc; border: 1px solid #555; width: 100%; padding: 4px; cursor: pointer; font-size: 0.75rem; margin-top:5px; border-radius: 4px; }
         .btn-expandir-mesa:hover { background: #444; color: #fff; }
         .mesa-expandida { display: none; margin-top: 5px; border-top: 1px dashed #444; padding-top: 5px; }
         .mesa-expandida.ativo { display: block; }
         .grid-mini { display: flex; flex-wrap: wrap; gap: 4px; min-height: 40px; }
-
         #area-batalha-gm { flex-grow: 1; background: url('img/background_epico.png') no-repeat center center; background-size: cover; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         #titulo-batalha { background: rgba(0,0,0,0.8); color: var(--gold); text-align: center; padding: 5px; font-family: 'MedievalSharp', cursive; border-bottom: 1px solid var(--gold); }
-        
         #sidebar-escudo { width: 280px; flex-shrink: 0; background: #0f0f0f; border-left: 2px solid var(--gold); padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .escudo-topicos { display: flex; flex-direction: column; gap: 5px; }
         .btn-topico { background: #222; border: 1px solid #444; color: #ddd; padding: 8px; text-align: left; cursor: pointer; border-radius: 5px; transition: 0.2s; }
         .btn-topico:hover { border-color: var(--gold); background: #333; }
-
         #controles-mestre { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: #111; border-bottom: 2px solid var(--gold); z-index: 100; }
         .btn-rest { font-size: 0.8rem; padding: 5px 10px; cursor: pointer; color: white; border-radius: 4px; border:none; }
         .curto { background: #f57c00; } .longo { background: #d32f2f; }
         .btn-nav-mestre { background: #333; color: #fff; padding: 5px 10px; border: 1px solid #555; cursor: pointer; border-radius: 4px; }
-
         #modal-criar-inimigo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9000; align-items: center; justify-content: center; }
         .modal-criar-content { background: #1a1a1a; width: 450px; padding: 20px; border: 2px solid var(--gold); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; max-height:90vh; overflow-y:auto; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .form-full { grid-column: 1 / -1; }
         input, textarea { width: 100%; box-sizing: border-box; background: #222; border: 1px solid #444; color: white; padding: 5px; }
-        
         #preview-carta-mestre { display: none; position: fixed; top: 50%; left: 50%; width: 320px; height: 480px; z-index: 9999; transform: translate(-50%, -50%); border: 3px solid var(--gold); background: #000; pointer-events: none; background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 0 60px rgba(255,215,0,0.4); border-radius: 10px; }
         #preview-carta-mestre .token-count { position: absolute; top: -10px; right: -10px; background: #000; border: 2px solid #fff; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; }
-        
         #modal-escudo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; }
         #modal-escudo.ativo { display: flex; }
         .modal-escudo-content { background: #1a1a1a; padding: 30px; border: 2px solid var(--gold); max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; color: #ddd; border-radius: 10px; }
@@ -88,12 +77,10 @@
                 <p style="text-align:center; color:#666;">Carregando...</p>
             </div>
         </div>
-
         <div id="area-batalha-gm">
             <div id="titulo-batalha">CAMPO DE BATALHA</div>
             <div id="area-inimigos"></div>
         </div>
-
         <div id="sidebar-escudo">
             <h3 style="color:var(--gold); text-align:center; border-bottom:1px solid #333; padding-bottom:5px; margin-top:0;">ESCUDO GM</h3>
             <div class="escudo-topicos">
@@ -141,12 +128,9 @@
 
     <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
         <div class="dados-content">
-            <div class="dados-header">Rolagem de Dados</div>
-            <div class="dualidade-box">
-                <span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span>
-                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button>
-            </div>
-            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
+            <div class="dados-header">Rolagem</div>
+            <div class="dualidade-box"><span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button></div>
+            <hr style="border-top:1px solid #444; width:100%;">
             <div class="grid-dados">
                 <div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div>
                 <div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div>
@@ -155,22 +139,13 @@
                 <div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div>
                 <div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div>
             </div>
-            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
+            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button>
         </div>
     </div>
 
-    <div id="overlay-rolagem">
-        <div id="quem-rolou-label"></div>
-        <div id="container-dados-rolando"></div>
-        <button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button>
-    </div>
+    <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar</button></div>
 
-    <div id="modal-escudo">
-        <div class="modal-escudo-content">
-            <button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button>
-            <div id="escudo-conteudo"></div>
-        </div>
-    </div>
+    <div id="modal-escudo"><div class="modal-escudo-content"><button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button><div id="escudo-conteudo"></div></div></div>
 
     <div id="sheet-modal" class="modal">
         <div class="sheet-content">
@@ -207,22 +182,20 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
-        window.onValue = onValue; window.push = push; window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded; window.update = update;
+        window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove; window.onValue = onValue; window.push = push; window.update = update;
+        window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
         
-        window.nomeJogador = "Mestre";
+        window.nomeJogador = "Mestre"; 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
-        window.fazerLogout = function() {
-            signOut(auth).then(() => window.location.href = "index.html");
-        }
+        window.fazerLogout = function() { signOut(auth).then(() => window.location.href = "index.html"); }
 
         window.abrirFichaDoJogador = function(nome) {
             window.nomeJogador = nome;
             get(ref(db, `mesa_rpg/jogadores/${nome}/slots/Fundamental`)).then(snap => {
                 if(snap.exists() && snap.val().profissao) {
                     localStorage.setItem('profissaoSelecionada', snap.val().profissao);
-                    if(typeof window.abrirFichaPersonagem === 'function') window.abrirFichaPersonagem();
+                    if(window.abrirFichaPersonagem) window.abrirFichaPersonagem();
                 } else alert("Jogador sem classe.");
             });
         };
@@ -281,7 +254,9 @@
                     card.innerHTML = `
                         <div class="card-header">
                             <div><div class="nome">${nome}</div>${classeNome ? `<div class="tag-classe">${classeNome}</div>` : ''}</div>
-                            <button class="btn-abrir-ficha-mestre" onclick="window.abrirFichaDoJogador('${safeName}')">📝</button>
+                            <div style="display:flex;align-items:center;">
+                                <button class="btn-abrir-ficha-mestre" onclick="window.abrirFichaDoJogador('${safeName}')">📝</button>
+                            </div>
                         </div>
                         <div class="label">Mão</div><div class="grid-mini" data-jogador="${nome}">${htmlMao}</div>
                         <button class="btn-expandir-mesa" onclick="window.toggleMesaJogador('${safeName}')">📂 Ver Mesa</button>
@@ -368,6 +343,7 @@
         window.fecharEscudo = function() { document.getElementById('modal-escudo').classList.remove('ativo'); }
         document.getElementById('modal-escudo').addEventListener('click', function(e) { if(e.target===this) fecharEscudo(); });
 
+        // Inicialização
         onAuthStateChanged(auth, u => {
             document.getElementById('loading-screen').style.display = 'none';
             if(!u || u.email !== EMAIL_MESTRE) { window.location.href="index.html"; return; }
@@ -378,14 +354,14 @@
             }, 1000);
         });
 
-        // HOVER PREVIEW ATUALIZADO (DETECTA CARTA DE MESA TAMBÉM)
+        // Hover Preview (Detecta cartas na mão, na mesa expandida e na reserva)
         document.addEventListener('mouseover', (e) => {
-            // Verifica se o alvo ou algum pai é .mini-carta (MÃO E MESA USAM ESSA CLASSE)
-            const c = e.target.closest('.mini-carta');
+            // Seletor abrangente para cartas
+            const c = e.target.closest('.mini-carta, .slot-ativo, .carta-reserva-visual');
             if (c && !c.classList.contains('status-vazio')) {
                 const p = document.getElementById('preview-carta-mestre');
                 
-                // Tenta pegar imagem do estilo inline (Mão) ou computado (Mesa pode ter classes)
+                // Tenta pegar imagem do estilo inline (Mão) ou computado (Mesa)
                 let bg = c.style.backgroundImage;
                 if (!bg || bg === 'none') {
                      bg = window.getComputedStyle(c).backgroundImage;
@@ -393,14 +369,15 @@
                 
                 if (bg && bg !== 'none') {
                     p.style.backgroundImage = bg;
-                    p.innerHTML = c.innerHTML; // Copia tokens se tiver
+                    // Limpa conteúdo anterior (como tokens da mão) para cartas da mesa
+                    p.innerHTML = c.classList.contains('mini-carta') ? c.innerHTML : '';
                     p.style.display = 'flex';
                 }
             }
         });
         
         document.addEventListener('mouseout', (e) => { 
-            if (e.target.closest('.mini-carta')) {
+            if (e.target.closest('.mini-carta, .slot-ativo, .carta-reserva-visual')) {
                 document.getElementById('preview-carta-mestre').style.display = 'none';
             }
         });
@@ -409,6 +386,6 @@
     
     <script src="ficha.js?v=4.0"></script>
     <script src="dados.js?v=2.0"></script>
-    <script src="inimigos.js?v=3.7"></script>
+    <script src="inimigos.js?v=4.0"></script>
 </body>
 </html>
