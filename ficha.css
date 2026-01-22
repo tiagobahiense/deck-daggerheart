@@ -1,5 +1,5 @@
 /* =========================================================
-   ESTILOS DA FICHA - MODO PRANCHETA (FINAL v2.0)
+   ESTILOS DA FICHA - PRANCHETA V2.1 (UX MELHORADO)
    ========================================================= */
 
    #sheet-modal {
@@ -53,7 +53,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    /* Removido pointer-events: none para permitir arrastar os wrappers */
+    pointer-events: none;
 }
 
 /* --- BARRA DE FERRAMENTAS --- */
@@ -126,30 +126,29 @@
 
 /* --- ELEMENTOS DO JOGADOR --- */
 
-/* Wrapper Genérico */
 .element-wrapper {
     position: absolute;
-    padding: 2px;
+    pointer-events: auto; 
+    padding: 2px; /* Área de 'pegada' para arrastar */
     z-index: 100;
-    cursor: grab; /* Mãozinha para indicar que pode mover */
+    cursor: grab;
 }
 
 .element-wrapper:active {
     cursor: grabbing;
 }
 
-/* Estado Selecionado (Borda Dourada) */
+/* Estado Selecionado */
 .element-wrapper.selected {
     border: 2px dashed var(--gold);
-    background: rgba(212, 175, 55, 0.1);
-    z-index: 1000; /* Traz para frente */
+    background: rgba(212, 175, 55, 0.05);
+    z-index: 1000;
 }
 
-/* Caixa de Seleção Temporária (Drag to Create) */
 .temp-box {
     position: absolute;
-    border: 1px dashed blue;
-    background-color: rgba(0, 0, 255, 0.1);
+    border: 2px dashed #0099ff;
+    background-color: rgba(0, 153, 255, 0.2);
     pointer-events: none;
     z-index: 999;
 }
@@ -158,17 +157,26 @@
 .user-textarea {
     width: 100%;
     height: 100%;
-    background: transparent;
-    border: none;
+    background: rgba(0, 0, 0, 0.03); /* Fundo sutil para não ficar invisível */
+    border: 1px dashed rgba(0, 0, 0, 0.3); /* Borda sempre visível */
     color: #000;
     font-family: 'Courier New', monospace;
-    font-weight: 900; /* Mais negrito */
+    font-weight: 900; /* Negrito Forte */
     line-height: 1.1;
-    padding: 2px;
+    padding: 4px;
     resize: none; 
     overflow: hidden;
     outline: none;
     cursor: text;
+    border-radius: 3px;
+    transition: border 0.2s, background 0.2s;
+}
+
+/* Quando foca ou passa o mouse, destaca mais */
+.element-wrapper:hover .user-textarea, 
+.user-textarea:focus {
+    border: 1px dashed rgba(0, 0, 255, 0.8);
+    background: rgba(255, 255, 255, 0.6);
 }
 
 /* MARCADOR (BOLINHA) */
@@ -177,47 +185,47 @@
     height: 100%;
     background-color: #000;
     border-radius: 50%;
-    box-shadow: 0 0 1px #fff;
-    pointer-events: none; /* Deixa o clique ir pro wrapper */
+    box-shadow: 0 0 2px #fff;
+    pointer-events: none;
 }
 
-/* --- MENU DE CONTEXTO (BOTOES DE EDITAR) --- */
+/* --- MENU DE CONTEXTO --- */
 .element-context-menu {
     position: absolute;
-    top: -40px; /* Acima do elemento */
+    top: -45px;
     left: 50%;
     transform: translateX(-50%);
-    background: #333;
-    border: 1px solid #fff;
+    background: #222;
+    border: 1px solid var(--gold);
     border-radius: 5px;
-    display: none; /* Escondido por padrão */
+    display: none;
     gap: 5px;
-    padding: 3px;
+    padding: 5px;
     z-index: 2000;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.8);
     white-space: nowrap;
 }
 
-/* Mostra o menu quando o elemento tem a classe .selected */
 .element-wrapper.selected .element-context-menu {
     display: flex;
 }
 
 .ctx-btn {
-    background: #555;
+    background: #444;
     color: #fff;
-    border: none;
-    border-radius: 3px;
-    width: 25px;
-    height: 25px;
+    border: 1px solid #666;
+    border-radius: 4px;
+    width: 30px;
+    height: 30px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-size: 14px;
+    font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 .ctx-btn:hover { background: var(--gold); color: #000; }
-.ctx-btn.del:hover { background: #ff4444; color: #fff; }
+.ctx-btn.del:hover { background: #ff4444; color: #fff; border-color: red; }
 
 /* Footer */
 .sheet-footer {
@@ -243,7 +251,6 @@
 }
 .nav-simple-btn:hover { border-color: var(--gold); color: var(--gold); }
 
-/* Responsividade */
 @media (max-width: 1100px) {
     .sheet-toolbar {
         top: -60px; left: 0; width: 100%; height: 50px;
