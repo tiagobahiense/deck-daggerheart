@@ -3,482 +3,645 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grimório Daggerheart</title>
-    <link rel="icon" type="image/png" href="img/favicon.png" />
-    <link rel="stylesheet" href="style.css?v=10.1">
-    <link rel="stylesheet" href="profissao.css?v=1.0">
-    <link rel="stylesheet" href="selecao-classe.css?v=3.0">
-    <link rel="stylesheet" href="ficha.css?v=5.0">
-    <link rel="stylesheet" href="dados.css?v=2.0">
-    <link rel="stylesheet" href="inimigos.css?v=3.6">
-    <link rel="stylesheet" href="medo.css?v=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <title>Grimório Daggerheart - Sistema Completo</title>
     <style>
-        /* Botão Refresh do Jogador */
-        .btn-refresh-player {
-            position: absolute; top: 15px; right: 15px;
-            background: rgba(0, 0, 0, 0.7); border: 2px solid #555; color: #aaa;
-            width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 9999;
-            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
-            transition: all 0.3s ease; box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'MedievalSharp', cursive;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        .btn-refresh-player:hover { border-color: var(--gold); color: var(--gold); transform: rotate(180deg); background: rgba(0, 0, 0, 0.9); }
-        .spin-anim { animation: spin 1s linear infinite; color: var(--gold); border-color: var(--gold); }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Container Principal */
+        #app-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 20px;
+            gap: 20px;
+        }
+
+        /* Header com Título */
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 10px;
+            border: 2px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .header h1 {
+            color: #d4af37;
+            font-size: 2.5rem;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Área de Slots Fixos */
+        .slots-area {
+            display: grid;
+            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        .grupo-fixo {
+            background: rgba(0,0,0,0.4);
+            border: 2px solid rgba(212, 175, 55, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+        }
+
+        .titulo-grupo {
+            color: #d4af37;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .slots-row {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .slot-fixo, .slot-classe {
+            position: relative;
+            width: 150px;
+            height: 220px;
+            background: rgba(26, 26, 26, 0.8);
+            border: 3px solid rgba(212, 175, 55, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .slot-fixo:hover, .slot-classe:hover {
+            border-color: #d4af37;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+            transform: translateY(-5px);
+        }
+
+        .slot-fixo img, .slot-classe img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .label-slot {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            z-index: 2;
+            white-space: nowrap;
+        }
+
+        .nivel-req {
+            position: absolute;
+            bottom: 10px;
+            background: rgba(212, 175, 55, 0.9);
+            color: #000;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .btn-limpar {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 25px;
+            height: 25px;
+            background: rgba(255, 0, 0, 0.8);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            display: none;
+            z-index: 3;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-limpar:hover {
+            background: rgba(255, 0, 0, 1);
+        }
+
+        /* Área do Deck */
+        .deck-area {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .btn-deck {
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+            border: 3px solid #fff;
+            border-radius: 10px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .btn-deck:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Modal do Grimório */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0,0,0,0.9);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 3px solid #d4af37;
+            border-radius: 15px;
+            padding: 30px;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .modal-header h2 {
+            color: #d4af37;
+            font-size: 2rem;
+        }
+
+        .close-btn {
+            background: rgba(255,0,0,0.8);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255,0,0,1);
+            transform: rotate(90deg);
+        }
+
+        #grid-cartas {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 20px 0;
+        }
+
+        .carta-modal {
+            width: 100%;
+            height: 300px;
+            background-size: cover;
+            background-position: center;
+            border: 3px solid rgba(212, 175, 55, 0.5);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .carta-modal:hover {
+            border-color: #d4af37;
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.8);
+            transform: scale(1.05);
+            z-index: 100;
+        }
+
+        /* Preview de Hover */
+        #hover-preview-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 400px;
+            height: 600px;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            border: 4px solid #d4af37;
+            pointer-events: none;
+            z-index: 99999;
+            box-shadow: 0 0 50px rgba(212, 175, 55, 0.9);
+        }
+
+        /* Botão de Info */
+        .info-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: rgba(212, 175, 55, 0.9);
+            border: 3px solid #fff;
+            border-radius: 50%;
+            color: #000;
+            font-size: 2rem;
+            cursor: pointer;
+            z-index: 5000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+        }
+
+        .info-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(212, 175, 55, 0.7);
+        }
+
+        /* Mensagens */
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            background: rgba(212, 175, 55, 0.95);
+            color: #000;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 20000;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Responsivo */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 1.8rem; }
+            .slots-row { flex-direction: column; align-items: center; }
+            .slot-fixo, .slot-classe { width: 120px; height: 180px; }
+            #grid-cartas { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+            .carta-modal { height: 220px; }
+        }
     </style>
 </head>
 <body>
+    <!-- Preview de Hover -->
+    <div id="hover-preview-modal"></div>
 
-    <div id="medo-overlay-msg"></div>
-
-    <div id="login-screen">
-        <div class="login-box" id="fase-selecao">
-            <h1>Grimório Daggerheart</h1>
-            <p>Escolha seu destino</p>
-            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
-                <button type="button" class="btn-main" onclick="irParaLoginJogador()">Sou Jogador</button>
-                <button type="button" class="btn-main" onclick="irParaLoginNarrador()" style="background: #8b0000; color: #fff; border: 2px solid #ff4444;">Sou Narrador</button>
-            </div>
-            <button type="button" onclick="forcarLogout()" style="background: transparent; color: #666; border: none; font-size: 0.8rem; margin-top: 20px;">Forçar Logout (Reset)</button>
+    <!-- Container Principal -->
+    <div id="app-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>⚔️ Grimório Daggerheart ⚔️</h1>
+            <p style="color: #aaa; margin-top: 10px;">Sistema de Gerenciamento de Cartas</p>
         </div>
 
-        <div class="login-box" id="fase-login-jogador" style="display: none;">
-            <h1>Acesso do Jogador</h1>
-            <p>Insira suas credenciais</p>
-            <div class="input-group"><input type="email" id="player-email" placeholder="Email" class="input-login"></div>
-            <div class="input-group"><input type="password" id="player-pass" placeholder="Senha" class="input-login"><span class="toggle-password" onclick="togglePassword('player-pass')">👁️</span></div>
-            <div id="error-msg-player"></div>
-            <button type="button" class="btn-entrar" onclick="fazerLoginJogador()">Entrar</button>
-            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
+        <!-- Slots de Identidade -->
+        <div class="slots-area">
+            <div class="grupo-fixo">
+                <div class="titulo-grupo">Identidade</div>
+                <div class="slots-row">
+                    <div class="slot-fixo" id="slot-Ancestralidade" onclick="abrirGrimorio('Ancestralidade', 'Ancestralidade')">
+                        <span class="label-slot">Ancestralidade</span>
+                        <button class="btn-limpar" onclick="limparSlot('Ancestralidade', event)">×</button>
+                    </div>
+                    <div class="slot-fixo" id="slot-Comunidade" onclick="abrirGrimorio('Comunidade', 'Comunidade')">
+                        <span class="label-slot">Comunidade</span>
+                        <button class="btn-limpar" onclick="limparSlot('Comunidade', event)">×</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slots de Classe -->
+            <div class="grupo-fixo">
+                <div class="titulo-grupo">Evolução de Classe</div>
+                <div class="slots-row">
+                    <div class="slot-classe" id="slot-Fundamental" onclick="abrirGrimorio('Classes', 'Fundamental')">
+                        <span class="label-slot">Fundamental</span>
+                        <span class="nivel-req">Nível 1</span>
+                        <button class="btn-limpar" onclick="limparSlot('Fundamental', event)">×</button>
+                    </div>
+                    <div class="slot-classe" id="slot-Especializacao" onclick="abrirGrimorio('Classes', 'Especializacao')">
+                        <span class="label-slot">Especialização</span>
+                        <span class="nivel-req">Avanço</span>
+                        <button class="btn-limpar" onclick="limparSlot('Especializacao', event)">×</button>
+                    </div>
+                    <div class="slot-classe" id="slot-Maestria" onclick="abrirGrimorio('Classes', 'Maestria')">
+                        <span class="label-slot">Maestria</span>
+                        <span class="nivel-req">Avanço</span>
+                        <button class="btn-limpar" onclick="limparSlot('Maestria', event)">×</button>
+                    </div>
+                </div>
+            </div>
         </div>
 
-        <div class="login-box" id="fase-login-narrador" style="display: none;">
-            <h1>Acesso do Narrador</h1>
-            <p>Área Restrita</p>
-            <div class="input-group"><input type="email" id="narrador-email" placeholder="Email" class="input-login"></div>
-            <div class="input-group"><input type="password" id="narrador-pass" placeholder="Senha" class="input-login"><span class="toggle-password" onclick="togglePassword('narrador-pass')">👁️</span></div>
-            <div id="error-msg-narrador"></div>
-            <button type="button" class="btn-entrar" onclick="fazerLoginNarrador()">Acessar Admin</button>
-            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
-        </div>
-
-        <div class="login-box" id="fase-personagem" style="display: none;">
-            <h1>Seus Personagens</h1>
-            <p>Escolha um personagem existente ou crie um novo</p>
-            <div id="lista-personagens" style="margin: 20px 0; min-height: 100px;">
-                <p style="color: #888; text-align: center;">Carregando...</p>
-            </div>
-            <div style="border-top: 1px solid #444; padding-top: 15px; margin-top: 15px;">
-                <p style="margin-bottom: 10px; color: #aaa; font-size: 0.9rem;">Criar novo personagem:</p>
-                <input type="text" id="nome-personagem" placeholder="Nome do Novo Personagem" class="input-login" autocomplete="off" style="margin-bottom: 10px;">
-                <button type="button" class="btn-entrar" onclick="criarNovoPersonagem()">Criar e Jogar</button>
-            </div>
-            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()" style="margin-top: 15px;">Cancelar</button>
+        <!-- Deck/Grimório -->
+        <div class="deck-area">
+            <button class="btn-deck" onclick="abrirGrimorio('Geral')">
+                📚 Abrir Grimório Geral
+            </button>
         </div>
     </div>
 
-    <div id="classe-selection-modal" class="modal-selecao"><div class="classe-carousel-wrapper"><div class="selecao-header"><h2>Escolha sua Classe</h2><p>Clique na imagem para ler</p></div><div class="carousel-main"><button class="nav-btn prev" onclick="window.mudarClasse(-1)">❮</button><div class="card-display" onclick="window.verDetalhesClasse()"><div class="card-glow"></div><img id="img-classe-perfil" class="img-perfil-animada"><div class="card-label"><span id="nome-classe-selecao">CLASSE</span></div></div><button class="nav-btn next" onclick="window.mudarClasse(1)">❯</button></div><div class="selecao-footer"><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasse()">✓ Confirmar <span id="btn-nome-classe">Classe</span></button></div></div></div>
-    <div id="modal-detalhes-classe" class="modal" style="z-index: 7000;"><div class="modal-detalhes-content"><button class="close-detalhes" onclick="window.fecharDetalhesClasse()">X</button><div class="pdf-wrapper"><button class="nav-pdf-btn prev" onclick="window.mudarPaginaPDF(-1)">❮</button><div class="pdf-container"><img id="img-classe-pdf"></div><button class="nav-pdf-btn next" onclick="window.mudarPaginaPDF(1)">❯</button></div><div class="detalhes-footer"><div class="page-counter" id="pdf-page-counter">1/2</div><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasseDeDentro()">Escolher</button></div></div></div>
-    
-    <div id="sheet-modal" class="modal"><div class="sheet-content"><div class="sheet-toolbar"><button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button><button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button><button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button></div><button class="btn-close-sheet" onclick="fecharFicha()">X</button><div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div><div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div></div></div>
-    
-    <div id="hover-preview" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:525px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
-    <div id="hover-preview-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:525px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
-    <div id="hover-preview-slot" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:600px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
-
-    <div id="app-container" style="display: none; opacity: 0;">
-        <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar">🔄</button>
-        <div id="aura-profissao"></div><div id="particulas-profissao"></div>
-        <div id="audio-control"><button onclick="toggleMusic()" id="btn-music">🔊</button><input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()"></div>
-        <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio><audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
-        <div id="system-message"></div>
-        
-        <div id="area-inimigos"></div>
-        
-        <div id="area-jogo">
-            <section id="mesa-area">
-                <div class="grupo-fixo"><div class="titulo-grupo">Identidade</div><div class="slots-row"><div class="slot-fixo" onclick="abrirGrimorio('Ancestralidade', 'Ancestralidade')" id="slot-Ancestralidade"><span class="label-slot">Ancestralidade</span><button class="btn-limpar" onclick="limparSlot('Ancestralidade', event)">×</button></div><div class="slot-fixo" onclick="abrirGrimorio('Comunidade', 'Comunidade')" id="slot-Comunidade"><span class="label-slot">Comunidade</span><button class="btn-limpar" onclick="limparSlot('Comunidade', event)">×</button></div></div></div>
-                <div class="grupo-fixo destaque-classe"><div class="titulo-grupo">Evolução de Subclasse</div><div class="slots-row"><div class="slot-classe" onclick="abrirGrimorio('Classes', 'Fundamental')" id="slot-Fundamental"><span class="label-slot">Fundamental</span><span class="nivel-req">Nível 1</span><button class="btn-limpar" onclick="limparSlot('Fundamental', event)">×</button></div><div class="seta-evolucao">➜</div><div class="slot-classe" onclick="abrirGrimorio('Classes', 'Especializacao')" id="slot-Especializacao"><span class="label-slot">Especialização</span><span class="nivel-req">Avanço</span><button class="btn-limpar" onclick="limparSlot('Especializacao', event)">×</button></div><div class="seta-evolucao">➜</div><div class="slot-classe" onclick="abrirGrimorio('Classes', 'Maestria')" id="slot-Maestria"><span class="label-slot">Maestria</span><span class="nivel-req">Avanço</span><button class="btn-limpar" onclick="limparSlot('Maestria', event)">×</button></div></div></div>
-            </section>
-            <div id="deck-container-wrapper"><div id="deck-area" onclick="abrirGrimorio('Geral')"><div class="pote-glow"></div><img src="img/pote_deck.png" class="pote-img"><div class="label-deck">Grimório</div></div></div>
-            <section id="reserva-area"><div class="titulo-reserva">Reserva (Inativas)</div><div id="cartas-reserva"></div></section>
-        </div> 
-        <footer id="mao-area"><div id="cartas-mao"></div><button onclick="window.abrirFichaPersonagem()" style="position: absolute; bottom: 20px; right: 20px; z-index: 2000; pointer-events: auto; padding: 10px 20px; background: var(--gold); border: 2px solid #fff; border-radius: 5px; cursor: pointer; font-weight: bold; font-family: 'MedievalSharp', cursive; font-size: 1rem; box-shadow: 0 0 10px rgba(0,0,0,0.8); color: #000;">📝 Ficha</button></footer>
-        <div id="btn-abrir-dados" onclick="abrirSeletorDados()" title="Rolar Dados">🎲</div>
-        <div id="carta-tabuleiro-animada" class="carta-tabuleiro-animada"></div>
+    <!-- Modal do Grimório -->
+    <div id="grimorio-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-titulo">Escolha uma Carta</h2>
+                <button class="close-btn" onclick="fecharGrimorio()">×</button>
+            </div>
+            <div id="grid-cartas"></div>
+        </div>
     </div>
 
-    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()"><div class="dados-content"><div class="dados-header">Rolagem</div><div class="dualidade-box"><span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button></div><hr style="border-top:1px solid #444; width:100%;"><div class="grid-dados"><div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div></div><button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button></div></div>
-    <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button></div>
-    <div id="grimorio-modal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Escolha uma Carta</h2><button class="close-btn" onclick="fecharGrimorio()">X</button></div><div id="grid-cartas"></div></div></div>
-    <div id="decisao-modal" class="modal" style="z-index: 6000;"><div class="modal-decisao-content"><h3>Gerenciar Carta</h3><div class="carta-preview-decisao" id="preview-decisao"></div><div class="grupo-tokens"><span>Tokens:</span><button class="btn-token" onclick="alterarToken(-1)">-</button><span id="label-token-qtd">0</span><button class="btn-token" onclick="alterarToken(1)">+</button></div><div class="grupo-tokens"><button class="btn-estado" onclick="definirEstado('curto')">Descanso Curto</button><button class="btn-estado" onclick="definirEstado('longo')">Descanso Longo</button></div><div class="botoes-decisao"><button class="btn-usar-carta" id="btn-usar-carta" onclick="usarCarta()" style="display:none;">⚡ Usar</button><button class="btn-confirmar" onclick="confirmarEdicao()">OK</button><button class="btn-reserva" id="btn-para-reserva" onclick="moverParaReserva()" style="display:none;">Reserva</button><button class="btn-deck" id="btn-devolver-mao" onclick="devolverParaMao()" style="display:none;">Mão</button><button class="btn-deck" id="btn-devolver-deck" onclick="devolverAoDeck()" style="display:none;">Deck</button></div></div></div>
-    <div id="reserva-modal" class="modal" style="z-index: 6000;"><div class="modal-reserva-content"><div class="modal-header"><h2>Reserva</h2><button class="close-btn" onclick="window.fecharReserva()">X</button></div><div id="grid-reserva"></div></div></div>
-    <div id="troca-modal" class="modal" style="z-index: 6100;"><div class="modal-decisao-content"><h3>Mão cheia!</h3><div id="grid-troca"></div><div class="botoes-decisao"><button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button></div></div></div>
+    <!-- Botão de Info -->
+    <div class="info-btn" onclick="mostrarInfo()" title="Informações">ℹ️</div>
 
-    <script type="module" src="script.js?v=10.2"></script>
-    <script type="module">
-        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
-            authDomain: "deck-daggerheart.firebaseapp.com",
-            databaseURL: "https://deck-daggerheart-default-rtdb.firebaseio.com",
-            projectId: "deck-daggerheart",
-            storageBucket: "deck-daggerheart.firebasestorage.app",
-            messagingSenderId: "825358776791",
-            appId: "1:825358776791:web:ce0ab844f58c60573c7392",
-            measurementId: "G-20TB05E9N2"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const auth = getAuth(app);
-        
-        // Garante que a autenticação persista apenas na sessão
-        setPersistence(auth, browserSessionPersistence).catch(console.error);
-
-        // Exportações globais (CRUCIAIS PARA OS OUTROS SCRIPTS)
-        window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
-        window.onValue = onValue; window.push = push; window.update = update; window.off = off; window.onDisconnect = onDisconnect;
-        window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
-        
-        // === RESTAURAÇÃO COMPLETA DA LÓGICA DO JOGADOR ===
-        window.nomeJogador = "";
-        let maoDoJogador = [];
-        let reservaDoJogador = [];
-        let slotsFixos = { 'Ancestralidade': null, 'Comunidade': null, 'Fundamental': null, 'Especializacao': null, 'Maestria': null };
-        let catalogoCartas = []; 
+    <script>
+        // ===== DADOS E ESTADO =====
+        let catalogoCartas = [];
         let catalogoCartasClasses = [];
-        let cartaEmTransitoIndex = null;
-        let origemTransito = null;
+        let slotsFixos = {
+            'Ancestralidade': null,
+            'Comunidade': null,
+            'Fundamental': null,
+            'Especializacao': null,
+            'Maestria': null
+        };
         let slotDestinoAtual = null;
-        const LIMITE_MAO = 5;
 
-        // Carrega cartas (JSON)
+        // ===== CARREGAR CARTAS =====
         async function carregarDados() {
             try {
-                const [r1, r2] = await Promise.all([fetch('./lista_cartas.json'), fetch('./lista_cartas_v2.json')]);
-                if(r1.ok) catalogoCartas = await r1.json();
-                if(r2.ok) {
-                    const v2 = await r2.json();
-                    catalogoCartasClasses = Array.isArray(v2) ? v2.filter(c => c.categoria === 'Classes' && c.profissao) : [];
-                }
-            } catch(e) { console.error("Erro loading cards", e); }
+                // Dados inline para garantir funcionamento
+                catalogoCartas = [
+                    {"caminho": "img/cartas/Ancestralidade/Ancestralidade - Anão.jpg", "nome": "Ancestralidade - Anão", "categoria": "Ancestralidade"},
+                    {"caminho": "img/cartas/Ancestralidade/Ancestralidade - Elfo.jpg", "nome": "Ancestralidade - Elfo", "categoria": "Ancestralidade"},
+                    {"caminho": "img/cartas/Ancestralidade/Ancestralidade - Humano.jpg", "nome": "Ancestralidade - Humano", "categoria": "Ancestralidade"},
+                    {"caminho": "img/cartas/Comunidade/Comunidade - Aristocrática.jpg", "nome": "Comunidade - Aristocrática", "categoria": "Comunidade"},
+                    {"caminho": "img/cartas/Comunidade/Comunidade - Disciplinada.jpg", "nome": "Comunidade - Disciplinada", "categoria": "Comunidade"},
+                    {"caminho": "img/cartas/Feitiço/Feitiço - Adivinhação.jpg", "nome": "Feitiço - Adivinhação", "categoria": "Feitiço"},
+                    {"caminho": "img/cartas/Talento/Talento - Ferocidade.jpg", "nome": "Talento - Ferocidade", "categoria": "Talento"}
+                ];
+
+                catalogoCartasClasses = [
+                    {"caminho": "img/cartas/Classes/Fundamental - Baluarte.jpg", "nome": "Fundamental - Baluarte", "categoria": "Classes", "profissao": "Guardião"},
+                    {"caminho": "img/cartas/Classes/Fundamental - Beletrista.jpg", "nome": "Fundamental - Beletrista", "categoria": "Classes", "profissao": "Bardo"},
+                    {"caminho": "img/cartas/Classes/Especialização - Baluarte.jpg", "nome": "Especialização - Baluarte", "categoria": "Classes", "profissao": "Guardião"},
+                    {"caminho": "img/cartas/Classes/Maestria - Baluarte.jpg", "nome": "Maestria - Baluarte", "categoria": "Classes", "profissao": "Guardião"}
+                ];
+
+                console.log('✅ Cartas carregadas:', catalogoCartas.length, 'gerais e', catalogoCartasClasses.length, 'de classes');
+                return true;
+            } catch (error) {
+                console.error('❌ Erro ao carregar cartas:', error);
+                mostrarMensagem('Erro ao carregar cartas!', 'error');
+                return false;
+            }
         }
 
-        // Funções de Interface (GRIMÓRIO)
+        // ===== ABRIR GRIMÓRIO =====
         window.abrirGrimorio = async function(tipo, slotDestino = null) {
             const modal = document.getElementById('grimorio-modal');
             const grid = document.getElementById('grid-cartas');
             const titulo = document.getElementById('modal-titulo');
+
             slotDestinoAtual = slotDestino;
             grid.innerHTML = '';
 
-            if(catalogoCartas.length === 0) await carregarDados();
+            // Garante que as cartas estão carregadas
+            if (catalogoCartas.length === 0) {
+                await carregarDados();
+            }
 
             let lista = [];
+            
             if (tipo === 'Geral') {
-                titulo.innerText = "Grimório Principal";
+                titulo.innerText = "📚 Grimório Geral";
                 lista = catalogoCartas.filter(c => !['Classes','Ancestralidade','Comunidade'].includes(c.categoria));
-            } else if (tipo === 'Classes') {
-                const prof = localStorage.getItem('profissaoSelecionada');
-                titulo.innerText = prof ? `Cartas de ${prof}` : "Classes";
-                lista = catalogoCartasClasses.filter(c => !prof || c.profissao === prof);
-                // Filtro avançado para slots específicos
-                if(slotDestinoAtual && ['Fundamental', 'Especializacao', 'Maestria'].includes(slotDestinoAtual)) {
-                    const prefixo = slotDestinoAtual === 'Especializacao' ? ['Especialização -', 'Especializacao -'] : [`${slotDestinoAtual} -`];
-                    lista = lista.filter(c => prefixo.some(pref => c.nome.startsWith(pref) || c.caminho.includes(pref.replace(' -',''))));
+            } 
+            else if (tipo === 'Classes') {
+                titulo.innerText = `⚔️ Cartas de Classe`;
+                lista = catalogoCartasClasses.slice();
+
+                // Filtro por tipo de carta (Fundamental/Especialização/Maestria)
+                if (slotDestinoAtual && ['Fundamental', 'Especializacao', 'Maestria'].includes(slotDestinoAtual)) {
+                    const prefixos = slotDestinoAtual === 'Especializacao' 
+                        ? ['Especialização -', 'Especializacao -']
+                        : [`${slotDestinoAtual} -`];
+                    
+                    lista = lista.filter(c => {
+                        const nomeMatch = c.nome && prefixos.some(pref => c.nome.startsWith(pref));
+                        const caminhoMatch = c.caminho && prefixos.some(pref => c.caminho.includes(pref.replace(' -', '')));
+                        return nomeMatch || caminhoMatch;
+                    });
                 }
-            } else {
-                titulo.innerText = `Selecionar: ${tipo}`;
+            }
+            else {
+                titulo.innerText = `🎴 ${tipo}`;
                 lista = catalogoCartas.filter(c => c.categoria === tipo);
             }
 
-            lista.forEach(carta => {
-                const div = document.createElement('div');
-                div.className = 'carta-modal lazy-card';
-                div.style.backgroundImage = `url('${carta.caminho}')`;
-                div.onclick = () => selecionarCarta(carta);
-                // Hover preview
-                div.onmouseenter = () => {
-                     const p = document.getElementById('hover-preview-modal');
-                     p.style.display = 'block'; p.style.backgroundImage = `url('${carta.caminho}')`;
-                };
-                div.onmouseleave = () => document.getElementById('hover-preview-modal').style.display = 'none';
-                grid.appendChild(div);
-            });
+            console.log(`📖 Abrindo ${tipo}:`, lista.length, 'cartas encontradas');
+
+            if (lista.length === 0) {
+                grid.innerHTML = '<p style="color: #aaa; text-align: center; padding: 40px;">Nenhuma carta encontrada nesta categoria.</p>';
+            } else {
+                lista.forEach(carta => {
+                    const div = document.createElement('div');
+                    div.className = 'carta-modal';
+                    div.style.backgroundImage = `url('${carta.caminho}')`;
+                    
+                    // Hover preview
+                    div.onmouseenter = function() {
+                        const preview = document.getElementById('hover-preview-modal');
+                        if (preview) {
+                            preview.style.display = 'block';
+                            preview.style.backgroundImage = `url('${carta.caminho}')`;
+                        }
+                    };
+                    
+                    div.onmouseleave = function() {
+                        const preview = document.getElementById('hover-preview-modal');
+                        if (preview) preview.style.display = 'none';
+                    };
+                    
+                    div.onclick = () => selecionarCarta(carta);
+                    grid.appendChild(div);
+                });
+            }
+
             modal.style.display = 'flex';
         };
 
-        window.fecharGrimorio = function() { document.getElementById('grimorio-modal').style.display = 'none'; };
+        // ===== FECHAR GRIMÓRIO =====
+        window.fecharGrimorio = function() {
+            const modal = document.getElementById('grimorio-modal');
+            if (modal) modal.style.display = 'none';
+            const preview = document.getElementById('hover-preview-modal');
+            if (preview) preview.style.display = 'none';
+        };
 
+        // ===== SELECIONAR CARTA =====
         function selecionarCarta(carta) {
-            window.fecharGrimorio();
-            if(slotDestinoAtual) window.preencherSlotFixo(carta, slotDestinoAtual);
-            else adicionarNaMao(carta);
+            console.log('🎴 Carta selecionada:', carta.nome);
+            
+            if (slotDestinoAtual) {
+                preencherSlotFixo(carta, slotDestinoAtual);
+                mostrarMensagem(`✅ ${carta.nome} adicionada ao slot ${slotDestinoAtual}!`);
+            } else {
+                mostrarMensagem(`ℹ️ ${carta.nome} selecionada`);
+            }
+            
+            fecharGrimorio();
             slotDestinoAtual = null;
         }
 
-        function adicionarNaMao(carta) {
-            if(maoDoJogador.length < LIMITE_MAO) {
-                carta.tokens = 0; carta.estado = 'ativo';
-                maoDoJogador.push(carta);
-                salvarNaNuvem(); renderizar();
-            } else { alert("Mão cheia! Remova uma carta ou envie para reserva."); }
-        }
-
+        // ===== PREENCHER SLOT =====
         window.preencherSlotFixo = function(carta, idSlot) {
             slotsFixos[idSlot] = carta;
-            salvarNaNuvem(); renderizar();
+            renderizarSlots();
+            console.log('💾 Slot atualizado:', idSlot, '-', carta.nome);
         };
 
+        // ===== LIMPAR SLOT =====
         window.limparSlot = function(idSlot, evt) {
-            if(evt) evt.stopPropagation();
-            slotsFixos[idSlot] = null;
-            salvarNaNuvem(); renderizar();
+            if (evt) evt.stopPropagation();
+            
+            if (slotsFixos[idSlot]) {
+                const cartaRemovida = slotsFixos[idSlot].nome;
+                slotsFixos[idSlot] = null;
+                renderizarSlots();
+                mostrarMensagem(`🗑️ ${cartaRemovida} removida`);
+                console.log('🗑️ Slot limpo:', idSlot);
+            }
         };
 
-        // Renderização Principal (Mão e Mesa)
-        window.renderizar = function() {
-            const divMao = document.getElementById('cartas-mao');
-            const divRes = document.getElementById('cartas-reserva');
-            if(!divMao) return;
-
-            // Renderiza Slots
-            Object.keys(slotsFixos).forEach(id => {
-                const div = document.getElementById(`slot-${id}`);
-                if(div) {
-                    const carta = slotsFixos[id];
-                    const oldImg = div.querySelector('img'); if(oldImg) oldImg.remove();
-                    const btn = div.querySelector('.btn-limpar'); if(btn) btn.style.display = carta ? 'flex' : 'none';
+        // ===== RENDERIZAR SLOTS =====
+        function renderizarSlots() {
+            Object.keys(slotsFixos).forEach(idSlot => {
+                const carta = slotsFixos[idSlot];
+                const div = document.getElementById(`slot-${idSlot}`);
+                
+                if (div) {
+                    // Remove imagem anterior se existir
+                    const imgAntiga = div.querySelector('img');
+                    if (imgAntiga) imgAntiga.remove();
                     
-                    if(carta) {
+                    const btnLimpar = div.querySelector('.btn-limpar');
+                    
+                    if (carta) {
+                        // Adiciona nova imagem
                         const img = document.createElement('img');
                         img.src = carta.caminho;
+                        img.alt = carta.nome;
                         div.appendChild(img);
-                        img.onmouseenter = () => { const p = document.getElementById('hover-preview-slot'); p.style.display='block'; p.style.backgroundImage=`url('${img.src}')`; };
-                        img.onmouseleave = () => document.getElementById('hover-preview-slot').style.display='none';
+                        
+                        if (btnLimpar) btnLimpar.style.display = 'flex';
+                    } else {
+                        if (btnLimpar) btnLimpar.style.display = 'none';
                     }
                 }
             });
-
-            // Renderiza Mão
-            divMao.innerHTML = '';
-            maoDoJogador.forEach((c, i) => {
-                const el = document.createElement('div');
-                el.className = 'carta lazy-card';
-                el.style.backgroundImage = `url('${c.caminho}')`;
-                
-                // Rotação da mão
-                const centro = (maoDoJogador.length - 1) / 2;
-                el.style.transform = `rotate(${(i - centro) * 4}deg)`;
-
-                if(c.estado === 'curto' || c.estado === 'longo') {
-                    el.classList.add('indisponivel');
-                    const icon = document.createElement('div'); icon.className = 'icone-descanso';
-                    icon.innerHTML = c.estado==='curto' ? '<img src="img/meia-lua.png">' : '<img src="img/lua-cheia.png">';
-                    el.appendChild(icon);
-                }
-                if(c.tokens > 0) {
-                    const badge = document.createElement('div'); badge.className = `token-badge token-${c.tokens}`;
-                    badge.innerText = c.tokens; el.appendChild(badge);
-                }
-
-                el.onclick = () => window.abrirDecisao(i);
-                // Hover Mão
-                el.onmouseenter = () => { const p = document.getElementById('hover-preview'); p.style.display='block'; p.style.backgroundImage=`url('${c.caminho}')`; };
-                el.onmouseleave = () => document.getElementById('hover-preview').style.display='none';
-                
-                divMao.appendChild(el);
-            });
-
-            // Renderiza Reserva
-            divRes.innerHTML = '';
-            if(reservaDoJogador.length > 0) {
-                const container = document.createElement('div'); container.className = 'reserva-container';
-                container.onclick = window.abrirReserva;
-                // Empilha cartas visualmente
-                for(let i=0; i<Math.min(3, reservaDoJogador.length); i++) {
-                    const c = document.createElement('div'); c.className = 'carta-reserva-stacked';
-                    c.style.backgroundImage = `url('${reservaDoJogador[i].caminho}')`;
-                    c.style.top = `${i*4}px`; c.style.left = `${i*4}px`;
-                    container.appendChild(c);
-                }
-                divRes.appendChild(container);
-            }
-        };
-
-        // Modal de Decisão (Usar, Tokens, Descanso)
-        window.abrirDecisao = function(idx) {
-            cartaEmTransitoIndex = idx; origemTransito = 'mao';
-            const c = maoDoJogador[idx];
-            const modal = document.getElementById('decisao-modal');
-            const preview = document.getElementById('preview-decisao');
-            const label = document.getElementById('label-token-qtd');
-            
-            // Configura botões
-            document.getElementById('btn-usar-carta').style.display = 'inline-block';
-            document.getElementById('btn-para-reserva').style.display = 'inline-block';
-            document.getElementById('btn-devolver-mao').style.display = 'none';
-
-            preview.style.backgroundImage = `url('${c.caminho}')`;
-            label.innerText = c.tokens || 0;
-            modal.style.display = 'flex';
-        };
-
-        window.fecharDecisao = function() { document.getElementById('decisao-modal').style.display = 'none'; };
-        window.confirmarEdicao = function() { window.fecharDecisao(); renderizar(); };
-
-        window.alterarToken = function(delta) {
-            if(origemTransito === 'mao') {
-                const c = maoDoJogador[cartaEmTransitoIndex];
-                c.tokens = Math.max(0, Math.min(5, (c.tokens||0) + delta));
-                document.getElementById('label-token-qtd').innerText = c.tokens;
-                salvarNaNuvem();
-            }
-        };
-
-        window.definirEstado = function(estado) {
-            if(origemTransito === 'mao') {
-                maoDoJogador[cartaEmTransitoIndex].estado = estado;
-                salvarNaNuvem();
-            }
-        };
-
-        window.usarCarta = function() {
-            const c = maoDoJogador[cartaEmTransitoIndex];
-            window.fecharDecisao();
-            // Animação Simples
-            const anim = document.getElementById('carta-tabuleiro-animada');
-            anim.style.backgroundImage = `url('${c.caminho}')`;
-            anim.classList.add('ativa');
-            setTimeout(() => anim.classList.remove('ativa'), 2000);
-            
-            // Toca som e salva uso
-            const audio = document.getElementById('use-card-sound'); if(audio) audio.play();
-            set(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}/cartaUsada`), {
-                caminho: c.caminho, nome: c.nome, timestamp: Date.now()
-            });
-        };
-
-        window.moverParaReserva = function() {
-            const c = maoDoJogador.splice(cartaEmTransitoIndex, 1)[0];
-            reservaDoJogador.push(c);
-            salvarNaNuvem(); renderizar(); window.fecharDecisao();
-        };
-
-        // Reserva Logic
-        window.abrirReserva = function() {
-            const modal = document.getElementById('reserva-modal');
-            const grid = document.getElementById('grid-reserva');
-            grid.innerHTML = '';
-            reservaDoJogador.forEach((c, idx) => {
-                const div = document.createElement('div'); div.className = 'carta-modal';
-                div.style.backgroundImage = `url('${c.caminho}')`;
-                div.onclick = () => {
-                    // Devolver para mão
-                    if(maoDoJogador.length < LIMITE_MAO) {
-                        maoDoJogador.push(reservaDoJogador.splice(idx, 1)[0]);
-                        salvarNaNuvem(); renderizar(); window.fecharReserva();
-                    } else { alert("Mão cheia!"); }
-                };
-                grid.appendChild(div);
-            });
-            modal.style.display = 'flex';
-        };
-        window.fecharReserva = function() { document.getElementById('reserva-modal').style.display = 'none'; };
-
-        // Save
-        function salvarNaNuvem() {
-            if(window.nomeJogador) {
-                set(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}`), {
-                    mao: maoDoJogador, reserva: reservaDoJogador, slots: slotsFixos
-                });
-            }
         }
 
-        // --- SISTEMA DE PRESENÇA (CORREÇÃO FINAL: HEARTBEAT) ---
-        window.registrarPresenca = function(nomePersonagem) {
-            if (!nomePersonagem) return;
-            const presencaRef = ref(db, `mesa_rpg/presenca/${nomePersonagem}`);
-            set(presencaRef, true);
-            onDisconnect(presencaRef).remove();
-        };
+        // ===== MENSAGEM TEMPORÁRIA =====
+        function mostrarMensagem(texto, tipo = 'success') {
+            const msg = document.createElement('div');
+            msg.className = 'message';
+            msg.textContent = texto;
+            msg.style.background = tipo === 'error' ? 'rgba(255, 0, 0, 0.95)' : 'rgba(212, 175, 55, 0.95)';
+            msg.style.color = tipo === 'error' ? '#fff' : '#000';
+            
+            document.body.appendChild(msg);
+            
+            setTimeout(() => {
+                msg.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => msg.remove(), 300);
+            }, 3000);
+        }
 
-        // INTERCEPTA A SELEÇÃO
-        const originalSelecionar = window.selecionarPersonagem;
-        window.selecionarPersonagem = async function(charName) {
-            // Garante que a variável global seja definida antes de tudo
-            window.nomeJogador = charName.toUpperCase();
-            
-            // Carrega dados do Firebase para popular variáveis locais
-            const snap = await get(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}`));
-            if(snap.exists()) {
-                const d = snap.val();
-                maoDoJogador = d.mao || [];
-                reservaDoJogador = d.reserva || [];
-                if(d.slots) slotsFixos = d.slots;
-            }
+        // ===== INFO =====
+        function mostrarInfo() {
+            alert(`📚 GRIMÓRIO DAGGERHEART 📚
 
-            await originalSelecionar(charName); // Lógica visual de esconder login
-            
-            window.registrarPresenca(window.nomeJogador);
-            
-            // Inicia sistemas externos e renderização
+✅ FUNCIONALIDADES:
+• Clique nos slots vazios para escolher cartas
+• Clique no X vermelho para remover cartas
+• Passe o mouse sobre as cartas no grimório para preview ampliado
+• Slots de Classe filtram automaticamente (Fundamental/Especialização/Maestria)
+
+🎴 CATEGORIAS:
+• Identidade: Ancestralidade e Comunidade
+• Classes: Fundamental, Especialização e Maestria
+• Grimório Geral: Feitiços e Talentos
+
+💾 Dados salvos localmente no navegador`);
+        }
+
+        // ===== INICIALIZAÇÃO =====
+        window.addEventListener('DOMContentLoaded', async () => {
+            console.log('🚀 Iniciando sistema...');
             await carregarDados();
-            renderizar();
-            
-            if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-            
-            // HEARTBEAT: Revalida a presença a cada 30 segundos para não cair
-            if (window.presencaInterval) clearInterval(window.presencaInterval);
-            window.presencaInterval = setInterval(() => {
-                if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
-            }, 30000); // A cada 1 minuto renova a presença
-        };
+            renderizarSlots();
+            mostrarMensagem('✅ Sistema carregado com sucesso!');
+        });
 
-        // REFRESH MANUAL
-        window.atualizarSincronia = function() {
-            const btn = document.querySelector('.btn-refresh-player');
-            if(btn) btn.classList.add('spin-anim');
-            document.getElementById('area-inimigos').innerHTML = "";
-            
-            // Reload lógica
-            if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.escutarRolagens) window.escutarRolagens();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-            renderizar();
-
-            // REFORÇA PRESENÇA
-            if (window.nomeJogador) window.registrarPresenca(window.nomeJogador);
-
-            setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
-        };
-
-        // LOADER DE SCRIPTS
-        function loadScript(src) {
-            const script = document.createElement('script');
-            script.src = src + "?t=" + Date.now();
-            document.body.appendChild(script);
-        }
-
-        loadScript("profissao.js");
-        loadScript("selecao-classe.js");
-        loadScript("ficha.js");
-        loadScript("dados.js");
-        loadScript("inimigos.js");
-        loadScript("medo.js");
-
-        setTimeout(() => {
-            if(window.escutarRolagens) window.escutarRolagens();
-            if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-            
-            // Se já tiver personagem carregado, registra presença agora
-            if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
-        }, 2000);
+        // Fechar modal ao clicar fora
+        document.getElementById('grimorio-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                fecharGrimorio();
+            }
+        });
     </script>
 </body>
 </html>
