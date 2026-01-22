@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grimório Daggerheart</title>
     <link rel="icon" type="image/png" href="img/favicon.png" />
-    <link rel="stylesheet" href="style.css?v=10.1">
+    <link rel="stylesheet" href="style.css?v=10.2">
     <link rel="stylesheet" href="profissao.css?v=1.0">
     <link rel="stylesheet" href="selecao-classe.css?v=3.0">
-    <link rel="stylesheet" href="ficha.css?v=5.0">
+    <link rel="stylesheet" href="ficha.css?v=5.1">
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
     <link rel="stylesheet" href="medo.css?v=1.0">
@@ -95,62 +95,52 @@
             <div class="sheet-container" id="sheet-container">
                 <img id="sheet-bg">
                 <div id="sheet-inputs-layer"></div>
-                
-                <div id="tutorial-overlay" onclick="fecharTutorial(event)">
-                    <div class="tutorial-box">
-                        <button class="close-tutorial-btn" onclick="fecharTutorial(event)">×</button>
-                        <div class="tutorial-scroll">
-                            <h2 style="color: var(--gold); text-align: center; border-bottom: 1px solid var(--gold); padding-bottom: 10px;">Guia de Preenchimento</h2>
-                            
-                            <h3>1. Escolha de Classe e Nível</h3>
-                            <ul>
-                                <li><strong>Classe:</strong> Anote no topo da ficha.</li>
-                                <li><strong>Subclasse:</strong> Escolha a carta <strong>Fundamental</strong>.</li>
-                                <li><strong>Nível:</strong> Anote <strong>1</strong>.</li>
-                            </ul>
+            </div>
 
-                            <h3>2. Herança</h3>
-                            <ul>
-                                <li><strong>Ancestralidade:</strong> Concede <strong>duas</strong> habilidades (veja a carta).</li>
-                                <li><strong>Comunidade:</strong> Concede <strong>uma</strong> habilidade (veja a carta).</li>
-                            </ul>
+            <div id="tutorial-overlay">
+                <div class="tutorial-box">
+                    <button class="close-tutorial-btn" onclick="toggleTutorial()">×</button>
+                    <div class="tutorial-scroll">
+                        <h2 style="color: var(--gold); text-align: center; border-bottom: 1px solid var(--gold); padding-bottom: 10px;">Guia de Preenchimento</h2>
+                        
+                        <h3>1. Escolha de Classe e Nível</h3>
+                        <ul>
+                            <li><strong>Classe:</strong> Anote no topo da ficha.</li>
+                            <li><strong>Subclasse:</strong> Escolha a carta <strong>Fundamental</strong>.</li>
+                            <li><strong>Nível:</strong> Anote <strong>1</strong>.</li>
+                        </ul>
 
-                            <h3>3. Atributos</h3>
-                            <p>Distribua os modificadores nas seis caixas:</p>
-                            <p style="text-align: center; font-weight: bold; color: var(--gold); background: rgba(0,0,0,0.3); padding: 5px;">+2, +1, +1, 0, 0, –1</p>
+                        <h3>2. Herança</h3>
+                        <ul>
+                            <li><strong>Ancestralidade:</strong> Concede <strong>duas</strong> habilidades.</li>
+                            <li><strong>Comunidade:</strong> Concede <strong>uma</strong> habilidade.</li>
+                        </ul>
 
-                            <h3>4. Combate e Vida</h3>
-                            <ul>
-                                <li><strong>Evasão:</strong> Valor fixo da Classe (ex: Bardo 10, Guerreiro 9).</li>
-                                <li><strong>Pontos de Vida (PV):</strong> Valor fixo da Classe.</li>
-                                <li><strong>Fadiga (PF):</strong> Começa com <strong>6</strong> espaços.</li>
-                                <li><strong>Esperança:</strong> Começa com <strong>2</strong> marcados.</li>
-                            </ul>
+                        <h3>3. Atributos</h3>
+                        <p>Distribua os modificadores:</p>
+                        <p style="text-align: center; font-weight: bold; color: var(--gold); background: rgba(0,0,0,0.3); padding: 5px;">+2, +1, +1, 0, 0, –1</p>
 
-                            <h3>5. Equipamento</h3>
-                            <p><strong>Armadura:</strong> Anote o valor base (ex: Couro = 3).</p>
-                            <p><strong>Limiares de Dano:</strong> Armadura + Nível.</p>
-                            <ul>
-                                <li><em>Exemplo (Nível 1):</em> Base 2/4 → Anote <strong>3</strong> (Menor) e <strong>5</strong> (Maior).</li>
-                            </ul>
-                            <p><strong>Armas:</strong> Escolha Primária e Secundária. Marque o 1º círculo de Proficiência.</p>
+                        <h3>4. Combate e Vida</h3>
+                        <ul>
+                            <li><strong>Evasão:</strong> Valor fixo da Classe (ex: Bardo 10).</li>
+                            <li><strong>PV:</strong> Valor fixo da Classe.</li>
+                            <li><strong>Fadiga:</strong> 6 espaços.</li>
+                            <li><strong>Esperança:</strong> 2 marcados.</li>
+                        </ul>
 
-                            <h3>6. Experiências</h3>
-                            <p>Crie duas frases curtas (ex: <em>“Guarda-costas Leal”</em>). Atribua <strong>+2</strong> para ambas.</p>
+                        <h3>5. Equipamento</h3>
+                        <p><strong>Armadura:</strong> Valor base (ex: Couro = 3).</p>
+                        <p><strong>Limiares de Dano:</strong> Armadura + Nível.</p>
+                        <p><strong>Armas:</strong> Primária e Secundária. Marque Proficiência 1.</p>
 
-                            <h3>7. Cartas de Domínio</h3>
-                            <p>Escolha <strong>duas cartas de nível 1</strong> baseadas nos domínios da sua classe.</p>
+                        <h3>6. Experiências</h3>
+                        <p>Crie duas frases (+2 para ambas).</p>
 
-                            <h3>8. Detalhes Finais</h3>
-                            <ul>
-                                <li><strong>Inventário:</strong> Kit básico, poção inicial e 1 Punhado de Ouro.</li>
-                                <li><strong>Descrição:</strong> Nome, Pronomes e Aparência.</li>
-                                <li><strong>Vínculos:</strong> Conecte sua história com os outros jogadores.</li>
-                            </ul>
-                        </div>
+                        <h3>7. Cartas de Domínio</h3>
+                        <p>Duas cartas de nível 1.</p>
                     </div>
                 </div>
-                </div>
+            </div>
             
             <div class="sheet-footer">
                 <button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button>
@@ -165,9 +155,7 @@
     <div id="hover-preview-slot" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:600px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
 
     <div id="app-container" style="display: none; opacity: 0;">
-        
         <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar Mesa">🔄</button>
-
         <div id="aura-profissao"></div>
         <div id="particulas-profissao"></div>
 
@@ -201,7 +189,7 @@
     <div id="reserva-modal" class="modal" style="z-index: 6000;"><div class="modal-reserva-content"><div class="modal-header"><h2>Reserva</h2><button class="close-btn" onclick="window.fecharReserva()">X</button></div><div id="grid-reserva"></div></div></div>
     <div id="troca-modal" class="modal" style="z-index: 6100;"><div class="modal-decisao-content"><h3>Mão cheia!</h3><div id="grid-troca"></div><div class="botoes-decisao"><button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button></div></div></div>
 
-    <script type="module" src="script.js?v=11.0"></script>
+    <script type="module" src="script.js?v=11.2"></script>
     
     <script>
         // Função utilitária para carregar scripts dinamicamente

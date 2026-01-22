@@ -1,6 +1,5 @@
 // =========================================================
-// FICHA DIGITAL - PRANCHETA V4.0 
-// (Drag Overlay, Double-Click Edit, Color Picker)
+// FICHA DIGITAL - PRANCHETA V4.1 (Fixed Events)
 // =========================================================
 
 const FICHAS_IMAGENS = {
@@ -23,7 +22,14 @@ let corAtual = 'black';
 let elementosFicha = {}; 
 let paginasTotais = 1;
 let imgFichaAtual = [];
+let eventosInicializados = false;
 
+// Variáveis de desenho
+let isDrawing = false;
+let startX, startY;
+let tempBox = null;
+
+// Abertura da Ficha
 window.abrirFichaPersonagem = function() {
     const prof = localStorage.getItem('profissaoSelecionada') || 'Guerreiro';
     imgFichaAtual = FICHAS_IMAGENS[prof] || FICHAS_IMAGENS['Guerreiro'];
@@ -32,8 +38,13 @@ window.abrirFichaPersonagem = function() {
 
     carregarFichaDe(window.nomeJogador);
     
-    document.getElementById('sheet-modal').style.display = 'flex';
+    const modal = document.getElementById('sheet-modal');
+    modal.style.display = 'flex';
+    
     atualizarPaginaFicha();
+    
+    // Garante que os eventos de clique funcionem agora que o modal está visível
+    inicializarEventosFicha();
 };
 
 window.fecharFicha = function() {
@@ -56,9 +67,15 @@ function atualizarPaginaFicha() {
 window.selecionarFerramenta = function(ferramenta) {
     ferramentaAtual = ferramenta;
     document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
-    // Apenas botões que não são o guia ganham 'active' visualmente
-    if(ferramenta !== 'guia') {
-        event.currentTarget.classList.add('active');
+    // Botões visuais
+    if(ferramenta === 'texto' || ferramenta === 'marcador') {
+        const btns = document.querySelectorAll('.tool-btn');
+        // Hack simples para achar o botão certo pelo title ou ordem
+        for(let btn of btns) {
+            if(btn.title && btn.title.toLowerCase().includes(ferramenta)) {
+                btn.classList.add('active');
+            }
+        }
     }
 };
 
@@ -68,17 +85,19 @@ window.mudarCorTexto = function(cor) {
     event.currentTarget.classList.add('active-color');
 };
 
-// --- ARRASTAR E SOLTAR PARA CRIAR ---
-const container = document.getElementById('sheet-container');
-let isDrawing = false;
-let startX, startY;
-let tempBox = null;
+// --- INICIALIZAÇÃO SEGURA DOS EVENTOS ---
+function inicializarEventosFicha() {
+    const container = document.getElementById('sheet-container');
+    if (!container) return; // Se ainda não carregou, sai
 
-if(container) {
+    // Remove listeners antigos para evitar duplicação (hack simples: substituir o elemento por ele mesmo limpa eventos inline, mas listeners addEventListener precisam de cuidado. Aqui usamos onmousedown direto, então basta sobrescrever)
+    
     container.onmousedown = (e) => {
-        // Se estiver clicando no tutorial ou seus filhos, ignorar
+        // Se clicar no guia, ignora
         if(e.target.closest('#tutorial-overlay')) return;
-        if(e.target.classList.contains('input-wrapper') || e.target.classList.contains('drag-overlay')) return;
+        
+        // Se clicar em input existente, ignora
+        if(e.target.classList.contains('input-wrapper') || e.target.classList.contains('drag-overlay') || e.target.tagName === 'TEXTAREA') return;
 
         isDrawing = true;
         const rect = container.getBoundingClientRect();
@@ -116,7 +135,6 @@ if(container) {
         const endX = e.clientX - rect.left;
         const endY = e.clientY - rect.top;
 
-        // Calcular porcentagens
         const widthPct = (Math.abs(endX - startX) / rect.width) * 100;
         const heightPct = (Math.abs(endY - startY) / rect.height) * 100;
         const leftPct = (Math.min(startX, endX) / rect.width) * 100;
@@ -124,10 +142,11 @@ if(container) {
 
         if (ferramentaAtual === 'texto') {
             if (tempBox) tempBox.remove();
-            if (widthPct > 2 && heightPct > 2) { // Tamanho mínimo
+            if (widthPct > 1 && heightPct > 1) { // Mínimo de tamanho para evitar cliques acidentais
                 criarNovoElemento('texto', { top: topPct, left: leftPct, width: widthPct, height: heightPct });
             }
         } else if (ferramentaAtual === 'marcador') {
+            // Marcador é criado no clique (mousedown+mouseup no mesmo lugar ou perto)
             criarNovoElemento('marcador', { top: (endY/rect.height)*100, left: (endX/rect.width)*100 });
         }
     };
@@ -156,7 +175,6 @@ function criarNovoElemento(tipo, coords) {
         color: corAtual
     };
     
-    // Salvar no Firebase
     if(window.nomeJogador) {
         window.set(window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}/ficha/${id}`), novo);
     }
@@ -177,6 +195,7 @@ function deletarElementoNoFirebase(id) {
 // --- RENDERIZAÇÃO ---
 function renderizarElementosFicha() {
     const layer = document.getElementById('sheet-inputs-layer');
+    if(!layer) return;
     layer.innerHTML = '';
 
     Object.values(elementosFicha).forEach(el => {
@@ -197,9 +216,8 @@ function renderizarElementosFicha() {
             input.style.fontSize = (el.fontSize || 1.5) + 'vh';
             input.style.color = TEXT_COLORS[el.color || 'black'];
             
-            // SAIR DA EDIÇÃO (BLUR)
             input.onblur = () => {
-                wrapper.classList.remove('is-editing'); // Traz o overlay de volta
+                wrapper.classList.remove('is-editing');
                 if (input.value !== el.valor) {
                     el.valor = input.value;
                     salvarElementoNoFirebase(el);
@@ -208,19 +226,14 @@ function renderizarElementosFicha() {
 
             wrapper.appendChild(input);
 
-            // CAMADA DE ARRASTE (OVERLAY) - O segredo da "mãozinha"
             const overlay = document.createElement('div');
             overlay.className = 'drag-overlay';
             wrapper.appendChild(overlay);
 
-            // DOUBLE CLICK PARA EDITAR
             overlay.ondblclick = () => {
                 wrapper.classList.add('is-editing');
                 input.focus();
             };
-
-            // ARRASTAR CAIXA (Desktop) - Requer lógica complexa de drag, simplificada aqui:
-            // Implementação futura ou usar biblioteca de drag. Por enquanto apenas cria.
 
         } 
         else if (el.tipo === 'marcador') {
@@ -247,32 +260,20 @@ window.limparPaginaAtual = function() {
 };
 
 // =========================================================
-// LÓGICA DO TUTORIAL (CORRIGIDA E REFORÇADA)
+// LÓGICA DO TUTORIAL (GLOBAL)
 // =========================================================
 
 window.toggleTutorial = function() {
     const overlay = document.getElementById('tutorial-overlay');
     if (!overlay) {
-        console.error("Erro: Overlay do tutorial não encontrado no HTML!");
+        console.error("Overlay do tutorial não encontrado!");
         return;
     }
 
-    // Usa getComputedStyle para garantir que lê o estado real do CSS
     const currentDisplay = window.getComputedStyle(overlay).display;
-
     if (currentDisplay === 'none') {
         overlay.style.display = 'flex';
     } else {
-        overlay.style.display = 'none';
-    }
-};
-
-window.fecharTutorial = function(e) {
-    // Fecha se clicar no overlay (fundo escuro) ou no botão de fechar
-    const overlay = document.getElementById('tutorial-overlay');
-    
-    // Se o evento vier do botão X ou do fundo escuro
-    if (e.target.id === 'tutorial-overlay' || e.target.classList.contains('close-tutorial-btn')) {
         overlay.style.display = 'none';
     }
 };

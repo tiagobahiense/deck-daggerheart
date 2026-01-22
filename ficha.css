@@ -1,6 +1,5 @@
 /* =========================================================
-   ESTILOS DA FICHA - PRANCHETA V4.0 
-   (Drag Overlay, Double-Click Edit, Color Picker)
+   ESTILOS DA FICHA - PRANCHETA V4.1 (Corrigido)
    ========================================================= */
 
    #sheet-modal {
@@ -22,12 +21,14 @@
 .sheet-container {
     position: relative; width: 100%; flex-grow: 1; overflow: hidden; 
     background: #fff; cursor: crosshair; border-radius: 4px 4px 0 0; user-select: none;
+    z-index: 1; /* Nível base */
 }
 
 #sheet-bg { width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
 
 #sheet-inputs-layer {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+    z-index: 10; /* Acima do BG, abaixo do overlay de guia */
 }
 
 /* Elementos de Input (Texto) */
@@ -66,9 +67,14 @@
 }
 .input-wrapper:hover .delete-handle { display: flex; }
 
-/* Barra de Ferramentas */
+/* Barra de Ferramentas (CORRIGIDO LAYOUT) */
 .sheet-toolbar {
-    height: 50px; background: #333; display: flex; align-items: center; gap: 10px; padding: 0 15px;
+    height: 50px; background: #333; 
+    display: flex; 
+    flex-direction: row; /* Garante que fique em linha */
+    flex-wrap: nowrap; /* Impede que caia para baixo */
+    align-items: center; 
+    gap: 10px; padding: 0 15px;
     border-bottom: 2px solid var(--gold);
 }
 
@@ -76,13 +82,14 @@
     width: 35px; height: 35px; background: #222; border: 1px solid #555;
     color: #aaa; border-radius: 5px; cursor: pointer; font-size: 1.2rem;
     display: flex; align-items: center; justify-content: center; transition: 0.2s;
+    flex-shrink: 0; /* Impede o botão de esmagar */
 }
 .tool-btn:hover, .tool-btn.active { background: #444; color: var(--gold); border-color: var(--gold); }
 
-/* --- ESTILO NOVO PARA O BOTÃO GUIA --- */
+/* Botão Guia (Texto) */
 .sheet-toolbar .btn-guia {
-    width: auto !important; /* Remove largura fixa */
-    padding: 0 15px;       /* Mais espaço lateral */
+    width: auto !important; 
+    padding: 0 15px;
     font-family: 'MedievalSharp', cursive;
     font-size: 0.9rem;
     font-weight: bold;
@@ -101,25 +108,13 @@
     cursor: pointer; font-weight: bold; z-index: 200;
 }
 
-/* Botões de Contexto (Tamanho/Cor) */
-.ctx-menu { display: flex; gap: 5px; margin-left: 15px; border-left: 1px solid #555; padding-left: 10px; }
-.ctx-btn { 
-    width: 25px; height: 25px; background: #444; border: 1px solid #666; 
-    color: #fff; border-radius: 3px; cursor: pointer; font-size: 0.8rem; font-weight: bold;
-    display: flex; align-items: center; justify-content: center;
-}
-.ctx-btn:hover { background: var(--gold); color: #000; }
-.ctx-btn.del:hover { background: #ff4444; color: #fff; }
-
-/* Botões de Cor */
-.color-separator { width: 1px; height: 30px; background: #555; margin: 0 5px; }
+.color-separator { width: 1px; height: 30px; background: #555; margin: 0 5px; flex-shrink: 0; }
 .color-btn {
     width: 24px; height: 24px; border-radius: 50%; border: 2px solid #555;
-    cursor: pointer; transition: transform 0.2s, border-color 0.2s;
+    cursor: pointer; transition: transform 0.2s, border-color 0.2s; flex-shrink: 0;
 }
 .color-btn:hover { transform: scale(1.2); border-color: #fff; }
 .color-btn.active-color { border-color: var(--gold); box-shadow: 0 0 5px var(--gold); }
-
 
 /* Drag Box Temporário */
 .temp-box {
@@ -140,79 +135,46 @@
 .nav-simple-btn:hover { background: var(--gold); color: #000; }
 
 /* =========================================================
-   ESTILOS DO TUTORIAL (OVERLAY)
+   ESTILOS DO TUTORIAL (OVERLAY) - Z-INDEX CORRIGIDO
    ========================================================= */
 
 #tutorial-overlay {
-    display: none; /* Começa oculto */
-    position: absolute; /* Relativo ao container da ficha */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.85); /* Mais escuro para focar */
-    z-index: 99999; /* Garante que fique acima de tudo dentro da ficha */
-    align-items: center;
-    justify-content: center;
+    display: none; 
+    position: absolute; /* Agora é absoluto em relação ao .sheet-content */
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.85); 
+    z-index: 2000; /* MUITO ALTO para cobrir tudo dentro da ficha */
+    align-items: center; justify-content: center;
     backdrop-filter: blur(3px);
 }
 
 .tutorial-box {
-    width: 90%;
-    max-width: 500px;
-    height: 85%;
-    background: #1a1a1a;
-    border: 2px solid var(--gold);
-    border-radius: 8px;
-    box-shadow: 0 0 30px rgba(0,0,0,1);
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    color: #ddd;
-    font-family: sans-serif;
+    width: 90%; max-width: 500px; height: 85%;
+    background: #1a1a1a; border: 2px solid var(--gold);
+    border-radius: 8px; box-shadow: 0 0 30px rgba(0,0,0,1);
+    position: relative; display: flex; flex-direction: column;
+    color: #ddd; font-family: sans-serif;
 }
 
 .tutorial-scroll {
-    padding: 20px;
-    overflow-y: auto;
-    flex: 1;
-    line-height: 1.6;
+    padding: 20px; overflow-y: auto; flex: 1; line-height: 1.6;
 }
 
 .tutorial-scroll h3 {
-    color: #fff9c4;
-    border-bottom: 1px solid #444;
-    margin-top: 25px;
-    padding-bottom: 5px;
-    font-family: 'MedievalSharp', cursive;
+    color: #fff9c4; border-bottom: 1px solid #444; margin-top: 25px;
+    padding-bottom: 5px; font-family: 'MedievalSharp', cursive;
 }
 
-.tutorial-scroll ul {
-    padding-left: 20px;
-    color: #ccc;
-}
-
-.tutorial-scroll li {
-    margin-bottom: 8px;
-}
+.tutorial-scroll ul { padding-left: 20px; color: #ccc; }
+.tutorial-scroll li { margin-bottom: 8px; }
 
 .close-tutorial-btn {
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    background: none;
-    border: none;
-    color: #fff;
-    font-size: 2rem;
-    cursor: pointer;
-    z-index: 10;
-    line-height: 1;
+    position: absolute; top: 10px; right: 15px;
+    background: none; border: none; color: #fff;
+    font-size: 2rem; cursor: pointer; z-index: 10; line-height: 1;
 }
-.close-tutorial-btn:hover {
-    color: var(--gold);
-}
+.close-tutorial-btn:hover { color: var(--gold); }
 
-/* Scrollbar personalizada */
 .tutorial-scroll::-webkit-scrollbar { width: 8px; }
 .tutorial-scroll::-webkit-scrollbar-track { background: #222; }
 .tutorial-scroll::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
