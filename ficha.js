@@ -1,5 +1,5 @@
 // =========================================================
-// FICHA DIGITAL - PRANCHETA REALTIME V2.2 (Auto-Resize Fix)
+// FICHA DIGITAL - PRANCHETA V3.0 (Manual Resize)
 // =========================================================
 
 const FICHAS_IMAGENS = {
@@ -23,11 +23,11 @@ let elementoSelecionadoId = null;
 // Estados do Mouse
 let isCreating = false;
 let isMoving = false;
+let isResizing = false;
 let startX = 0, startY = 0;
 let tempBox = null;
-let movingElementId = null;
-let movingStartLeft = 0;
-let movingStartTop = 0;
+let activeElementId = null; // ID do elemento sendo movido ou redimensionado
+let initialRect = {}; // Guarda posição/tamanho inicial para calculo
 
 // --- INICIALIZAÇÃO ---
 window.abrirFichaPersonagem = function() {
@@ -76,6 +76,7 @@ window.selecionarFerramenta = function(f) {
 function configurarTeclado() {
     document.addEventListener('keydown', (e) => {
         if (elementoSelecionadoId && (e.key === 'Delete' || e.key === 'Backspace')) {
+            // Permite apagar texto dentro do input sem apagar o elemento
             if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
             deletarElementoNoFirebase(elementoSelecionadoId);
             deselecionarTudo();
@@ -88,7 +89,6 @@ function selecionarElemento(id) {
         const elAntigo = document.getElementById('wrap_' + elementoSelecionadoId);
         if(elAntigo) elAntigo.classList.remove('selected');
     }
-    
     elementoSelecionadoId = id;
     const elNovo = document.getElementById('wrap_' + id);
     if(elNovo) elNovo.classList.add('selected');
@@ -102,35 +102,53 @@ function deselecionarTudo() {
     elementoSelecionadoId = null;
 }
 
-// --- EVENTOS DO MOUSE (DRAG & DROP) ---
+// --- LOGICA DE EVENTOS (CRIAR, MOVER, REDIMENSIONAR) ---
 function configurarEventosMouse() {
     const container = document.getElementById('sheet-container');
     
-    container.onmousedown = null;
-    container.onmousemove = null;
-    container.onmouseup = null;
-
     container.onmousedown = (e) => {
-        if(e.target.tagName === 'BUTTON' || e.target.closest('.element-context-menu')) return;
+        if(e.target.tagName === 'BUTTON' || e.target.closest('.element-context-menu') || e.target.classList.contains('delete-handle')) return;
 
         const rect = container.getBoundingClientRect();
-        const clickedWrapper = e.target.closest('.element-wrapper');
         
+        // 1. Verificar se clicou na ALÇA DE RESIZE
+        if (e.target.classList.contains('resize-handle')) {
+            const wrapper = e.target.closest('.element-wrapper');
+            activeElementId = wrapper.id.replace('wrap_', '');
+            isResizing = true;
+            startX = e.clientX;
+            startY = e.clientY;
+            // Salva dimensões iniciais em PX
+            initialRect = {
+                w: wrapper.offsetWidth,
+                h: wrapper.offsetHeight,
+                l: wrapper.offsetLeft,
+                t: wrapper.offsetTop
+            };
+            return;
+        }
+
+        // 2. Verificar se clicou em um ELEMENTO (Mover)
+        const clickedWrapper = e.target.closest('.element-wrapper');
         if (clickedWrapper) {
             const id = clickedWrapper.id.replace('wrap_', '');
             selecionarElemento(id);
             
+            // Só move se clicar na borda/fundo, não se estiver editando texto
             if (e.target.tagName !== 'TEXTAREA') {
                 isMoving = true;
-                movingElementId = id;
-                movingStartLeft = parseFloat(clickedWrapper.style.left);
-                movingStartTop = parseFloat(clickedWrapper.style.top);
+                activeElementId = id;
                 startX = e.clientX;
                 startY = e.clientY;
+                initialRect = {
+                    l: clickedWrapper.offsetLeft,
+                    t: clickedWrapper.offsetTop
+                };
             }
             return;
         }
 
+        // 3. Clicou no VAZIO (Criar)
         deselecionarTudo();
         startX = e.clientX - rect.left;
         startY = e.clientY - rect.top;
@@ -150,9 +168,50 @@ function configurarEventosMouse() {
     container.onmousemove = (e) => {
         const rect = container.getBoundingClientRect();
 
+        // REDIMENSIONANDO
+        if (isResizing && activeElementId) {
+            const wrapper = document.getElementById('wrap_' + activeElementId);
+            if(wrapper) {
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                // Calcula nova largura/altura em PX
+                const newW = initialRect.w + dx;
+                const newH = initialRect.h + dy;
+                
+                // Converte para % para salvar responsivo
+                const wPct = (newW / rect.width) * 100;
+                const hPct = (newH / rect.height) * 100;
+                
+                // Aplica visualmente
+                wrapper.style.width = wPct + '%';
+                wrapper.style.height = hPct + '%';
+            }
+        }
+
+        // MOVENDO
+        if (isMoving && activeElementId) {
+            const wrapper = document.getElementById('wrap_' + activeElementId);
+            if(wrapper) {
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                
+                const newL = initialRect.l + dx;
+                const newT = initialRect.t + dy;
+                
+                const xPct = (newL / rect.width) * 100;
+                const yPct = (newT / rect.height) * 100;
+                
+                wrapper.style.left = xPct + '%';
+                wrapper.style.top = yPct + '%';
+            }
+        }
+
+        // CRIANDO
         if (isCreating && ferramentaAtual === 'texto' && tempBox) {
             const currentX = e.clientX - rect.left;
             const currentY = e.clientY - rect.top;
+            
             const width = currentX - startX;
             const height = currentY - startY;
             
@@ -161,37 +220,40 @@ function configurarEventosMouse() {
             tempBox.style.left = (width < 0 ? currentX : startX) + 'px';
             tempBox.style.top = (height < 0 ? currentY : startY) + 'px';
         }
-
-        if (isMoving && movingElementId) {
-            const wrapper = document.getElementById('wrap_' + movingElementId);
-            if(wrapper) {
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                const dxPct = (dx / rect.width) * 100;
-                const dyPct = (dy / rect.height) * 100;
-                
-                wrapper.style.left = (movingStartLeft + dxPct) + '%';
-                wrapper.style.top = (movingStartTop + dyPct) + '%';
-            }
-        }
     };
 
     container.onmouseup = (e) => {
         const rect = container.getBoundingClientRect();
 
-        if (isMoving && movingElementId) {
+        // SALVAR APÓS REDIMENSIONAR
+        if (isResizing && activeElementId) {
+            isResizing = false;
+            const wrapper = document.getElementById('wrap_' + activeElementId);
+            if(wrapper && elementosFicha[activeElementId]) {
+                const el = elementosFicha[activeElementId];
+                el.w = parseFloat(wrapper.style.width);
+                el.h = parseFloat(wrapper.style.height);
+                salvarElementoNoFirebase(el);
+            }
+            activeElementId = null;
+            return;
+        }
+
+        // SALVAR APÓS MOVER
+        if (isMoving && activeElementId) {
             isMoving = false;
-            const wrapper = document.getElementById('wrap_' + movingElementId);
-            if(wrapper && elementosFicha[movingElementId]) {
-                const el = elementosFicha[movingElementId];
+            const wrapper = document.getElementById('wrap_' + activeElementId);
+            if(wrapper && elementosFicha[activeElementId]) {
+                const el = elementosFicha[activeElementId];
                 el.x = parseFloat(wrapper.style.left);
                 el.y = parseFloat(wrapper.style.top);
                 salvarElementoNoFirebase(el);
             }
-            movingElementId = null;
+            activeElementId = null;
             return;
         }
 
+        // FINALIZAR CRIAÇÃO (TEXTO)
         if (isCreating && ferramentaAtual === 'texto') {
             isCreating = false;
             const finalW = parseFloat(tempBox.style.width);
@@ -212,12 +274,14 @@ function configurarEventosMouse() {
             return;
         }
 
+        // FINALIZAR CRIAÇÃO (MARCADOR - CLIQUE SIMPLES)
         if (ferramentaAtual === 'marcador') {
-            if(e.target.tagName === 'BUTTON' || e.target.closest('.element-wrapper')) return;
+            if(e.target.closest('.element-wrapper') || e.target.classList.contains('delete-handle')) return;
 
             const xPct = ((e.clientX - rect.left) / rect.width) * 100;
             const yPct = ((e.clientY - rect.top) / rect.height) * 100;
             
+            // Cria marcador com 1.5% de tamanho inicial
             criarElementoFinal(xPct, yPct, 1.5, 0, 'marcador'); 
         }
     };
@@ -234,29 +298,33 @@ function criarElementoFinal(x, y, w, h, tipo) {
     salvarElementoNoFirebase(novoElemento);
 }
 
-// --- AÇÕES DO MENU (RESIZE INTELIGENTE) ---
+// --- AÇÕES DO MENU ---
 window.alterarTamanhoElemento = function(id, delta) {
     if (!elementosFicha[id]) return;
     
-    // Texto = Fonte | Marcador = Largura
-    let prop = elementosFicha[id].tipo === 'texto' ? 'fontSize' : 'w';
-    let val = elementosFicha[id][prop] || (prop === 'fontSize' ? 1.6 : 1.5);
-    
-    val += delta;
-    if (val < 0.5) val = 0.5;
-    
-    elementosFicha[id][prop] = val;
-    
-    const wrap = document.getElementById('wrap_' + id);
-    const input = document.getElementById('input_' + id);
-    
-    if (elementosFicha[id].tipo === 'texto' && input) {
-        input.style.fontSize = val + 'vh';
-        // AUTO RESIZE: Ajusta a caixa ao novo tamanho de fonte
-        autoResizeTextarea(input, wrap, id); 
-    } else if (elementosFicha[id].tipo === 'marcador' && wrap) {
-        wrap.style.width = val + '%';
-        wrap.style.height = val + '%';
+    // Se for texto, muda FONTE. Se for marcador, muda LARGURA (Zoom)
+    if (elementosFicha[id].tipo === 'texto') {
+        let size = elementosFicha[id].fontSize || 1.6;
+        size += delta;
+        if(size < 0.5) size = 0.5;
+        elementosFicha[id].fontSize = size;
+        
+        // Aplica visualmente
+        const input = document.getElementById('input_' + id);
+        if(input) input.style.fontSize = size + 'vh';
+        
+    } else {
+        // Marcador: Aumenta o 'w' (largura em %)
+        let size = elementosFicha[id].w || 1.5;
+        size += (delta * 0.5); // Aumenta de 0.1 em 0.1
+        if(size < 0.5) size = 0.5;
+        elementosFicha[id].w = size;
+        
+        const wrap = document.getElementById('wrap_' + id);
+        if(wrap) {
+            wrap.style.width = size + '%';
+            wrap.style.height = size + '%'; // Mantém proporção
+        }
     }
     
     salvarElementoNoFirebase(elementosFicha[id]);
@@ -306,19 +374,24 @@ function renderizarElementosNaTela() {
         if(el.tipo === 'texto') {
             wrapper.style.height = el.h + '%';
         } else {
-            wrapper.style.width = el.w + '%'; 
+            // Marcador usa W para altura tbm para ser quadrado/redondo
+            // O CSS cuida do aspect-ratio se o browser suportar, mas garantimos aqui
+            wrapper.style.height = 'auto'; // Deixa o conteudo definir ou usa aspect-ratio do CSS
             wrapper.style.aspectRatio = '1/1';
             wrapper.style.transform = 'translate(-50%, -50%)'; 
         }
         
         if (elementoSelecionadoId === el.id) wrapper.classList.add('selected');
 
+        // MENU CONTEXTO
+        // Usei event.stopPropagation() para não disparar clique no fundo
         const menuHTML = `
-            <div class="element-context-menu">
-                <button class="ctx-btn" onclick="event.stopPropagation(); alterarTamanhoElemento('${el.id}', ${el.tipo==='texto'?0.2:0.5})" title="Aumentar">+</button>
-                <button class="ctx-btn" onclick="event.stopPropagation(); alterarTamanhoElemento('${el.id}', ${el.tipo==='texto'?-0.2:-0.5})" title="Diminuir">-</button>
-                <button class="ctx-btn del" onclick="event.stopPropagation(); deletarViaMenu('${el.id}')" title="Apagar">🗑️</button>
+            <div class="element-context-menu" onmousedown="event.stopPropagation()">
+                <button class="ctx-btn" onclick="alterarTamanhoElemento('${el.id}', ${el.tipo==='texto'?0.2:0.5})" title="Aumentar">+</button>
+                <button class="ctx-btn" onclick="alterarTamanhoElemento('${el.id}', ${el.tipo==='texto'?-0.2:-0.5})" title="Diminuir">-</button>
+                <button class="ctx-btn del" onclick="deletarViaMenu('${el.id}')" title="Apagar">🗑️</button>
             </div>
+            <div class="resize-handle"></div>
         `;
         wrapper.innerHTML = menuHTML;
 
@@ -332,14 +405,12 @@ function renderizarElementosNaTela() {
             let timeout;
             input.oninput = (e) => {
                 el.valor = e.target.value;
-                // AUTO RESIZE AO DIGITAR
-                autoResizeTextarea(input, wrapper, el.id);
                 clearTimeout(timeout);
                 timeout = setTimeout(() => salvarElementoNoFirebase(el), 500);
             };
             
-            // AUTO RESIZE INICIAL (Ao Carregar)
-            setTimeout(() => autoResizeTextarea(input, wrapper, el.id), 0);
+            // Focar se for novo e vazio
+            if(el.valor === '') setTimeout(() => input.focus(), 50);
             
             wrapper.appendChild(input);
         } 
@@ -347,44 +418,17 @@ function renderizarElementosNaTela() {
             const marker = document.createElement('div');
             marker.className = 'user-marker';
             wrapper.appendChild(marker);
+            
+            // Botão de deletar extra (aquele X vermelho do hover)
+            const delBtn = document.createElement('div');
+            delBtn.className = 'delete-handle';
+            delBtn.innerText = 'x';
+            delBtn.onclick = (e) => { e.stopPropagation(); deletarElementoNoFirebase(el.id); };
+            wrapper.appendChild(delBtn);
         }
 
         layer.appendChild(wrapper);
     });
-}
-
-// --- LÓGICA DE AUTO-EXPANSÃO (O SEGREDO) ---
-function autoResizeTextarea(input, wrapper, id) {
-    // 1. Reseta altura para medir o conteúdo real
-    input.style.height = '0px'; 
-    
-    // 2. Mede o tamanho do conteúdo (scrollHeight)
-    const contentHeight = input.scrollHeight;
-    
-    // 3. Pega a altura do container pai (A Ficha inteira) para calcular %
-    const containerHeight = document.getElementById('sheet-container').clientHeight;
-    
-    // 4. Se o conteúdo for maior que a altura atual do wrapper, expande
-    //    Mas se for menor (apagou texto), encolhe também.
-    //    Adicionamos um pequeno buffer (+2px) para evitar scrollbar
-    const newHeightPx = contentHeight + 2;
-    const newHeightPct = (newHeightPx / containerHeight) * 100;
-    
-    // 5. Aplica a nova altura no Wrapper (que segura o textarea)
-    //    Se o wrapper for menor que o texto, ele cresce.
-    //    Mas respeitamos o tamanho mínimo original se o texto for curto.
-    const minHeight = elementosFicha[id].minH || elementosFicha[id].h; // Guarda altura original
-    
-    if (newHeightPct > minHeight) {
-        wrapper.style.height = newHeightPct + '%';
-        elementosFicha[id].h = newHeightPct; // Atualiza dado local
-    } else {
-        wrapper.style.height = minHeight + '%'; // Volta ao tamanho original
-        elementosFicha[id].h = minHeight;
-    }
-    
-    // 6. Restaura o input para preencher o wrapper
-    input.style.height = '100%'; 
 }
 
 window.limparPaginaAtual = function() {

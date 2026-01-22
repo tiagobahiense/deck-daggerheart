@@ -1,5 +1,5 @@
 /* =========================================================
-   ESTILOS DA FICHA - PRANCHETA V2.1 (UX MELHORADO)
+   ESTILOS DA FICHA - PRANCHETA V3.0 (RESIZE MANUAL)
    ========================================================= */
 
    #sheet-modal {
@@ -7,12 +7,8 @@
     z-index: 9999 !important;
     background: rgba(0, 0, 0, 0.95);
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    align-items: center;
-    justify-content: center;
+    top: 0; left: 0; width: 100%; height: 100%;
+    align-items: center; justify-content: center;
 }
 
 .sheet-content {
@@ -22,9 +18,7 @@
     height: 90vh;
     background: #222;
     border: 3px solid var(--gold);
-    display: flex;
-    flex-direction: column;
-    position: relative;
+    display: flex; flex-direction: column; position: relative;
     box-shadow: 0 0 50px rgba(0,0,0,0.8);
     overflow: visible !important; 
 }
@@ -41,221 +35,171 @@
 }
 
 #sheet-bg {
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-    pointer-events: none;
+    width: 100%; height: 100%; object-fit: fill; pointer-events: none;
 }
 
 #sheet-inputs-layer {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     pointer-events: none;
 }
 
 /* --- BARRA DE FERRAMENTAS --- */
 .sheet-toolbar {
-    position: absolute;
-    top: 20px;
-    left: -60px;
-    width: 50px;
-    background: #222;
-    border: 2px solid var(--gold);
-    border-radius: 8px;
-    padding: 10px 0;
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    z-index: 10000;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    position: absolute; top: 20px; left: -60px;
+    width: 50px; background: #222;
+    border: 2px solid var(--gold); border-radius: 8px;
+    padding: 10px 0; display: flex; flex-direction: column; gap: 15px;
+    z-index: 10000; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
     align-items: center;
 }
 
 .tool-btn {
-    background: #444;
-    color: #fff;
-    border: 1px solid #666;
-    width: 40px;
-    height: 40px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 1.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: #444; color: #fff; border: 1px solid #666;
+    width: 40px; height: 40px; border-radius: 5px;
+    cursor: pointer; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
 }
-
 .tool-btn:hover { background: #666; border-color: #fff; }
-
 .tool-btn.active {
-    background: var(--gold);
-    color: #000;
-    border-color: #fff;
-    box-shadow: 0 0 10px var(--gold);
-    transform: scale(1.1);
+    background: var(--gold); color: #000; border-color: #fff;
+    box-shadow: 0 0 10px var(--gold); transform: scale(1.1);
 }
 
 .btn-close-sheet {
-    position: absolute;
-    top: -15px;
-    right: -55px;
-    width: 45px;
-    height: 45px;
-    background: #8b0000;
-    color: #fff;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    font-weight: bold;
-    font-size: 1.2rem;
-    cursor: pointer;
-    z-index: 10000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 0 10px rgba(0,0,0,0.8);
-    transition: transform 0.2s;
+    position: absolute; top: -15px; right: -55px;
+    width: 45px; height: 45px; background: #8b0000; color: #fff;
+    border: 2px solid #fff; border-radius: 50%;
+    font-weight: bold; font-size: 1.2rem; cursor: pointer;
+    z-index: 10000; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 10px rgba(0,0,0,0.8); transition: transform 0.2s;
 }
-.btn-close-sheet:hover {
-    background: #ff0000;
-    transform: scale(1.1) rotate(90deg);
-}
+.btn-close-sheet:hover { background: #ff0000; transform: scale(1.1) rotate(90deg); }
 
 /* --- ELEMENTOS DO JOGADOR --- */
 
 .element-wrapper {
     position: absolute;
     pointer-events: auto; 
-    padding: 2px; /* Área de 'pegada' para arrastar */
     z-index: 100;
-    cursor: grab;
-}
-
-.element-wrapper:active {
-    cursor: grabbing;
 }
 
 /* Estado Selecionado */
 .element-wrapper.selected {
-    border: 2px dashed var(--gold);
-    background: rgba(212, 175, 55, 0.05);
+    border: 1px dashed var(--gold);
     z-index: 1000;
 }
 
-.temp-box {
-    position: absolute;
-    border: 2px dashed #0099ff;
-    background-color: rgba(0, 153, 255, 0.2);
-    pointer-events: none;
-    z-index: 999;
-}
-
-/* TEXTO (TEXTAREA) - VISUAL */
+/* CAIXA DE TEXTO */
 .user-textarea {
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.03); /* Fundo cinza bem claro para ver onde está */
-    border: 1px dashed rgba(0, 0, 0, 0.3); /* Borda pontilhada sempre visível */
+    background: rgba(255, 255, 255, 0.1); /* Fundo sutil para identificar área */
+    border: 1px dotted rgba(0, 0, 0, 0.3);
     color: #000;
     font-family: 'Courier New', monospace;
-    font-weight: 900; /* Negrito Forte */
+    font-weight: 900; 
     line-height: 1.1;
-    padding: 4px;
+    padding: 2px;
     resize: none; 
-    overflow: hidden; /* Esconde barra de rolagem (o JS vai expandir) */
+    overflow: hidden;
     outline: none;
-    cursor: text;
-    border-radius: 3px;
-    transition: border 0.2s, background 0.2s;
+    cursor: grab; /* Mão para mover */
 }
 
-/* Quando foca, fica mais destacado */
-.element-wrapper:hover .user-textarea, 
+/* Quando foca para escrever */
 .user-textarea:focus {
-    border: 1px dashed rgba(0, 0, 255, 0.8);
-    background: rgba(255, 255, 255, 0.6);
+    cursor: text;
+    background: rgba(255, 255, 255, 0.8);
+    border: 1px solid blue;
 }
 
-/* MARCADOR (BOLINHA) */
-.user-marker {
-    width: 100%;
-    height: 100%;
-    background-color: #000;
-    border-radius: 50%;
-    box-shadow: 0 0 2px #fff;
-    pointer-events: none;
+.element-wrapper:hover .user-textarea {
+    border: 1px dashed rgba(0, 0, 255, 0.5);
 }
 
-/* --- MENU DE CONTEXTO --- */
-.element-context-menu {
+/* ALÇA DE REDIMENSIONAMENTO (RESIZE HANDLE) */
+.resize-handle {
     position: absolute;
-    top: -45px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #222;
-    border: 1px solid var(--gold);
-    border-radius: 5px;
-    display: none;
-    gap: 5px;
-    padding: 5px;
-    z-index: 2000;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.8);
-    white-space: nowrap;
+    bottom: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    background: linear-gradient(135deg, transparent 50%, var(--gold) 50%);
+    cursor: nwse-resize; /* Cursor diagonal */
+    z-index: 101;
+    display: none; /* Esconde até passar o mouse */
 }
 
-.element-wrapper.selected .element-context-menu {
-    display: flex;
+.element-wrapper:hover .resize-handle,
+.element-wrapper.selected .resize-handle {
+    display: block; /* Mostra ao passar mouse ou selecionar */
 }
+
+/* MARCADOR */
+.user-marker {
+    width: 100%; height: 100%;
+    background-color: #000; border-radius: 50%;
+    box-shadow: 0 0 2px #fff; pointer-events: none;
+}
+
+/* BOTÃO DE DELETAR (AJUSTADO) */
+.delete-handle {
+    position: absolute;
+    top: -10px; right: -10px;
+    background: red; color: white;
+    border-radius: 50%; width: 18px; height: 18px;
+    font-size: 12px; font-weight: bold;
+    cursor: pointer;
+    display: none;
+    align-items: center; justify-content: center;
+    z-index: 200;
+    border: 1px solid white;
+}
+/* Área segura invisível para não perder o hover */
+.delete-handle::after {
+    content: ''; position: absolute;
+    top: -10px; left: -10px; right: -10px; bottom: -10px;
+}
+
+.element-wrapper:hover .delete-handle { display: flex; }
+
+/* MENU CONTEXTO */
+.element-context-menu {
+    position: absolute; top: -45px; left: 50%; transform: translateX(-50%);
+    background: #222; border: 1px solid var(--gold); border-radius: 5px;
+    display: none; gap: 5px; padding: 5px; z-index: 2000;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+}
+.element-wrapper.selected .element-context-menu { display: flex; }
 
 .ctx-btn {
-    background: #444;
-    color: #fff;
-    border: 1px solid #666;
-    border-radius: 4px;
-    width: 30px;
-    height: 30px;
-    cursor: pointer;
-    font-size: 14px;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: #444; color: #fff; border: 1px solid #666; border-radius: 4px;
+    width: 30px; height: 30px; cursor: pointer;
+    font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center;
 }
 .ctx-btn:hover { background: var(--gold); color: #000; }
-.ctx-btn.del:hover { background: #ff4444; color: #fff; border-color: red; }
+.ctx-btn.del:hover { background: #ff4444; color: #fff; }
+
+/* Drag Box Temporário */
+.temp-box {
+    position: absolute; border: 2px dashed #0099ff;
+    background-color: rgba(0, 153, 255, 0.2); pointer-events: none; z-index: 999;
+}
 
 /* Footer */
 .sheet-footer {
-    height: 50px;
-    background: #222;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-    border-top: 1px solid #444;
-    color: #fff;
-    flex-shrink: 0;
+    height: 50px; background: #222; display: flex; align-items: center; justify-content: center;
+    gap: 20px; border-top: 1px solid #444; color: #fff; flex-shrink: 0;
 }
-
 .nav-simple-btn {
-    background: none;
-    border: 1px solid #666;
-    color: #ccc;
-    padding: 5px 15px;
-    cursor: pointer;
-    font-family: 'MedievalSharp', cursive;
-    border-radius: 4px;
+    background: none; border: 1px solid #666; color: #ccc;
+    padding: 5px 15px; cursor: pointer; font-family: 'MedievalSharp', cursive; border-radius: 4px;
 }
 .nav-simple-btn:hover { border-color: var(--gold); color: var(--gold); }
 
 @media (max-width: 1100px) {
-    .sheet-toolbar {
-        top: -60px; left: 0; width: 100%; height: 50px;
-        flex-direction: row; justify-content: center;
-    }
+    .sheet-toolbar { top: -60px; left: 0; width: 100%; height: 50px; flex-direction: row; justify-content: center; }
     .btn-close-sheet { top: -60px; right: 0; }
     .sheet-content { margin-top: 60px; }
 }
