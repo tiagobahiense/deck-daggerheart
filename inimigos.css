@@ -1,349 +1,215 @@
 /* =========================================================
-   SISTEMA DE INIMIGOS - DAGGERHEART (V2.0 - UX FIXED)
+   SISTEMA DE INIMIGOS V3.0 - TOKENS & BATALHA
    ========================================================= */
 
-/* Área Central onde os inimigos aparecem */
+/* --- ÁREA DE BATALHA (Onde ficam os tokens) --- */
+/* No Mestre: Fica numa coluna. No Jogador: Flutua no topo. */
+
 #area-inimigos {
-    position: fixed;
-    top: 55%; /* Um pouco abaixo do centro para não tapar o mestre */
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 90%;
-    height: auto;
-    max-height: 70%;
-    pointer-events: none; 
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
-    align-items: flex-start;
     gap: 15px;
-    z-index: 500; 
-    overflow-y: auto; /* Permite scroll se tiver muitos inimigos */
     padding: 10px;
+    align-items: flex-start;
+    justify-content: center;
+    z-index: 500;
 }
 
-/* CARD DO INIMIGO */
-.inimigo-card {
-    pointer-events: auto;
-    width: 240px;
-    background: #111;
-    border: 2px solid #444;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.9);
-    transition: transform 0.2s, border-color 0.2s;
-    flex-shrink: 0;
-}
-
-.inimigo-card:hover {
-    border-color: var(--gold);
-    z-index: 600;
-    transform: scale(1.02);
-}
-
-/* Header com Imagem e Barras */
-.inimigo-header {
+/* Comportamento específico para o Mestre (Layout em Coluna) */
+.modo-mestre #area-inimigos {
     position: relative;
     width: 100%;
-    height: 160px;
-    background-color: #000;
-    border-radius: 6px 6px 0 0;
+    height: 100%;
+    overflow-y: auto;
+    pointer-events: auto;
+}
+
+/* Comportamento para Jogador (Flutuante no topo, não atrapalha a mão) */
+.modo-jogador #area-inimigos {
+    position: fixed;
+    top: 15%; /* Fica no topo da tela */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-height: 40vh;
+    pointer-events: none; /* Deixa clicar através do vazio */
+}
+
+/* --- O TOKEN DO INIMIGO --- */
+.inimigo-token {
+    pointer-events: auto;
+    width: 140px; /* Bem menor */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    transition: transform 0.2s;
+}
+
+.inimigo-token:hover {
+    z-index: 600;
+    transform: scale(1.05);
+}
+
+/* Imagem do Monstro (Sem fundo preferencialmente) */
+.token-img-wrapper {
+    width: 120px;
+    height: 120px;
+    position: relative;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8));
+}
+
+.token-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    /* Se a imagem for quadrada, arredonda. Se for png recortado, fica normal */
+    border-radius: 10px; 
+}
+
+/* Barras sobre a cabeça (Sempre visíveis) */
+.token-barras {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: rgba(0,0,0,0.6);
+    padding: 2px;
+    border-radius: 4px;
+    pointer-events: auto;
+}
+
+.barra-mini {
+    width: 100%;
+    height: 6px;
+    background: #333;
+    border-radius: 2px;
     overflow: hidden;
 }
 
-.inimigo-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; /* Preenche melhor */
-    object-position: top;
-}
+.fill-pv { background: #ff3333; height: 100%; transition: width 0.3s; box-shadow: 0 0 5px red; }
+.fill-pf { background: #3388ff; height: 100%; transition: width 0.3s; box-shadow: 0 0 5px blue; }
 
-/* Barras DESTAQUE */
-.barras-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    background: rgba(0,0,0,0.6);
-    padding: 5px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    backdrop-filter: blur(2px);
-}
-
-.barra-wrapper {
-    width: 100%;
-    height: 10px; /* Mais grossa */
-    background: #333;
-    border: 1px solid #000;
-    border-radius: 3px;
-    position: relative;
-}
-
-.barra-fill {
-    height: 100%;
-    border-radius: 2px;
-    transition: width 0.3s ease-in-out;
-}
-
-.barra-pv { background: linear-gradient(90deg, #d32f2f, #ff5252); }
-.barra-pf { background: linear-gradient(90deg, #1976d2, #42a5f5); }
-
-/* Status Numérico */
-.status-numerico {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    background: rgba(0,0,0,0.85);
-    color: #fff;
-    font-size: 0.75rem;
-    padding: 3px 8px;
-    border-top-left-radius: 6px;
-    font-weight: bold;
-    border-top: 1px solid #444;
-    border-left: 1px solid #444;
-}
-
-/* Corpo do Card */
-.inimigo-body {
-    padding: 10px;
-    color: #fff;
-    background: #1a1a1a;
-}
-
-.inimigo-nome {
-    font-family: 'MedievalSharp', cursive;
-    color: var(--gold);
-    font-size: 1.1rem;
+/* Nome e Status */
+.token-info {
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid var(--gold);
+    border-radius: 15px;
+    padding: 2px 10px;
     text-align: center;
-    margin-bottom: 8px;
-    text-shadow: 0 1px 2px #000;
+    margin-top: -10px; /* Sobe um pouco na imagem */
+    z-index: 2;
+    min-width: 100px;
+}
+
+.token-nome {
+    color: var(--gold);
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.9rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 130px;
 }
 
-.inimigo-stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 5px;
-    font-size: 0.8rem;
-    color: #ccc;
-    background: #222;
-    padding: 5px;
-    border-radius: 4px;
-    border: 1px solid #333;
-}
-
-.stat-item strong { color: #fff; }
-
-/* Botão Detalhes (Accordion) */
-.btn-toggle-detalhes {
-    width: 100%;
-    background: #333;
-    border: none;
-    color: #aaa;
+.token-numeros {
     font-size: 0.7rem;
-    padding: 4px;
-    cursor: pointer;
+    color: #ccc;
+    font-family: monospace;
+}
+
+/* --- CONTROLES DO MESTRE (Hover) --- */
+.token-gm-controls {
+    display: none; /* Escondido por padrão */
+    flex-direction: row;
+    gap: 5px;
     margin-top: 5px;
-    border-radius: 3px;
-}
-.btn-toggle-detalhes:hover { background: #444; color: #fff; }
-
-.inimigo-detalhes {
-    font-size: 0.75rem;
-    color: #ddd;
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s;
-    background: #111;
-    padding: 0 5px;
-    line-height: 1.4;
-}
-
-.inimigo-detalhes.aberto {
-    max-height: 200px;
-    overflow-y: auto;
+    background: rgba(0,0,0,0.9);
     padding: 5px;
-    border-top: 1px solid #333;
-}
-
-/* Controles do Mestre - Maiores e Melhores */
-.gm-overlay-controls {
-    display: none;
-    background: #222;
-    padding: 5px;
-    gap: 3px;
-    border-top: 1px solid #444;
-}
-
-.linha-botoes {
-    display: flex;
-    gap: 3px;
-    width: 100%;
-    margin-bottom: 3px;
-}
-
-.btn-inimigo {
+    border-radius: 5px;
     border: 1px solid #444;
+}
+
+/* Mostra controles se for mestre E passar o mouse */
+.modo-mestre .inimigo-token:hover .token-gm-controls {
+    display: flex;
+}
+
+.btn-gm-mini {
+    width: 24px;
+    height: 24px;
     border-radius: 4px;
+    border: 1px solid #555;
     cursor: pointer;
     font-weight: bold;
-    padding: 8px 0;
-    font-size: 0.9rem;
-    color: #fff;
-    flex: 1;
+    font-size: 0.8rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: 0.1s;
-}
-
-.btn-inimigo:active { transform: scale(0.95); }
-
-.btn-dano { background: #5a0000; color: #ff9999; }
-.btn-dano:hover { background: #8b0000; }
-
-.btn-cura { background: #004d00; color: #99ff99; }
-.btn-cura:hover { background: #006400; }
-
-.btn-del { 
-    background: #000; 
-    border-color: #666; 
-    color: red;
-    font-size: 1.2rem;
-}
-.btn-del:hover { background: #330000; border-color: red; }
-
-/* Animações */
-.anim-dano { animation: shake-red 0.4s ease-in-out; }
-.anim-cura { animation: pulse-green 0.4s ease-in-out; }
-
-@keyframes shake-red {
-    0% { transform: translateX(0); border-color: #444; }
-    25% { transform: translateX(-5px); border-color: red; box-shadow: 0 0 15px red; }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-5px); }
-    100% { transform: translateX(0); border-color: #444; }
-}
-
-@keyframes pulse-green {
-    0% { transform: scale(1); border-color: #444; }
-    50% { transform: scale(1.05); border-color: lime; box-shadow: 0 0 15px lime; }
-    100% { transform: scale(1); border-color: #444; }
-}
-
-/* =========================================================
-   MODAL DE CRIAÇÃO (LAYOUT CORRIGIDO)
-   ========================================================= */
-#modal-criar-inimigo {
-    display: none;
-    position: fixed;
-    z-index: 9000;
-    left: 0; top: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.85);
-    align-items: center; justify-content: center;
-}
-
-.modal-criar-content {
-    background: #151515;
-    border: 2px solid var(--gold);
-    width: 600px;
-    max-width: 90%;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8);
-    display: flex; flex-direction: column; gap: 12px;
-    max-height: 90vh; overflow-y: auto;
-}
-
-.modal-criar-content h2 {
-    color: var(--gold); margin: 0; text-align: center;
-    border-bottom: 1px solid #333; padding-bottom: 10px;
-}
-
-/* Grid de Formulário */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.form-full { grid-column: 1 / -1; }
-
-.form-group { display: flex; flex-direction: column; }
-.form-group label { color: #aaa; font-size: 0.8rem; margin-bottom: 4px; font-weight: bold; }
-
-.form-group input, .form-group textarea {
-    background: #222;
-    border: 1px solid #444;
     color: #fff;
-    padding: 10px;
-    border-radius: 5px;
-    font-size: 1rem;
-}
-.form-group input:focus, .form-group textarea:focus {
-    border-color: var(--gold);
-    outline: none;
 }
 
-/* Inputs de Número Grandes */
-.form-group input[type="number"] {
-    font-family: 'Courier New', monospace;
-    font-weight: bold;
-    font-size: 1.1rem;
-}
+.btn-gm-dano { background: #5a0000; border-color: red; }
+.btn-gm-dano:hover { background: red; }
 
-/* Área de Upload */
-.upload-area {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
+.btn-gm-cura { background: #004d00; border-color: lime; }
+.btn-gm-cura:hover { background: lime; }
 
-#btn-upload-img {
-    background: #333; color: #fff;
-    border: 1px solid #555;
-    padding: 8px 12px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 0.8rem;
-    white-space: nowrap;
-}
-#btn-upload-img:hover { background: #444; border-color: #fff; }
+.btn-gm-trash { background: #000; border-color: #666; color: #666; }
+.btn-gm-trash:hover { border-color: red; color: red; }
 
-#preview-img-mini {
-    width: 40px; height: 40px;
-    object-fit: cover;
-    border: 1px solid #555;
-    border-radius: 4px;
+.btn-gm-info { background: #333; border-color: var(--gold); color: var(--gold); }
+.btn-gm-info:hover { background: var(--gold); color: #000; }
+
+/* --- DETALHES EXPANDIDOS (MODAL DE FICHA DO MONSTRO) --- */
+/* Quando clica no 'i', abre um mini modal flutuante */
+.token-detalhes-float {
     display: none;
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 250px;
+    background: #111;
+    border: 2px solid var(--gold);
+    padding: 10px;
+    border-radius: 8px;
+    z-index: 1000;
+    box-shadow: 0 10px 30px rgba(0,0,0,1);
+    color: #ddd;
+    font-size: 0.8rem;
+    max-height: 300px;
+    overflow-y: auto;
+    text-align: left;
 }
 
-/* Botões de Ação */
-.modal-actions {
-    display: flex;
-    gap: 15px;
-    margin-top: 15px;
-    padding-top: 15px;
-    border-top: 1px solid #333;
+.token-detalhes-float.ativo {
+    display: block;
 }
 
-.btn-acao {
-    flex: 1;
-    padding: 12px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    font-size: 1rem;
-    font-family: 'MedievalSharp', cursive;
+.token-detalhes-float strong { color: #fff; }
+
+/* Animações de Dano/Cura */
+.anim-hit-red .token-img-wrapper {
+    animation: flash-red 0.4s ease-out;
 }
-.btn-invocar { background: var(--gold); color: #000; }
-.btn-invocar:hover { background: #fff; }
-.btn-cancelar { background: #333; color: #fff; border: 1px solid #555; }
-.btn-cancelar:hover { background: #444; }
+.anim-hit-green .token-img-wrapper {
+    animation: flash-green 0.4s ease-out;
+}
+
+@keyframes flash-red {
+    0% { filter: drop-shadow(0 0 0 red); transform: translateX(0); }
+    25% { filter: drop-shadow(0 0 15px red); transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    100% { filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8)); transform: translateX(0); }
+}
+
+@keyframes flash-green {
+    0% { filter: drop-shadow(0 0 0 lime); transform: scale(1); }
+    50% { filter: drop-shadow(0 0 15px lime); transform: scale(1.1); }
+    100% { filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8)); transform: scale(1); }
+}
