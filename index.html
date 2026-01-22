@@ -121,15 +121,76 @@
         <div class="tutorial-box">
             <button class="close-tutorial-btn" onclick="toggleTutorial()">×</button>
             <div class="tutorial-scroll">
-                <h2 style="color: var(--gold); text-align: center; border-bottom: 1px solid var(--gold); padding-bottom: 10px;">Guia de Preenchimento</h2>
+                <h2 style="color: var(--gold); text-align: center; border-bottom: 1px solid var(--gold); padding-bottom: 10px;">Guia de Preenchimento da Ficha</h2>
+                
                 <h3>1. Escolha de Classe e Nível</h3>
-                <ul><li><strong>Classe:</strong> Anote no topo.</li><li><strong>Subclasse:</strong> Escolha a carta Fundamental.</li><li><strong>Nível:</strong> Anote 1.</li></ul>
-                <h3>2. Herança</h3>
-                <ul><li><strong>Ancestralidade:</strong> Duas habilidades.</li><li><strong>Comunidade:</strong> Uma habilidade.</li></ul>
+                <ul>
+                    <li><strong>Classe:</strong> Escolha sua classe (ex: Bardo, Guerreiro, Mago). Anote-a no topo da ficha.</li>
+                    <li><strong>Subclasse:</strong> Escolha a carta <strong>Fundamental</strong> da sua subclasse. Isso define seu estilo de jogo inicial.</li>
+                    <li><strong>Nível:</strong> Anote <strong>1</strong> no campo de nível (canto superior).</li>
+                    <li><strong>Habilidade de Classe:</strong> Cada classe tem uma habilidade passiva ou ativa única pré-impressa ou descrita no guia. Você não precisa escrevê-la se estiver usando a ficha específica da classe, mas deve conhecê-la.</li>
+                </ul>
+
+                <h3>2. Herança (Ancestralidade e Comunidade)</h3>
+                <p>Sua herança define quem você é e de onde veio. Anote no campo <strong>Herança</strong>:</p>
+                <ul>
+                    <li><strong>Ancestralidade:</strong> Escolha uma (ex: Elfo, Anão, Galapa). Ela concede <strong>duas</strong> habilidades descritas na carta de ancestralidade.</li>
+                    <li><strong>Comunidade:</strong> Escolha uma (ex: Subterrânea, Nômade, Erudita). Ela concede <strong>uma</strong> habilidade descrita na carta de comunidade.</li>
+                    <li><strong>Nota:</strong> Mantenha as cartas fisicamente com você ou anote os efeitos na ficha.</li>
+                </ul>
+
                 <h3>3. Atributos</h3>
-                <p>Distribua: +2, +1, +1, 0, 0, –1</p>
-                <h3>4. Combate</h3>
-                <ul><li><strong>Evasão:</strong> Valor fixo da Classe.</li><li><strong>PV:</strong> Valor fixo.</li><li><strong>Fadiga:</strong> 6 espaços.</li><li><strong>Esperança:</strong> 2 marcados.</li></ul>
+                <p>Distribua os seguintes modificadores entre seus seis atributos (<strong>Agilidade, Força, Acuidade, Instinto, Presença, Conhecimento</strong>):</p>
+                <p style="text-align: center; font-weight: bold; color: var(--gold); background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px;">+2, +1, +1, 0, 0, –1</p>
+                <p>Anote o número na caixa correspondente a cada atributo.</p>
+
+                <h3>4. Características de Combate e Vida</h3>
+                <p>Preencha os campos baseados na sua Classe (consulte a tabela da classe ou carta de referência):</p>
+                <ul>
+                    <li><strong>Evasão:</strong> É a dificuldade para te acertarem. (Ex: Bardo tem Evasão 10, Guerreiro 9).</li>
+                    <li><strong>Pontos de Vida (PV):</strong> Seu total de vida. (Ex: Druida tem 6 espaços).</li>
+                    <li><strong>Limiar de Estresse (Fadiga):</strong> A maioria das classes começa com <strong>6</strong> espaços de Estresse.</li>
+                    <li><strong>Esperança:</strong> Você começa a sessão com <strong>2</strong> pontos de Esperança marcados.</li>
+                </ul>
+
+                <h3>5. Equipamento Inicial</h3>
+                <h4>Armadura</h4>
+                <ul>
+                    <li>Anote o valor de <strong>Armadura</strong> do item inicial (ex: Couro = 3).</li>
+                    <li><strong>Limiares de Dano (Thresholds):</strong> A armadura fornece valores base (ex: Menor 2 / Maior 4). <strong>Some seu Nível</strong> a esses valores.</li>
+                    <li><em>Exemplo (Nível 1):</em> Base 2/4 → anote <strong>3</strong> (Menor) e <strong>5</strong> (Maior) na seção <em>Saúde e Dano</em>.</li>
+                </ul>
+
+                <h4>Armas Ativas</h4>
+                <ul>
+                    <li>Escolha uma arma <strong>Primária</strong> e uma <strong>Secundária</strong>.</li>
+                    <li>Anote: Nome, Atributo usado (ex: Força), Alcance, Dados de Dano (ex: 1d8), Tipo (Físico ou Mágico) e Habilidades da arma.</li>
+                    <li><strong>Proficiência:</strong> Marque o primeiro círculo (<strong>valor 1</strong>). Isso indica quantos dados você rola no dano.</li>
+                </ul>
+
+                <h3>6. Experiências</h3>
+                <p>Crie <strong>duas frases curtas</strong> que definam o passado ou habilidades do seu personagem (ex: <em>“Guarda-costas Leal”</em>, <em>“Ladrão de Telhados”</em>).</p>
+                <ul>
+                    <li>Anote-as na seção de <strong>Experiências</strong>.</li>
+                    <li>Atribua o modificador <strong>+2</strong> para ambas.</li>
+                </ul>
+
+                <h3>7. Cartas de Domínio</h3>
+                <p>Sua classe é composta por <strong>dois Domínios</strong> (ex: Guerreiro = <strong>Lâmina</strong> e <strong>Osso</strong>).</p>
+                <ul>
+                    <li>Escolha <strong>duas cartas de nível 1</strong> do seu baralho de Domínios (pode ser uma de cada domínio ou duas do mesmo).</li>
+                    <li>Coloque-as nos espaços de cartas ativas ou anote-as.</li>
+                </ul>
+
+                <h3>8. Detalhes Finais</h3>
+                <ul>
+                    <li><strong>Inventário:</strong> Você começa com um Kit Básico, uma Poção de Vida Menor, uma Tocha e algumas rações. Anote em <em>Inventário</em>.</li>
+                    <li><strong>Ouro:</strong> Você começa com <strong>1 Punhado</strong> (Handful) de ouro.</li>
+                    <li><strong>Descrição:</strong> Preencha seu Nome, Pronomes e descreva sua Aparência.</li>
+                    <li><strong>Vínculos e Perguntas:</strong> Responda às perguntas de criação de personagem da sua classe para criar laços com o grupo.</li>
+                </ul>
+                
+                <p style="text-align: center; margin-top: 20px; font-style: italic; color: #888;">Pronto! Seu herói está criado.</p>
             </div>
         </div>
     </div>
