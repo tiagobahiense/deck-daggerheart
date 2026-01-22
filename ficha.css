@@ -1,5 +1,5 @@
 /* =========================================================
-   ESTILOS DA FICHA - PRANCHETA V5.0 (FINAL RESTORED)
+   ESTILOS DA FICHA - PRANCHETA V6.0 (UX Refinado)
    ========================================================= */
 
    #sheet-modal {
@@ -34,52 +34,75 @@
 /* --- ELEMENTOS DE TEXTO (INPUTS) --- */
 .input-wrapper {
     position: absolute; 
-    padding: 0;
-    border: 1px dashed transparent; 
-    transition: border 0.2s;
-    /* Permite selecionar o texto dentro */
-    user-select: text; 
+    padding: 2px; /* Pequeno padding para facilitar o clique */
+    
+    /* VISIBILIDADE CONSTANTE (Apoio Visual Fraco) */
+    border: 1px solid rgba(0, 0, 0, 0.15); 
+    background: rgba(255, 255, 255, 0.1); /* Leve fundo para ver onde está */
+    
+    transition: all 0.2s;
+    user-select: none; /* Importante para o Drag funcionar bem */
 }
 
-/* Quando passa o mouse, mostra a borda e o menu */
+/* Quando passa o mouse: Fica mais visível e cursor de mover */
 .input-wrapper:hover { 
-    border-color: rgba(0,0,0,0.4); 
-    z-index: 100; /* Traz pra frente */
-    cursor: grab;
+    border: 1px dashed var(--gold); 
+    background: rgba(255, 255, 255, 0.3);
+    z-index: 100; 
+    cursor: move; /* Indica que pode arrastar */
 }
 
+/* Modo Edição: Fundo branco sólido para digitar */
 .input-wrapper.is-editing { 
-    border-color: var(--gold); 
-    background: rgba(255,255,255,0.9); 
+    border: 1px solid var(--gold); 
+    background: rgba(255, 255, 255, 0.95); 
     z-index: 200; 
     cursor: text;
+    box-shadow: 0 0 10px rgba(0,0,0,0.2);
 }
 
 .sheet-input {
     background: transparent; border: none; 
     font-family: 'Courier New', Courier, monospace;
-    font-weight: bold; /* O usuário pediu negrito */
+    font-weight: bold; 
     color: #000; width: 100%; height: 100%;
     resize: none; overflow: hidden; white-space: pre-wrap; outline: none; 
     line-height: 1.1;
-    pointer-events: auto; /* Garante que dá pra clicar */
+    pointer-events: none; /* O clique passa para o wrapper (para arrastar) */
 }
 
-/* --- MENU FLUTUANTE (Restaurado) --- */
+/* Libera o clique no input APENAS quando estiver editando */
+.input-wrapper.is-editing .sheet-input {
+    pointer-events: auto;
+    user-select: text;
+}
+
+/* --- MENU FLUTUANTE (CORRIGIDO PARA NÃO SUMIR) --- */
 .floating-menu {
     position: absolute;
     top: -35px; left: 0;
     height: 30px;
-    background: #333;
+    background: #222;
     border: 1px solid var(--gold);
     border-radius: 4px;
-    display: none; /* Oculto por padrão */
+    display: none; 
     align-items: center;
     gap: 5px;
     padding: 0 5px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     z-index: 300;
     white-space: nowrap;
+}
+
+/* A "Ponte" invisível: garante que o mouse não saia do elemento ao subir para o menu */
+.floating-menu::after {
+    content: '';
+    position: absolute;
+    bottom: -10px; /* Estende a área sensível para baixo */
+    left: 0;
+    width: 100%;
+    height: 10px;
+    background: transparent;
 }
 
 .input-wrapper:hover .floating-menu,
@@ -90,12 +113,13 @@
 /* Botões do Menu Flutuante */
 .float-btn {
     width: 20px; height: 20px;
-    background: #555; color: #fff;
-    border: 1px solid #777;
+    background: #444; color: #fff;
+    border: 1px solid #666;
     border-radius: 3px;
     cursor: pointer;
     font-size: 10px;
     display: flex; align-items: center; justify-content: center;
+    position: relative; z-index: 301; /* Fica acima da ponte */
 }
 .float-btn:hover { background: var(--gold); color: #000; }
 .float-btn.del { background: #8b0000; border-color: #f00; }
@@ -107,10 +131,11 @@
     border-radius: 50%;
     border: 1px solid #fff;
     cursor: pointer;
+    position: relative; z-index: 301;
 }
-.color-dot:hover { transform: scale(1.2); }
+.color-dot:hover { transform: scale(1.2); border-color: var(--gold); }
 
-/* Alça de Redimensionamento (Canto inferior direito) */
+/* Alça de Redimensionamento */
 .resize-handle {
     position: absolute;
     bottom: 0; right: 0;
@@ -131,16 +156,16 @@
     cursor: pointer;
 }
 .user-marker {
-    width: 1.8vh; height: 1.8vh; 
+    width: 1.4vh; height: 1.4vh; /* Reduzido de 1.8 para 1.4 */
     background: #000; border-radius: 50%;
     box-shadow: 0 0 2px #fff; 
     pointer-events: none;
 }
 .marker-delete {
     position: absolute; top: -12px; right: -12px;
-    width: 16px; height: 16px; 
+    width: 14px; height: 14px; 
     background: red; color: white;
-    border-radius: 50%; font-size: 10px; font-weight: bold;
+    border-radius: 50%; font-size: 9px; font-weight: bold;
     display: none;
     align-items: center; justify-content: center;
     z-index: 20; border: 1px solid white;
@@ -164,7 +189,6 @@
 }
 .tool-btn:hover, .tool-btn.active { background: #444; color: var(--gold); border-color: var(--gold); }
 
-/* Botão Guia */
 .sheet-toolbar .btn-guia {
     width: auto !important; padding: 0 15px;
     font-family: 'MedievalSharp', cursive; font-size: 0.9rem; font-weight: bold;
@@ -181,12 +205,6 @@
 
 .color-separator { width: 1px; height: 30px; background: #555; margin: 0 5px; flex-shrink: 0; }
 
-/* Drag Box Temporário */
-.temp-box {
-    position: absolute; border: 2px dashed #0099ff;
-    background-color: rgba(0, 153, 255, 0.2); pointer-events: none; z-index: 999;
-}
-
 /* Footer */
 .sheet-footer {
     height: 50px; background: #222; display: flex; align-items: center; justify-content: center;
@@ -199,12 +217,18 @@
 }
 .nav-simple-btn:hover { background: var(--gold); color: #000; }
 
+/* Drag Box Temporário */
+.temp-box {
+    position: absolute; border: 2px dashed #0099ff;
+    background-color: rgba(0, 153, 255, 0.2); pointer-events: none; z-index: 999;
+}
+
 /* --- TUTORIAL OVERLAY --- */
 #tutorial-overlay {
     display: none; 
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0, 0, 0, 0.85); 
-    z-index: 20000; /* Z-Index altíssimo para garantir */
+    z-index: 20000; 
     align-items: center; justify-content: center;
     backdrop-filter: blur(3px);
 }

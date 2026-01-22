@@ -1,5 +1,5 @@
 // =========================================================
-// FICHA DIGITAL - PRANCHETA V5.0 (FULL RESTORE)
+// FICHA DIGITAL - PRANCHETA V6.0 (UX Refinado)
 // =========================================================
 
 const FICHAS_IMAGENS = {
@@ -14,7 +14,6 @@ const FICHAS_IMAGENS = {
     'Serafim': ['img/fichas/ficha-serafim01.jpg', 'img/fichas/ficha-serafim02.jpg']
 };
 
-// Cores solicitadas: Preto, Vermelho, Laranja, Verde
 const TEXT_COLORS = { 
     'black': '#000000', 
     'red': '#cc0000', 
@@ -28,11 +27,10 @@ let elementosFicha = {};
 let paginasTotais = 1;
 let imgFichaAtual = [];
 
-// Variáveis de interação (Criar, Arrastar, Redimensionar)
+// Variáveis de interação
 let isDrawing = false;
 let isDragging = false;
 let isResizing = false;
-let currentElementId = null; // ID do elemento sendo manipulado
 let startX, startY;
 let initialTop, initialLeft, initialWidth, initialHeight;
 let tempBox = null;
@@ -70,9 +68,14 @@ function atualizarPaginaFicha() {
 window.selecionarFerramenta = function(ferramenta) {
     ferramentaAtual = ferramenta;
     document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
-    // Marca o botão da ferramenta
-    const btn = document.querySelector(`.tool-btn[onclick*="${ferramenta}"]`);
-    if(btn) btn.classList.add('active');
+    
+    // Procura o botão que contém a chamada da função para ativar visualmente
+    const botoes = document.querySelectorAll('.tool-btn');
+    botoes.forEach(btn => {
+        if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(ferramenta)) {
+            btn.classList.add('active');
+        }
+    });
 };
 
 // --- LOGICA DE CRIAÇÃO (Container) ---
@@ -80,15 +83,14 @@ function inicializarEventosContainer() {
     const container = document.getElementById('sheet-container');
     if (!container) return;
 
-    // Reset de listeners para evitar duplicação
+    // Remove listeners antigos substituindo o node (limpeza segura)
     const newContainer = container.cloneNode(true);
     container.parentNode.replaceChild(newContainer, container);
     
-    // Configura o novo container
     const activeContainer = document.getElementById('sheet-container');
 
     activeContainer.onmousedown = (e) => {
-        // Ignora se clicou em overlay de tutorial ou nos próprios inputs
+        // Ignora se clicou em overlay de tutorial ou elementos existentes
         if(e.target.closest('#tutorial-overlay')) return;
         if(e.target.closest('.input-wrapper') || e.target.closest('.marker-wrapper')) return;
 
@@ -157,7 +159,7 @@ function criarNovoElemento(tipo, coords) {
         height: coords.height || 0,
         valor: '',
         color: 'black',
-        fontSize: 1.5 // Tamanho padrão
+        fontSize: 1.5 
     };
     if(window.nomeJogador) window.set(window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}/ficha/${id}`), novo);
 }
@@ -178,7 +180,7 @@ function carregarFichaDe(nome) {
     });
 }
 
-// --- RENDERIZAÇÃO COMPLEXA (RESTORED) ---
+// --- RENDERIZAÇÃO E EVENTOS ESPECÍFICOS DE ELEMENTOS ---
 function renderizarElementosFicha() {
     const layer = document.getElementById('sheet-inputs-layer');
     if(!layer) return;
@@ -187,7 +189,7 @@ function renderizarElementosFicha() {
     Object.values(elementosFicha).forEach(el => {
         if (el.pagina !== paginaFichaAtual) return;
 
-        // --- RENDERIZAR TEXTO ---
+        // --- CAIXA DE TEXTO ---
         if (el.tipo === 'texto') {
             const wrapper = document.createElement('div');
             wrapper.className = 'input-wrapper';
@@ -196,7 +198,7 @@ function renderizarElementosFicha() {
             wrapper.style.width = el.width + '%';
             wrapper.style.height = el.height + '%';
 
-            // Menu Flutuante (Cores, Fontes, Delete)
+            // --- Menu Flutuante ---
             const menu = document.createElement('div');
             menu.className = 'floating-menu';
             
@@ -204,87 +206,91 @@ function renderizarElementosFicha() {
             const btnDel = document.createElement('div');
             btnDel.className = 'float-btn del';
             btnDel.innerText = 'X';
-            btnDel.title = "Excluir caixa";
             btnDel.onclick = (e) => { e.stopPropagation(); deletarElementoNoFirebase(el.id); };
             
-            // Botões de Tamanho
+            // Fontes
             const btnUp = document.createElement('div');
             btnUp.className = 'float-btn';
             btnUp.innerText = 'A+';
-            btnUp.onclick = (e) => { 
-                e.stopPropagation(); 
-                el.fontSize = (el.fontSize || 1.5) + 0.2; 
-                salvarElementoNoFirebase(el); 
-            };
+            btnUp.onclick = (e) => { e.stopPropagation(); el.fontSize = (el.fontSize || 1.5) + 0.2; salvarElementoNoFirebase(el); };
 
             const btnDown = document.createElement('div');
             btnDown.className = 'float-btn';
             btnDown.innerText = 'A-';
-            btnDown.onclick = (e) => { 
-                e.stopPropagation(); 
-                el.fontSize = Math.max(0.5, (el.fontSize || 1.5) - 0.2); 
-                salvarElementoNoFirebase(el); 
-            };
+            btnDown.onclick = (e) => { e.stopPropagation(); el.fontSize = Math.max(0.5, (el.fontSize || 1.5) - 0.2); salvarElementoNoFirebase(el); };
 
-            // Cores: Preto, Vermelho, Laranja, Verde
-            const cores = ['black', 'red', 'orange', 'green'];
+            // Cores
             const containerCores = document.createElement('div');
             containerCores.style.display = 'flex';
             containerCores.style.gap = '3px';
             containerCores.style.marginLeft = '5px';
 
-            cores.forEach(c => {
+            ['black', 'red', 'orange', 'green'].forEach(c => {
                 const dot = document.createElement('div');
                 dot.className = 'color-dot';
                 dot.style.background = TEXT_COLORS[c];
-                dot.onclick = (e) => {
-                    e.stopPropagation();
-                    el.color = c;
-                    salvarElementoNoFirebase(el);
-                };
+                dot.onclick = (e) => { e.stopPropagation(); el.color = c; salvarElementoNoFirebase(el); };
                 containerCores.appendChild(dot);
             });
 
             menu.append(btnDel, btnDown, btnUp, containerCores);
             wrapper.appendChild(menu);
 
-            // Textarea
+            // --- Textarea ---
             const input = document.createElement('textarea');
             input.className = 'sheet-input';
             input.value = el.valor || '';
             input.style.fontSize = (el.fontSize || 1.5) + 'vh';
             input.style.color = TEXT_COLORS[el.color || 'black'];
             
-            // Eventos do Input
             input.onblur = () => {
+                // Sai do modo edição
+                wrapper.classList.remove('is-editing');
                 if (input.value !== el.valor) {
                     el.valor = input.value;
                     salvarElementoNoFirebase(el);
                 }
             };
-            // Evita propagação de drag quando clica dentro para digitar
-            input.onmousedown = (e) => { e.stopPropagation(); };
 
             wrapper.appendChild(input);
 
-            // Alça de Resize
+            // --- Resize Handle ---
             const resizer = document.createElement('div');
             resizer.className = 'resize-handle';
             resizer.onmousedown = (e) => startResize(e, el);
             wrapper.appendChild(resizer);
 
-            // Evento de Drag no Wrapper (borda)
-            wrapper.onmousedown = (e) => startDrag(e, el);
+            // --- Eventos do Wrapper (Drag vs Edit) ---
+            
+            // 1. Mouse Down: Inicia Drag (se não estiver redimensionando ou clicando no menu)
+            wrapper.onmousedown = (e) => {
+                // Se clicar no menu, input ou resizer, ignora drag do wrapper
+                if (e.target.classList.contains('float-btn') || 
+                    e.target.classList.contains('color-dot') || 
+                    e.target.classList.contains('resize-handle') ||
+                    e.target.tagName === 'TEXTAREA' && wrapper.classList.contains('is-editing')) {
+                    return;
+                }
+                
+                startDrag(e, el);
+            };
+
+            // 2. Double Click: Entra no modo Edição
+            wrapper.ondblclick = (e) => {
+                e.stopPropagation();
+                wrapper.classList.add('is-editing');
+                input.focus();
+            };
 
             layer.appendChild(wrapper);
         } 
         
-        // --- RENDERIZAR MARCADOR ---
+        // --- MARCADOR ---
         else if (el.tipo === 'marcador') {
             const wrapper = document.createElement('div');
             wrapper.className = 'marker-wrapper';
-            wrapper.style.top = `calc(${el.top}% - 10px)`; // Centraliza no clique
-            wrapper.style.left = `calc(${el.left}% - 10px)`;
+            wrapper.style.top = `calc(${el.top}% - 7px)`; 
+            wrapper.style.left = `calc(${el.left}% - 7px)`;
 
             const marker = document.createElement('div');
             marker.className = 'user-marker';
@@ -301,16 +307,12 @@ function renderizarElementosFicha() {
     });
 }
 
-// --- LÓGICA DE MOVE / RESIZE ---
-
+// --- LÓGICA DE MOVE (DRAG) ---
 function startDrag(e, el) {
-    if(e.target.tagName === 'TEXTAREA' || e.target.classList.contains('float-btn') || e.target.classList.contains('color-dot')) return;
-    
-    e.preventDefault();
+    e.preventDefault(); 
     e.stopPropagation();
     
     isDragging = true;
-    currentElementId = el.id;
     
     const container = document.getElementById('sheet-container');
     const rect = container.getBoundingClientRect();
@@ -318,7 +320,6 @@ function startDrag(e, el) {
     startX = e.clientX;
     startY = e.clientY;
     
-    // Converte % de volta para pixels para calculo suave
     initialTop = (el.top / 100) * rect.height;
     initialLeft = (el.left / 100) * rect.width;
 
@@ -327,12 +328,13 @@ function startDrag(e, el) {
         const dx = moveEvent.clientX - startX;
         const dy = moveEvent.clientY - startY;
         
-        let newTopPx = initialTop + dy;
-        let newLeftPx = initialLeft + dx;
-        
-        // Atualiza visualmente (performance)
-        const wrapper = document.querySelector(`.input-wrapper`); // Ineficiente buscar de novo, mas ok pra MVP
-        // Idealmente, achar o wrapper especifico. Vamos re-renderizar no final.
+        // Visualmente move o wrapper atual sem salvar ainda (performance)
+        // Como o wrapper é recriado no render, precisamos achar o elemento DOM certo
+        // Uma forma simples é atualizar o style do target
+        if(e.currentTarget) {
+            e.currentTarget.style.top = ((initialTop + dy) / rect.height) * 100 + '%';
+            e.currentTarget.style.left = ((initialLeft + dx) / rect.width) * 100 + '%';
+        }
     };
 
     const onUp = (upEvent) => {
@@ -342,13 +344,10 @@ function startDrag(e, el) {
         const dx = upEvent.clientX - startX;
         const dy = upEvent.clientY - startY;
         
-        const rect = container.getBoundingClientRect();
-        
-        // Atualiza dados finais
         el.top = ((initialTop + dy) / rect.height) * 100;
         el.left = ((initialLeft + dx) / rect.width) * 100;
         
-        salvarElementoNoFirebase(el);
+        salvarElementoNoFirebase(el); // Salva e re-renderiza
         
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
@@ -358,6 +357,7 @@ function startDrag(e, el) {
     document.addEventListener('mouseup', onUp);
 }
 
+// --- LÓGICA DE RESIZE ---
 function startResize(e, el) {
     e.preventDefault();
     e.stopPropagation();
@@ -373,10 +373,6 @@ function startResize(e, el) {
     initialWidth = (el.width / 100) * rect.width;
     initialHeight = (el.height / 100) * rect.height;
 
-    const onMove = (moveEvent) => {
-        // Opcional: atualização visual em tempo real sem salvar
-    };
-
     const onUp = (upEvent) => {
         if (!isResizing) return;
         isResizing = false;
@@ -384,19 +380,14 @@ function startResize(e, el) {
         const dx = upEvent.clientX - startX;
         const dy = upEvent.clientY - startY;
         
-        const rect = container.getBoundingClientRect();
-        
-        // Define novo tamanho, mínimo de 2%
         el.width = Math.max(2, ((initialWidth + dx) / rect.width) * 100);
         el.height = Math.max(2, ((initialHeight + dy) / rect.height) * 100);
         
         salvarElementoNoFirebase(el);
         
-        document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
     };
 
-    document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
 }
 
