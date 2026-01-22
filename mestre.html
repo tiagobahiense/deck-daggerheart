@@ -11,42 +11,42 @@
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; }
+        
+        /* Loading Overlay para evitar flicker/logout falso */
+        #loading-screen { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 99999; display: flex; align-items: center; justify-content: center; color: var(--gold); font-family: 'MedievalSharp', cursive; font-size: 2rem; }
+
+        /* Layout 3 Colunas */
         #container-principal { display: flex; flex: 1; overflow: hidden; gap: 0; }
         
-        /* COLUNA JOGADORES */
-        #area-jogadores { width: 360px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 2px solid var(--gold); background: #0a0a0a; }
+        #area-jogadores { width: 350px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 2px solid var(--gold); background: #0a0a0a; }
         #painel { padding: 10px; overflow-y: auto; height: 100%; display: flex; flex-direction: column; gap: 10px; }
         
-        /* Cards Jogador GM */
         .card-jogador { width: 100%; background: rgba(20,20,20,0.9); border: 1px solid #444; border-radius:8px; padding:8px; box-sizing: border-box; }
         .card-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:5px; }
         .nome { color: var(--gold); font-weight: bold; font-size: 0.9rem; }
         .tag-classe { font-size: 0.65rem; color: #aaa; background: #222; padding: 1px 4px; border-radius: 4px; }
-        .btn-abrir-ficha-mestre { background: var(--gold); color: #000; border: none; border-radius: 15px; padding: 2px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-left:5px; }
         
-        /* Botão Expandir Mesa do Jogador */
+        .btn-abrir-ficha-mestre { background: var(--gold); color: #000; border: none; border-radius: 15px; padding: 2px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-left:5px; }
         .btn-expandir-mesa { background: #333; color: #ccc; border: 1px solid #555; width: 100%; padding: 4px; cursor: pointer; font-size: 0.75rem; margin-top:5px; border-radius: 4px; }
         .btn-expandir-mesa:hover { background: #444; color: #fff; }
         .mesa-expandida { display: none; margin-top: 5px; border-top: 1px dashed #444; padding-top: 5px; }
         .mesa-expandida.ativo { display: block; }
 
-        /* COLUNA BATALHA */
         #area-batalha-gm { flex-grow: 1; background: url('img/background_epico.png') no-repeat center center; background-size: cover; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         #titulo-batalha { background: rgba(0,0,0,0.8); color: var(--gold); text-align: center; padding: 5px; font-family: 'MedievalSharp', cursive; border-bottom: 1px solid var(--gold); }
-        
-        /* COLUNA ESCUDO */
+        #area-inimigos { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 15px; }
+
         #sidebar-escudo { width: 280px; flex-shrink: 0; background: #0f0f0f; border-left: 2px solid var(--gold); padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .escudo-topicos { display: flex; flex-direction: column; gap: 5px; }
         .btn-topico { background: #222; border: 1px solid #444; color: #ddd; padding: 8px; text-align: left; cursor: pointer; border-radius: 5px; transition: 0.2s; }
         .btn-topico:hover { border-color: var(--gold); background: #333; }
 
-        /* Controles Gerais */
         #controles-mestre { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: #111; border-bottom: 2px solid var(--gold); z-index: 100; }
         .btn-rest { font-size: 0.8rem; padding: 5px 10px; cursor: pointer; color: white; border-radius: 4px; border:none; }
         .curto { background: #f57c00; } .longo { background: #d32f2f; }
         .btn-nav-mestre { background: #333; color: #fff; padding: 5px 10px; border: 1px solid #555; cursor: pointer; border-radius: 4px; }
         
-        /* Modal Criar */
+        /* Modal Criar Inimigo */
         #modal-criar-inimigo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9000; align-items: center; justify-content: center; }
         .modal-criar-content { background: #1a1a1a; width: 450px; padding: 20px; border: 2px solid var(--gold); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; max-height:90vh; overflow-y:auto; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -66,6 +66,8 @@
     </style>
 </head>
 <body>
+    
+    <div id="loading-screen">Carregando Mesa...</div>
 
     <div id="preview-carta-mestre"></div>
 
@@ -85,6 +87,7 @@
     </div>
 
     <div id="container-principal">
+        
         <div id="area-jogadores">
             <h3 style="color:#aaa; text-align:center; margin:5px 0; border-bottom:1px solid #333;">JOGADORES</h3>
             <div id="painel">
@@ -117,10 +120,7 @@
         <div class="modal-criar-content">
             <h2 style="color:var(--gold); text-align:center; margin-top:0;">Invocar Inimigo</h2>
             <div class="form-grid">
-                <div class="form-group form-full">
-                    <label>Nome</label>
-                    <input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz">
-                </div>
+                <div class="form-group form-full"><label>Nome</label><input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz"></div>
                 <div class="form-group form-full">
                     <label>Imagem (Upload ou Link)</label>
                     <div style="display:flex; gap:5px;">
@@ -147,12 +147,12 @@
 
     <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
         <div class="dados-content">
-            <div class="dados-header">Rolagem</div>
+            <div class="dados-header">Rolagem de Dados</div>
             <div class="dualidade-box">
-                <span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span>
-                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button>
+                <span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span>
+                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button>
             </div>
-            <hr style="border-top:1px solid #444; width:100%;">
+            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
             <div class="grid-dados">
                 <div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div>
                 <div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div>
@@ -161,14 +161,14 @@
                 <div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div>
                 <div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div>
             </div>
-            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button>
+            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
         </div>
     </div>
 
     <div id="overlay-rolagem">
         <div id="quem-rolou-label"></div>
         <div id="container-dados-rolando"></div>
-        <button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar</button>
+        <button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button>
     </div>
 
     <div id="modal-escudo">
@@ -196,7 +196,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get, onChildChanged, push, query, limitToLast, onChildAdded, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
@@ -212,8 +212,11 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
+        
+        // Garante persistência
+        setPersistence(auth, browserSessionPersistence).catch(console.error);
 
-        // EXPORTS
+        // Exportações globais
         window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
         window.onValue = onValue; window.push = push; window.update = update;
         window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
@@ -260,7 +263,6 @@
                     card.className = 'card-jogador';
                     const safeName = nome.replace(/'/g, "\\'");
 
-                    // HTML MÃO
                     let htmlMao = "";
                     if(p.mao && p.mao.length > 0) {
                         p.mao.forEach(c => {
@@ -272,7 +274,6 @@
                         });
                     } else { htmlMao = "<span style='font-size:0.7rem; color:#666'>Vazia</span>"; }
 
-                    // HTML MESA (EXPANSÍVEL)
                     let htmlMesa = "";
                     if(p.slots) {
                         ['Ancestralidade', 'Comunidade', 'Fundamental', 'Especializacao', 'Maestria'].forEach(k => {
@@ -325,161 +326,12 @@
                 render();
             });
             
-            // Listener Carta Usada
             onChildChanged(jogadoresRef, (snap) => {
                 const n = snap.key; const d = snap.val();
                 if(d.cartaUsada) animarCartaEspecifica(n, d.cartaUsada);
             });
         }
 
-        // --- CONTEÚDO DO ESCUDO (COMPLETO) ---
-        const topicos = {
-            testes: {
-                titulo: "🎲 TESTES & DUALIDADE",
-                conteudo: `
-                    <h2>🎲 TESTES & DUALIDADE</h2>
-                    <h3>Rolagem Padrão</h3>
-                    <ul>
-                        <li><strong>Role:</strong> <code>2d12 (Esperança + Medo) + Atributo</code></li>
-                        <li><strong>Crítico:</strong> Dados iguais (ex: 1,1 ou 12,12). Sucesso automático + Ganha Esperança.</li>
-                    </ul>
-                    <h3>Resultados</h3>
-                    <ul>
-                        <li><strong>Sucesso com Esperança:</strong> Total ≥ Dificuldade & Esperança > Medo. <br><em>Ação funciona e ganha 1 Esperança.</em></li>
-                        <li><strong>Sucesso com Medo:</strong> Total ≥ Dificuldade & Medo > Esperança. <br><em>Ação funciona, mas GM ganha 1 Medo.</em></li>
-                        <li><strong>Falha com Esperança:</strong> Total < Dificuldade & Esperança > Medo. <br><em>Falha, mas ganha 1 Esperança.</em></li>
-                        <li><strong>Falha com Medo:</strong> Total < Dificuldade & Medo > Esperança. <br><em>Falha e GM ganha 1 Medo ou faz movimento.</em></li>
-                    </ul>
-                `
-            },
-            recursos: {
-                titulo: "💎 RECURSOS DO JOGADOR",
-                conteudo: `
-                    <h2>💎 RECURSOS DO JOGADOR</h2>
-                    <h3>Esperança</h3>
-                    <ul>
-                        <li><strong>Ganho:</strong> Sucesso com Esperança ou Crítico.</li>
-                        <li><strong>Gastos:</strong>
-                            <ul>
-                                <li><strong>Experiência:</strong> Use uma carta de Experiência.</li>
-                                <li><strong>Ajudar:</strong> Gaste 1 para dar +1d6 (ou +2d6 com vínculo) a um aliado.</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <h3>Estresse (Fadiga)</h3>
-                    <ul>
-                        <li>Usada para ativar habilidades ou absorver consequências menores.</li>
-                        <li>Se encher, o próximo dano vai direto para PV.</li>
-                    </ul>
-                `
-            },
-            combate: {
-                titulo: "⚔️ COMBATE",
-                conteudo: `
-                    <h2>⚔️ COMBATE</h2>
-                    <h3>Ataque</h3>
-                    <ul>
-                        <li><strong>Teste:</strong> Atributo da arma vs <strong>Dificuldade (Evasão do Inimigo)</strong>.</li>
-                        <li><strong>Vantagem:</strong> +1d6 no total.</li>
-                        <li><strong>Desvantagem:</strong> -1d6 no total.</li>
-                    </ul>
-                    <h3>Dano</h3>
-                    <ul>
-                        <li><strong>Dados:</strong> Base da arma (ex: d8) + Cartas de Dano.</li>
-                        <li><strong>Crítico:</strong> Adicione o valor máximo dos dados ao total rolado.</li>
-                    </ul>
-                `
-            },
-            dano: {
-                titulo: "🩸 DANO & LIMIARES",
-                conteudo: `
-                    <h2>🩸 DANO & LIMIARES</h2>
-                    <p>O dano sofrido é comparado aos limiares do personagem:</p>
-                    <ul>
-                        <li><strong>Abaixo do Menor:</strong> 0 PV (Arranhão).</li>
-                        <li><strong>Menor:</strong> 1 PV (Machucado).</li>
-                        <li><strong>Maior:</strong> 2 PV (Ferida Grave).</li>
-                        <li><strong>Severo:</strong> 3 PV (Mortal).</li>
-                    </ul>
-                `
-            },
-            armadura: {
-                titulo: "🛡️ ARMADURA (PA)",
-                conteudo: `
-                    <h2>🛡️ ARMADURA (PA)</h2>
-                    <ul>
-                        <li>Gaste <strong>slots de Armadura</strong> para reduzir o dano recebido.</li>
-                        <li>A quantidade reduzida depende do tipo de armadura equipada.</li>
-                        <li>Slots gastos só recuperam em Descanso ou Reparo.</li>
-                    </ul>
-                `
-            },
-            morte: {
-                titulo: "☠️ MORTE",
-                conteudo: `
-                    <h2>☠️ MORTE</h2>
-                    <p>Se marcar o último PV, o personagem cai. Escolha:</p>
-                    <ul>
-                        <li><strong>Arriscar Tudo:</strong> Role Fear die. Se falhar, morre. Se passar, levanta com 1 PV.</li>
-                        <li><strong>Evitar a Morte:</strong> Fica inconsciente e ganha uma Cicatriz.</li>
-                        <li><strong>Sacrifício Glorioso:</strong> Morre realizando um feito impossível (Sucesso Crítico Automático).</li>
-                    </ul>
-                `
-            },
-            distancia: {
-                titulo: "📏 DISTÂNCIA & MOVIMENTO",
-                conteudo: `
-                    <h2>📏 DISTÂNCIA & MOVIMENTO</h2>
-                    <ul>
-                        <li><strong>Melee:</strong> Adjacente.</li>
-                        <li><strong>Very Close:</strong> Ao alcance do braço/arma longa.</li>
-                        <li><strong>Close:</strong> Alguns passos (mesma sala).</li>
-                        <li><strong>Far:</strong> Precisa gritar/correr (outro lado do campo).</li>
-                        <li><strong>Very Far:</strong> Apenas armas de longo alcance/magia.</li>
-                    </ul>
-                `
-            },
-            descanso: {
-                titulo: "💤 DESCANSO",
-                conteudo: `
-                    <h2>💤 DESCANSO</h2>
-                    <h3>Curto</h3>
-                    <ul>
-                        <li>Pode reparar Armadura.</li>
-                        <li>Pode curar PV ou limpar Estresse (role 1d4 + atributo).</li>
-                    </ul>
-                    <h3>Longo</h3>
-                    <ul>
-                        <li>Recupera <strong>todos</strong> PV, Estresse e Armadura.</li>
-                        <li>Reseta habilidades diárias.</li>
-                        <li>GM ganha Medo baseado na segurança do local.</li>
-                    </ul>
-                `
-            },
-            mestre: {
-                titulo: "💀 O MESTRE (GM)",
-                conteudo: `
-                    <h2>💀 O MESTRE (GM)</h2>
-                    <h3>Quando o GM Age?</h3>
-                    <ul>
-                        <li>Quando os jogadores falham.</li>
-                        <li>Quando rolam <strong>Com Medo</strong>.</li>
-                        <li>Quando olham para você esperando algo acontecer (Oportunidade de Ouro).</li>
-                    </ul>
-                    <h3>Medo</h3>
-                    <ul>
-                        <li>Use Medo para ativar habilidades especiais de monstros ou complicar a cena.</li>
-                        <li>Cada Medo gasto = 1 Token de Ação do GM.</li>
-                    </ul>
-                `
-            }
-        };
-
-        // Funções Auxiliares
-        window.exibirTopico = function(id) { if(topicos[id]) { document.getElementById('escudo-conteudo').innerHTML = topicos[id].conteudo; document.getElementById('modal-escudo').classList.add('ativo'); } }
-        window.fecharEscudo = function() { document.getElementById('modal-escudo').classList.remove('ativo'); }
-        document.getElementById('modal-escudo').addEventListener('click', function(e) { if(e.target===this) fecharEscudo(); });
-        
         window.realizarDescanso = function(tipo) {
             get(ref(db, 'mesa_rpg/jogadores')).then(snap => {
                 if(snap.exists()) {
@@ -510,16 +362,31 @@
                     setTimeout(() => { el.style.transform = ""; el.style.boxShadow = ""; }, 1000);
                 }
             });
-            // Preview Grande
             const pre = document.getElementById('preview-carta-mestre');
             pre.style.backgroundImage = `url('${carta.caminho}')`;
             pre.style.display = 'block';
             setTimeout(() => pre.style.display='none', 3000);
         }
 
-        // Init
+        const topicos = {
+            testes: { titulo: "🎲 TESTES & DUALIDADE", conteudo: "<h2>🎲 TESTES & DUALIDADE</h2><h3>Rolagem Padrão</h3><ul><li><strong>Role:</strong> <code>2d12 (Esperança + Medo) + Atributo</code></li><li><strong>Crítico:</strong> Dados iguais (ex: 1,1 ou 12,12). Sucesso automático + Ganha Esperança.</li></ul><h3>Resultados</h3><ul><li><strong>Sucesso com Esperança:</strong> Total ≥ Dificuldade & Esperança > Medo. <br><em>Ação funciona e ganha 1 Esperança.</em></li><li><strong>Sucesso com Medo:</strong> Total ≥ Dificuldade & Medo > Esperança. <br><em>Ação funciona, mas GM ganha 1 Medo.</em></li><li><strong>Falha com Esperança:</strong> Total < Dificuldade & Esperança > Medo. <br><em>Falha, mas ganha 1 Esperança.</em></li><li><strong>Falha com Medo:</strong> Total < Dificuldade & Medo > Esperança. <br><em>Falha e GM ganha 1 Medo ou faz movimento.</em></li></ul>" },
+            recursos: { titulo: "💎 RECURSOS DO JOGADOR", conteudo: "<h2>💎 RECURSOS DO JOGADOR</h2><h3>Esperança</h3><ul><li><strong>Ganho:</strong> Sucesso com Esperança ou Crítico.</li><li><strong>Gastos:</strong><ul><li><strong>Experiência:</strong> Use uma carta de Experiência.</li><li><strong>Ajudar:</strong> Gaste 1 para dar +1d6 (ou +2d6 com vínculo) a um aliado.</li></ul></li></ul><h3>Estresse (Fadiga)</h3><ul><li>Usada para ativar habilidades ou absorver consequências menores.</li><li>Se encher, o próximo dano vai direto para PV.</li></ul>" },
+            combate: { titulo: "⚔️ COMBATE", conteudo: "<h2>⚔️ COMBATE</h2><h3>Ataque</h3><ul><li><strong>Teste:</strong> Atributo da arma vs <strong>Dificuldade (Evasão do Inimigo)</strong>.</li><li><strong>Vantagem:</strong> +1d6 no total.</li><li><strong>Desvantagem:</strong> -1d6 no total.</li></ul><h3>Dano</h3><ul><li><strong>Dados:</strong> Base da arma (ex: d8) + Cartas de Dano.</li><li><strong>Crítico:</strong> Adicione o valor máximo dos dados ao total rolado.</li></ul>" },
+            dano: { titulo: "🩸 DANO & LIMIARES", conteudo: "<h2>🩸 DANO & LIMIARES</h2><p>O dano sofrido é comparado aos limiares do personagem:</p><ul><li><strong>Abaixo do Menor:</strong> 0 PV (Arranhão).</li><li><strong>Menor:</strong> 1 PV (Machucado).</li><li><strong>Maior:</strong> 2 PV (Ferida Grave).</li><li><strong>Severo:</strong> 3 PV (Mortal).</li></ul>" },
+            armadura: { titulo: "🛡️ ARMADURA (PA)", conteudo: "<h2>🛡️ ARMADURA (PA)</h2><ul><li>Gaste <strong>slots de Armadura</strong> para reduzir o dano recebido.</li><li>A quantidade reduzida depende do tipo de armadura equipada.</li><li>Slots gastos só recuperam em Descanso ou Reparo.</li></ul>" },
+            morte: { titulo: "☠️ MORTE", conteudo: "<h2>☠️ MORTE</h2><p>Se marcar o último PV, o personagem cai. Escolha:</p><ul><li><strong>Arriscar Tudo:</strong> Role Fear die. Se falhar, morre. Se passar, levanta com 1 PV.</li><li><strong>Evitar a Morte:</strong> Fica inconsciente e ganha uma Cicatriz.</li><li><strong>Sacrifício Glorioso:</strong> Morre realizando um feito impossível (Sucesso Crítico Automático).</li></ul>" },
+            distancia: { titulo: "📏 DISTÂNCIA & MOVIMENTO", conteudo: "<h2>📏 DISTÂNCIA & MOVIMENTO</h2><ul><li><strong>Melee:</strong> Adjacente.</li><li><strong>Very Close:</strong> Ao alcance do braço/arma longa.</li><li><strong>Close:</strong> Alguns passos (mesma sala).</li><li><strong>Far:</strong> Precisa gritar/correr (outro lado do campo).</li><li><strong>Very Far:</strong> Apenas armas de longo alcance/magia.</li></ul>" },
+            descanso: { titulo: "💤 DESCANSO", conteudo: "<h2>💤 DESCANSO</h2><h3>Curto</h3><ul><li>Pode reparar Armadura.</li><li>Pode curar PV ou limpar Estresse (role 1d4 + atributo).</li></ul><h3>Longo</h3><ul><li>Recupera <strong>todos</strong> PV, Estresse e Armadura.</li><li>Reseta habilidades diárias.</li><li>GM ganha Medo baseado na segurança do local.</li></ul>" },
+            mestre: { titulo: "💀 O MESTRE (GM)", conteudo: "<h2>💀 O MESTRE (GM)</h2><h3>Quando o GM Age?</h3><ul><li>Quando os jogadores falham.</li><li>Quando rolam <strong>Com Medo</strong>.</li><li>Quando olham para você esperando algo acontecer (Oportunidade de Ouro).</li></ul><h3>Medo</h3><ul><li>Use Medo para ativar habilidades especiais de monstros ou complicar a cena.</li><li>Cada Medo gasto = 1 Token de Ação do GM.</li></ul>" }
+        };
+
+        window.exibirTopico = function(id) { if(topicos[id]) { document.getElementById('escudo-conteudo').innerHTML = topicos[id].conteudo; document.getElementById('modal-escudo').classList.add('ativo'); } }
+        window.fecharEscudo = function() { document.getElementById('modal-escudo').classList.remove('ativo'); }
+        document.getElementById('modal-escudo').addEventListener('click', function(e) { if(e.target===this) fecharEscudo(); });
+
         onAuthStateChanged(auth, u => {
-            if(!u || u.email !== EMAIL_MESTRE) window.location.href="index.html";
+            document.getElementById('loading-screen').style.display = 'none';
+            if(!u || u.email !== EMAIL_MESTRE) { window.location.href="index.html"; return; }
             iniciarPainelJogadores();
             setTimeout(() => {
                 if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
@@ -527,7 +394,6 @@
             }, 1000);
         });
 
-        // Hover Preview (Mantém o mouseover para ver cartas paradas)
         document.addEventListener('mouseover', (e) => {
             const c = e.target.closest('.mini-carta');
             if (c && !c.classList.contains('status-vazio')) {
@@ -541,241 +407,6 @@
 
     </script>
     
-    <script src="ficha.js?v=4.0"></script>
-    <script src="dados.js?v=2.0"></script>
-    <script src="inimigos.js?v=3.5"></script>
-</body>
-</html>
-
-### 2. `index.html` (Visão do Jogador - Atualizado)
-Garante que o `#area-inimigos` esteja centralizado corretamente com o CSS novo.
-
-```html
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grimório Daggerheart</title>
-    <link rel="icon" type="image/png" href="img/favicon.png" />
-    <link rel="stylesheet" href="style.css?v=10.1">
-    <link rel="stylesheet" href="profissao.css?v=1.0">
-    <link rel="stylesheet" href="selecao-classe.css?v=3.0">
-    <link rel="stylesheet" href="ficha.css?v=4.0">
-    <link rel="stylesheet" href="dados.css?v=2.0">
-    <link rel="stylesheet" href="inimigos.css?v=3.5">
-    <link href="[https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap](https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap)" rel="stylesheet">
-</head>
-<body>
-
-    <div id="login-screen">
-        <div class="login-box" id="fase-selecao">
-            <h1>Grimório Daggerheart</h1>
-            <p>Escolha seu destino</p>
-            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
-                <button type="button" class="btn-main" onclick="irParaLoginJogador()">Sou Jogador</button>
-                <button type="button" class="btn-main" onclick="irParaLoginNarrador()" style="background: #8b0000; color: #fff; border: 2px solid #ff4444;">Sou Narrador</button>
-            </div>
-            <button type="button" onclick="forcarLogout()" style="background: transparent; color: #666; border: none; font-size: 0.8rem; margin-top: 20px;">Forçar Logout (Reset)</button>
-        </div>
-
-        <div class="login-box" id="fase-login-jogador" style="display: none;">
-            <h1>Acesso do Jogador</h1>
-            <p>Insira suas credenciais</p>
-            <div class="input-group">
-                <input type="email" id="player-email" placeholder="Email" class="input-login">
-            </div>
-            <div class="input-group">
-                <input type="password" id="player-pass" placeholder="Senha" class="input-login">
-                <span class="toggle-password" onclick="togglePassword('player-pass')">👁️</span>
-            </div>
-            <div id="error-msg-player"></div>
-            <button type="button" class="btn-entrar" onclick="fazerLoginJogador()">Entrar</button>
-            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
-        </div>
-
-        <div class="login-box" id="fase-login-narrador" style="display: none;">
-            <h1>Acesso do Narrador</h1>
-            <p>Área Restrita</p>
-            <div class="input-group">
-                <input type="email" id="narrador-email" placeholder="Email" class="input-login">
-            </div>
-            <div class="input-group">
-                <input type="password" id="narrador-pass" placeholder="Senha" class="input-login">
-                <span class="toggle-password" onclick="togglePassword('narrador-pass')">👁️</span>
-            </div>
-            <div id="error-msg-narrador"></div>
-            <button type="button" class="btn-entrar" onclick="fazerLoginNarrador()">Acessar Admin</button>
-            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
-        </div>
-
-        <div class="login-box" id="fase-personagem" style="display: none;">
-            <h1>Seus Personagens</h1>
-            <p>Escolha um personagem existente ou crie um novo</p>
-            <div id="lista-personagens" style="margin: 20px 0; min-height: 100px;">
-                <p style="color: #888; text-align: center;">Carregando...</p>
-            </div>
-            <div style="border-top: 1px solid #444; padding-top: 15px; margin-top: 15px;">
-                <p style="margin-bottom: 10px; color: #aaa; font-size: 0.9rem;">Criar novo personagem:</p>
-                <input type="text" id="nome-personagem" placeholder="Nome do Novo Personagem" class="input-login" autocomplete="off" style="margin-bottom: 10px;">
-                <button type="button" class="btn-entrar" onclick="criarNovoPersonagem()">Criar e Jogar</button>
-            </div>
-            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()" style="margin-top: 15px;">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="classe-selection-modal" class="modal-selecao">
-        <div class="classe-carousel-wrapper">
-            <div class="selecao-header"><h2>Escolha sua Classe</h2><p>Clique na imagem para ler</p></div>
-            <div class="carousel-main">
-                <button class="nav-btn prev" onclick="window.mudarClasse(-1)">❮</button>
-                <div class="card-display" onclick="window.verDetalhesClasse()">
-                    <div class="card-glow"></div><img id="img-classe-perfil" class="img-perfil-animada"><div class="card-label"><span id="nome-classe-selecao">CLASSE</span></div>
-                </div>
-                <button class="nav-btn next" onclick="window.mudarClasse(1)">❯</button>
-            </div>
-            <div class="selecao-footer"><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasse()">✓ Confirmar <span id="btn-nome-classe">Classe</span></button></div>
-        </div>
-    </div>
-
-    <div id="modal-detalhes-classe" class="modal" style="z-index: 7000;">
-        <div class="modal-detalhes-content">
-            <button class="close-detalhes" onclick="window.fecharDetalhesClasse()">X</button>
-            <div class="pdf-wrapper"><button class="nav-pdf-btn prev" onclick="window.mudarPaginaPDF(-1)">❮</button><div class="pdf-container"><img id="img-classe-pdf"></div><button class="nav-pdf-btn next" onclick="window.mudarPaginaPDF(1)">❯</button></div>
-            <div class="detalhes-footer"><div class="page-counter" id="pdf-page-counter">1/2</div><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasseDeDentro()">Escolher</button></div>
-        </div>
-    </div>
-
-    <div id="sheet-modal" class="modal">
-        <div class="sheet-content">
-            <div class="sheet-toolbar">
-                <button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button>
-                <button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button>
-                <button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button>
-            </div>
-            <button class="btn-close-sheet" onclick="fecharFicha()">X</button>
-            <div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div>
-            <div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div>
-        </div>
-    </div>
-
-    <div id="hover-preview" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:525px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
-    <div id="hover-preview-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:525px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
-    <div id="hover-preview-slot" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:600px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
-
-    <div id="app-container" style="display: none; opacity: 0;">
-        <div id="aura-profissao"></div>
-        <div id="particulas-profissao"></div>
-
-        <div id="audio-control">
-            <button onclick="toggleMusic()" id="btn-music">🔊</button>
-            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()">
-        </div>
-        <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio>
-        <audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
-        <div id="system-message"></div>
-
-        <div id="area-inimigos"></div>
-
-        <div id="area-jogo">
-            <section id="mesa-area">
-                <div class="grupo-fixo">
-                    <div class="titulo-grupo">Identidade</div>
-                    <div class="slots-row">
-                        <div class="slot-fixo" onclick="abrirGrimorio('Ancestralidade', 'Ancestralidade')" id="slot-Ancestralidade"><span class="label-slot">Ancestralidade</span><button class="btn-limpar" onclick="limparSlot('Ancestralidade', event)">×</button></div>
-                        <div class="slot-fixo" onclick="abrirGrimorio('Comunidade', 'Comunidade')" id="slot-Comunidade"><span class="label-slot">Comunidade</span><button class="btn-limpar" onclick="limparSlot('Comunidade', event)">×</button></div>
-                    </div>
-                </div>
-                <div class="grupo-fixo destaque-classe">
-                    <div class="titulo-grupo">Evolução de Subclasse</div>
-                    <div class="slots-row">
-                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Fundamental')" id="slot-Fundamental"><span class="label-slot">Fundamental</span><span class="nivel-req">Nível 1</span><button class="btn-limpar" onclick="limparSlot('Fundamental', event)">×</button></div>
-                        <div class="seta-evolucao">➜</div>
-                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Especializacao')" id="slot-Especializacao"><span class="label-slot">Especialização</span><span class="nivel-req">Avanço</span><button class="btn-limpar" onclick="limparSlot('Especializacao', event)">×</button></div>
-                        <div class="seta-evolucao">➜</div>
-                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Maestria')" id="slot-Maestria"><span class="label-slot">Maestria</span><span class="nivel-req">Avanço</span><button class="btn-limpar" onclick="limparSlot('Maestria', event)">×</button></div>
-                    </div>
-                </div>
-            </section>
-            <div id="deck-container-wrapper">
-                <div id="deck-area" onclick="abrirGrimorio('Geral')"><div class="pote-glow"></div><img src="img/pote_deck.png" class="pote-img"><div class="label-deck">Grimório</div></div>
-            </div>
-            <section id="reserva-area">
-                <div class="titulo-reserva">Reserva (Inativas)</div>
-                <div id="cartas-reserva"></div>
-            </section>
-        </div> 
-        <footer id="mao-area">
-            <div id="cartas-mao"></div>
-            <button onclick="window.abrirFichaPersonagem()" style="position: absolute; bottom: 20px; right: 20px; z-index: 2000; pointer-events: auto; padding: 10px 20px; background: var(--gold); border: 2px solid #fff; border-radius: 5px; cursor: pointer; font-weight: bold; font-family: 'MedievalSharp', cursive; font-size: 1rem; box-shadow: 0 0 10px rgba(0,0,0,0.8); color: #000;">📝 Ficha</button>
-        </footer>
-        
-        <div id="btn-abrir-dados" onclick="abrirSeletorDados()" title="Rolar Dados">🎲</div>
-        
-        <div id="carta-tabuleiro-animada" class="carta-tabuleiro-animada"></div>
-    </div>
-
-    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
-        <div class="dados-content">
-            <div class="dados-header">Rolagem de Dados</div>
-            <div class="dualidade-box"><span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button></div>
-            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
-            <div class="grid-dados">
-                <div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div>
-            </div>
-            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
-        </div>
-    </div>
-
-    <div id="overlay-rolagem">
-        <div id="quem-rolou-label"></div>
-        <div id="container-dados-rolando"></div>
-        <button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button>
-    </div>
-
-    <div id="grimorio-modal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Escolha uma Carta</h2><button class="close-btn" onclick="fecharGrimorio()">X</button></div><div id="grid-cartas"></div></div></div>
-    <div id="decisao-modal" class="modal" style="z-index: 6000;">
-        <div class="modal-decisao-content">
-            <h3>Gerenciar Carta</h3><div class="carta-preview-decisao" id="preview-decisao"></div>
-            <div class="grupo-tokens"><span>Tokens:</span><button class="btn-token" onclick="alterarToken(-1)">-</button><span id="label-token-qtd">0</span><button class="btn-token" onclick="alterarToken(1)">+</button></div>
-            <div class="grupo-tokens"><button class="btn-estado" onclick="definirEstado('curto')">Descanso Curto</button><button class="btn-estado" onclick="definirEstado('longo')">Descanso Longo</button></div>
-            <div class="botoes-decisao"><button class="btn-usar-carta" id="btn-usar-carta" onclick="usarCarta()" style="display: none;">⚡ Usar Carta</button><button class="btn-confirmar" onclick="confirmarEdicao()">OK / Voltar</button><button class="btn-reserva" id="btn-para-reserva" onclick="moverParaReserva()" style="display: none;">Para Reserva</button><button class="btn-deck" id="btn-devolver-mao" onclick="devolverParaMao()" style="display: none;">Devolver à Mão</button><button class="btn-deck" id="btn-devolver-deck" onclick="devolverAoDeck()" style="display: none;">Devolver ao Deck</button></div>
-        </div>
-    </div>
-    <div id="reserva-modal" class="modal" style="z-index: 6000;"><div class="modal-reserva-content"><div class="modal-header"><h2>Cartas em Reserva</h2><button class="close-btn" onclick="window.fecharReserva()">X</button></div><div id="grid-reserva"></div></div></div>
-    <div id="troca-modal" class="modal" style="z-index: 6100;"><div class="modal-decisao-content"><h3>Sua mão está cheia!</h3><p style="color: #aaa; margin: 10px 0;">Escolha qual carta descartar:</p><div id="grid-troca" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0; max-height: 300px; overflow-y: auto;"></div><div class="botoes-decisao"><button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button></div></div></div>
-
-    <script type="module" src="script.js?v=10.2"></script>
-    <script type="module">
-        // EXPOSIÇÃO GLOBAL CRÍTICA
-        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update } from "[https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js](https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js)";
-        
-        window.db = getDatabase(); 
-        window.ref = ref;
-        window.push = push;
-        window.query = query;
-        window.limitToLast = limitToLast;
-        window.onChildAdded = onChildAdded;
-        window.set = set;
-        window.get = get;
-        window.remove = remove;
-        window.onValue = onValue;
-        window.update = update;
-
-        // Inicia escuta
-        setTimeout(() => {
-            if(window.escutarRolagens) window.escutarRolagens();
-            if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-        }, 3000);
-    </script>
-    
-    <script src="profissao.js?v=1.0"></script>
-    <script src="selecao-classe.js?v=3.0"></script>
     <script src="ficha.js?v=4.0"></script>
     <script src="dados.js?v=2.0"></script>
     <script src="inimigos.js?v=3.5"></script>

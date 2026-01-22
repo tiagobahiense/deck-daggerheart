@@ -19,7 +19,7 @@ window.salvarNovoInimigo = function() {
     const img = document.getElementById('new-enemy-img').value || '';
     const pvMax = parseInt(document.getElementById('new-enemy-pv').value) || 1;
     const pfMax = parseInt(document.getElementById('new-enemy-pf').value) || 0;
-    const dif = parseInt(document.getElementById('new-enemy-dif').value) || 10;
+    const dif = parseInt(document.getElementById('new-enemy-dif').value) || 12;
     
     const limiares = document.getElementById('new-enemy-limiares').value || "-";
     const ataque = document.getElementById('new-enemy-atk').value || "+0";
@@ -102,7 +102,7 @@ window.iniciarSistemaInimigos = function() {
         return;
     }
     
-    // Detecta se é mestre ou jogador
+    // Detecta se é mestre ou jogador para ajustar classes
     const isGM = (window.nomeJogador === "Mestre") || (document.getElementById('controles-mestre') !== null);
     document.body.classList.add(isGM ? 'modo-mestre' : 'modo-jogador');
 
@@ -141,6 +141,8 @@ function criarTokenInimigo(id, data, isGM) {
 
     const pvPct = (data.pv_atual / data.pv_max) * 100;
     const pfPct = data.pf_max > 0 ? (data.pf_atual / data.pf_max) * 100 : 0;
+    
+    // Imagem fallback
     const imgSrc = data.imagem && data.imagem.length > 10 ? data.imagem : 'img/monsters/default.png';
 
     // Controles GM
@@ -165,7 +167,7 @@ function criarTokenInimigo(id, data, isGM) {
             </div>
         `;
     } else {
-        // Jogador: Apenas botão info
+        // Jogador só vê o botão info
         gmHTML = `
             <div class="token-gm-controls" style="display:flex; background:transparent; border:none; margin-top:0;">
                 <div class="btn-gm-mini btn-gm-info" onclick="toggleDetalhesToken('${id}')" style="background:rgba(0,0,0,0.5)">i</div>
@@ -209,7 +211,7 @@ function criarTokenInimigo(id, data, isGM) {
     return el;
 }
 
-// Upload
+// Upload de imagem
 window.processarUploadImagem = function() {
     const fileInput = document.getElementById('upload-file-input');
     const urlInput = document.getElementById('new-enemy-img');
@@ -217,8 +219,9 @@ window.processarUploadImagem = function() {
 
     if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
-        if (file.size > 800000) { 
-            alert("Imagem muito grande! Use arquivos menores que 800KB."); return; 
+        if (file.size > 800000) { // Limite de 800KB para não travar
+            alert("Imagem muito grande! Use arquivos menores que 800KB.");
+            return;
         }
         const reader = new FileReader();
         reader.onload = function(e) {
