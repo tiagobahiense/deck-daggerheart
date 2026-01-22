@@ -7,19 +7,19 @@
     <link rel="stylesheet" href="style.css?v=8.0">
     <link rel="stylesheet" href="ficha.css?v=4.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
-    <link rel="stylesheet" href="inimigos.css?v=3.0"> <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="inimigos.css?v=3.0">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; }
         
-        /* LAYOUT DE 3 COLUNAS */
         #container-principal { 
             display: flex; 
             flex: 1; 
-            overflow: hidden; /* Importante para o scroll interno */
+            overflow: hidden; 
             gap: 0; 
         }
         
-        /* 1. JOGADORES (ESQUERDA - 25%) */
+        /* 1. JOGADORES (ESQUERDA) */
         #area-jogadores { 
             width: 350px;
             flex-shrink: 0;
@@ -38,14 +38,27 @@
             gap: 10px; 
         }
 
-        /* Card Jogador Compacto para Caber na Coluna */
         .card-jogador { 
             width: 100%; 
             background: rgba(20,20,20,0.9); 
             border: 1px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            box-sizing: border-box;
         }
 
-        /* 2. ÁREA DE BATALHA (CENTRO - FLEXÍVEL) */
+        .card-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        .nome { color: var(--gold); font-weight: bold; font-size: 0.9rem; }
+        .tag-classe { font-size: 0.7rem; color: #aaa; background: #222; padding: 2px 5px; border-radius: 4px; }
+        
+        .btn-abrir-ficha-mestre { background: var(--gold); color: #000; border: none; border-radius: 15px; padding: 2px 8px; font-weight: bold; cursor: pointer; font-size: 0.8rem; }
+        .grid-mini { display: flex; flex-wrap: wrap; gap: 3px; min-height: 30px; }
+        
+        /* 2. ÁREA DE BATALHA (CENTRO) */
         #area-batalha-gm {
             flex-grow: 1;
             background: url('img/background_epico.png') no-repeat center center;
@@ -65,7 +78,6 @@
             border-bottom: 1px solid var(--gold);
         }
 
-        /* Container dos Inimigos dentro da Batalha */
         #area-inimigos {
             flex-grow: 1;
             overflow-y: auto;
@@ -77,7 +89,7 @@
             gap: 15px;
         }
 
-        /* 3. ESCUDO E DADOS (DIREITA - 25%) */
+        /* 3. ESCUDO E DADOS (DIREITA) */
         #sidebar-escudo { 
             width: 280px; 
             flex-shrink: 0;
@@ -89,19 +101,33 @@
             flex-direction: column; 
             gap: 10px; 
         }
-
-        /* Ajustes Gerais */
-        #controles-mestre { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: #111; border-bottom: 2px solid var(--gold); }
-        .btn-rest { font-size: 0.8rem; padding: 5px 10px; }
         
+        .escudo-topicos { display: flex; flex-direction: column; gap: 5px; }
+        .btn-topico { background: #222; border: 1px solid #444; color: #ddd; padding: 8px; text-align: left; cursor: pointer; border-radius: 5px; transition: 0.2s; }
+        .btn-topico:hover { border-color: var(--gold); background: #333; }
+
+        /* Controles Gerais */
+        #controles-mestre { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: #111; border-bottom: 2px solid var(--gold); z-index: 100; }
+        .btn-rest { font-size: 0.8rem; padding: 5px 10px; cursor: pointer; color: white; border-radius: 4px; }
+        .curto { background: #f57c00; border: none; }
+        .longo { background: #d32f2f; border: none; }
+        .btn-nav-mestre { background: #333; color: #fff; padding: 5px 10px; border: 1px solid #555; cursor: pointer; border-radius: 4px; }
+
         /* Modal Criar */
-        .modal-criar-content { background: #1a1a1a; width: 450px; }
+        #modal-criar-inimigo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9000; align-items: center; justify-content: center; }
+        .modal-criar-content { background: #1a1a1a; width: 450px; padding: 20px; border: 2px solid var(--gold); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .form-full { grid-column: 1 / -1; }
         input, textarea { width: 100%; box-sizing: border-box; background: #222; border: 1px solid #444; color: white; padding: 5px; }
         
         /* Preview Card */
-        #preview-carta-mestre { display: none; position: fixed; top: 50%; left: 50%; width: 300px; height: 450px; z-index: 9999; transform: translate(-50%, -50%); border: 2px solid var(--gold); background: #000; pointer-events: none; }
+        #preview-carta-mestre { display: none; position: fixed; top: 50%; left: 50%; width: 300px; height: 450px; z-index: 9999; transform: translate(-50%, -50%); border: 2px solid var(--gold); background: #000; pointer-events: none; background-size: contain; background-repeat: no-repeat; background-position: center; }
+        
+        /* Modal Escudo */
+        #modal-escudo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; }
+        #modal-escudo.ativo { display: flex; }
+        .modal-escudo-content { background: #1a1a1a; padding: 30px; border: 2px solid var(--gold); max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; color: #ddd; }
+        #btn-fechar-escudo { position: absolute; top: 10px; right: 10px; background: var(--gold); border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -109,16 +135,17 @@
     <div id="preview-carta-mestre"></div>
 
     <div id="controles-mestre">
-        <div>
+        <div style="display:flex; gap:10px;">
             <button class="btn-rest curto" onclick="realizarDescanso('curto')">🌙 Curto</button>
             <button class="btn-rest longo" onclick="realizarDescanso('longo')">🌕 Longo</button>
         </div>
-        <div>
+        <div style="display:flex; gap:10px;">
              <button class="btn-rest" style="background: #444; border: 1px solid var(--gold);" onclick="abrirCriadorInimigo()">👾 Novo Inimigo</button>
              <button class="btn-rest" style="background: #330000; border: 1px solid red;" onclick="removerTodosInimigos()">🗑️ Limpar</button>
         </div>
-        <div>
-            <div id="btn-abrir-dados" onclick="abrirSeletorDados()" style="position:static; width:40px; height:30px; font-size:1.2rem;">🎲</div>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <div id="btn-abrir-dados" onclick="abrirSeletorDados()" style="position:static; width:40px; height:30px; font-size:1.2rem; display:flex; align-items:center; justify-content:center; cursor:pointer;">🎲</div>
+            <button class="btn-nav-mestre" onclick="window.location.href='admin.html'">⚙️ Admin</button>
         </div>
     </div>
 
@@ -146,8 +173,6 @@
                 <button class="btn-topico" onclick="exibirTopico('morte')">☠️ Morte</button>
                 <button class="btn-topico" onclick="exibirTopico('mestre')">💀 Moves do GM</button>
             </div>
-            <hr style="border-color:#333;">
-            <button class="btn-nav-mestre" onclick="window.location.href='admin.html'">⚙️ Admin</button>
         </div>
     </div>
 
@@ -158,14 +183,14 @@
             <div class="form-grid">
                 <div class="form-group form-full">
                     <label>Nome</label>
-                    <input type="text" id="new-enemy-name" placeholder="Ex: Esqueleto">
+                    <input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz">
                 </div>
                 
                 <div class="form-group form-full">
                     <label>Imagem (Upload ou Link)</label>
                     <div style="display:flex; gap:5px;">
                         <input type="text" id="new-enemy-img" placeholder="URL ou Upload..." style="flex:1">
-                        <label for="upload-file-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer;">📁</label>
+                        <label for="upload-file-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer; color:white;">📁</label>
                         <input type="file" id="upload-file-input" accept="image/*" style="display:none" onchange="processarUploadImagem()">
                         <img id="preview-img-mini" style="width:30px; height:30px; display:none; border:1px solid #555;">
                     </div>
@@ -238,6 +263,7 @@
             <div class="sheet-toolbar">
                 <button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button>
                 <button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button>
+                <button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button>
             </div>
             <button class="btn-close-sheet" onclick="fecharFicha()">X</button>
             <div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div>
@@ -273,6 +299,12 @@
         
         window.nomeJogador = "Mestre"; // Identidade
 
+        const EMAIL_MESTRE = "tgbahiense@gmail.com";
+
+        window.fazerLogout = function() {
+            signOut(auth).then(() => window.location.href = "index.html");
+        }
+
         window.abrirFichaDoJogador = function(nome) {
             window.nomeJogador = nome;
             get(ref(db, `mesa_rpg/jogadores/${nome}/slots/Fundamental`)).then(snap => {
@@ -283,30 +315,209 @@
             });
         };
 
-        // Funções de painel e escudo... (Resumidas para caber no bloco, use a lógica do anterior)
-        // ... (A lógica de renderizar cards, descanso e escudo é idêntica ao anterior)
-        
-        // Inicializadores
+        window.realizarDescanso = function(tipo) {
+            const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
+            get(jogadoresRef).then(snapshot => {
+                if(snapshot.exists()) {
+                    const dados = snapshot.val();
+                    Object.keys(dados).forEach(nome => {
+                        const player = dados[nome];
+                        const resetCartas = (lista, path) => {
+                            if(!lista) return;
+                            let listChanged = false;
+                            lista.forEach(carta => {
+                                if(!carta) return;
+                                if(tipo === 'curto' && carta.estado === 'curto') { carta.estado = 'ativo'; listChanged = true; }
+                                if(tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) { carta.estado = 'ativo'; listChanged = true; }
+                            });
+                            if(listChanged) set(ref(db, `mesa_rpg/jogadores/${nome}/${path}`), lista);
+                        };
+                        resetCartas(player.mao, 'mao');
+                        resetCartas(player.reserva, 'reserva');
+                        if(player.slots) {
+                            let slotsChanged = false;
+                            Object.keys(player.slots).forEach(k => {
+                                const c = player.slots[k];
+                                if(c && ((tipo==='curto' && c.estado==='curto') || (tipo==='longo' && (c.estado==='curto'||c.estado==='longo')))) {
+                                    c.estado = 'ativo'; slotsChanged = true;
+                                }
+                            });
+                            if(slotsChanged) set(ref(db, `mesa_rpg/jogadores/${nome}/slots`), player.slots);
+                        }
+                    });
+                }
+            });
+        }
+
+        // Inicialização
         onAuthStateChanged(auth, user => {
-            if(!user || user.email !== "tgbahiense@gmail.com") window.location.href="index.html";
-            // Inicia sistemas
+            if(!user || user.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) {
+                window.location.href="index.html";
+                return;
+            }
             iniciarPainelJogadores();
             setTimeout(() => {
-                if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos(); // Inimigos na coluna do meio
-                if(window.escutarRolagens) window.escutarRolagens();
+                if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos(); // Inicia inimigos
+                if(window.escutarRolagens) window.escutarRolagens(); // Inicia dados
             }, 1000);
         });
 
-        // Função de renderizar jogadores (Colocar dentro de iniciarPainelJogadores)
+        // --- RENDERIZAR JOGADORES NA COLUNA ESQUERDA ---
         function iniciarPainelJogadores() {
-             // ... Copie a lógica de renderização do painel da resposta anterior ...
-             // Mas garanta que o appendChild seja no 'painel' que agora está na coluna da esquerda
-             const painel = document.getElementById('painel');
-             // (Resto do código de onValue dos jogadores/accounts)
+            const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
+            const accountsRef = ref(db, 'mesa_rpg/accounts');
+            let nomesDePersonagens = new Set();
+            let cacheJogadores = {};
+
+            function render() {
+                const painel = document.getElementById('painel');
+                if(!painel) return;
+                
+                painel.innerHTML = "";
+                const nomes = Array.from(nomesDePersonagens);
+                
+                if (nomes.length === 0) {
+                    painel.innerHTML = "<p style='color:#666;text-align:center'>Nenhum personagem.</p>";
+                    return;
+                }
+
+                nomes.sort().forEach(nome => {
+                    const p = cacheJogadores[nome] || {};
+                    const card = document.createElement('div');
+                    card.className = 'card-jogador';
+
+                    // HTML da Mão
+                    let htmlMao = "";
+                    if(p.mao && p.mao.length > 0) {
+                        p.mao.forEach(c => {
+                            let classes = "mini-carta";
+                            let tooltip = c.nome;
+                            if(c.estado === 'curto') { classes += " indisponivel"; tooltip += " (Recarga: Curto)"; }
+                            if(c.estado === 'longo') { classes += " indisponivel"; tooltip += " (Recarga: Longo)"; }
+                            
+                            // Adicionar ícone de descanso se necessário
+                            let icon = "";
+                            if(c.estado === 'curto') icon = `<div class="icone-descanso-mini"><img src="img/meia-lua.png"></div>`;
+                            if(c.estado === 'longo') icon = `<div class="icone-descanso-mini"><img src="img/lua-cheia.png"></div>`;
+                            
+                            htmlMao += `<div class="${classes}" style="background-image: url('${c.caminho}')" title="${tooltip}">${icon}</div>`;
+                        });
+                    } else { htmlMao = "<span style='font-size:0.7rem; color:#666'>Vazia</span>"; }
+
+                    // HTML dos Slots (Classe)
+                    let classeNome = "";
+                    if(p.slots && p.slots.Fundamental && p.slots.Fundamental.profissao) {
+                        classeNome = p.slots.Fundamental.profissao;
+                    }
+
+                    const safeName = nome.replace(/'/g, "\\'");
+                    
+                    card.innerHTML = `
+                        <div class="card-header">
+                            <div>
+                                <div class="nome">${nome}</div>
+                                ${classeNome ? `<div class="tag-classe">${classeNome}</div>` : ''}
+                            </div>
+                            <button class="btn-abrir-ficha-mestre" onclick="window.abrirFichaDoJogador('${safeName}')">📝</button>
+                        </div>
+                        <div class="grid-mini" data-jogador="${nome}">${htmlMao}</div>
+                    `;
+                    painel.appendChild(card);
+                });
+            }
+
+            // Listeners
+            onValue(accountsRef, (snap) => {
+                const setNomes = new Set();
+                if (snap.exists()) {
+                    snap.forEach(childSnap => {
+                        const data = childSnap.val();
+                        if (!data || data.status === 'inactive') return;
+                        if (data.characters) Object.keys(data.characters).forEach(n => setNomes.add(String(n).toUpperCase()));
+                    });
+                }
+                nomesDePersonagens = setNomes;
+                render();
+            });
+
+            onValue(jogadoresRef, (snapshot) => {
+                cacheJogadores = snapshot.exists() ? (snapshot.val() || {}) : {};
+                // Garante que quem tem ficha também apareça
+                Object.keys(cacheJogadores).forEach(n => nomesDePersonagens.add(String(n).toUpperCase()));
+                render();
+            });
+            
+            // Listener de Carta Usada
+            onChildChanged(jogadoresRef, (snapshot) => {
+                const nome = snapshot.key;
+                const dados = snapshot.val();
+                if(dados.cartaUsada) animarCartaEspecifica(nome, dados.cartaUsada);
+            });
         }
 
-        // Tópicos do Escudo (Coloque aqui o objeto 'topicos' completo da resposta anterior)
-        // ...
+        // Função de Animação de Carta
+        function animarCartaEspecifica(nomeJogador, cartaUsada) {
+            const gridMao = document.querySelector(`[data-jogador="${nomeJogador}"]`);
+            if(!gridMao) return;
+            const cartas = gridMao.querySelectorAll('.mini-carta');
+            
+            cartas.forEach(carta => {
+                const bg = carta.style.backgroundImage;
+                if(bg && (bg.includes(cartaUsada.caminho) || bg.includes(cartaUsada.caminho.split('/').pop()))) {
+                    // Efeito visual de uso
+                    carta.style.transform = "scale(1.3)";
+                    carta.style.borderColor = "var(--gold)";
+                    carta.style.boxShadow = "0 0 15px var(--gold)";
+                    carta.style.zIndex = "100";
+                    setTimeout(() => {
+                        carta.style.transform = "";
+                        carta.style.borderColor = "";
+                        carta.style.boxShadow = "";
+                        carta.style.zIndex = "";
+                    }, 1000);
+                }
+            });
+            
+            // Também mostra no preview grande
+            const preview = document.getElementById('preview-carta-mestre');
+            if(preview) {
+                preview.style.backgroundImage = `url('${cartaUsada.caminho}')`;
+                preview.style.display = 'block';
+                setTimeout(() => preview.style.display = 'none', 3000);
+            }
+        }
+
+        // Tópicos do Escudo (Mantido para referência)
+        const topicos = {
+            testes: { titulo: "🎲 TESTES & DUALIDADE", conteudo: "<h2>🎲 TESTES & DUALIDADE</h2><p>2d12 (Esperança+Medo). Se Esperança > Medo = Ganha Esperança. Se Medo > Esperança = GM ganha Medo.</p>" },
+            recursos: { titulo: "💎 RECURSOS", conteudo: "<h2>💎 RECURSOS</h2><p>Esperança: +1d6, Tag Team. Fadiga: Custo de habilidade, Dano.</p>" },
+            combate: { titulo: "⚔️ COMBATE", conteudo: "<h2>⚔️ COMBATE</h2><p>Role contra Evasão. Dano vs Limiares. Distâncias: C-a-C, Muito Próximo, Próximo, Distante.</p>" },
+            dano: { titulo: "🩸 DANO", conteudo: "<h2>🩸 DANO</h2><p>Menor (1PV), Maior (2PV), Grave (3PV). Armor reduz.</p>" },
+            armadura: { titulo: "🛡️ ARMADURA", conteudo: "<h2>🛡️ ARMADURA</h2><p>Queime slots de armadura para reduzir dano recebido.</p>" },
+            morte: { titulo: "☠️ MORTE", conteudo: "<h2>☠️ MORTE</h2><p>Opções ao cair: Arriscar, Evitar (Cicatriz), Sacrifício.</p>" },
+            distancia: { titulo: "📏 DISTÂNCIA", conteudo: "<h2>📏 DISTÂNCIA</h2><p>Melee, Very Close, Close, Far, Very Far.</p>" },
+            descanso: { titulo: "💤 DESCANSO", conteudo: "<h2>💤 DESCANSO</h2><p>Curto: Repara Armor, cura um pouco. Longo: Full reset.</p>" },
+            mestre: { titulo: "💀 GM", conteudo: "<h2>💀 O MESTRE</h2><p>Faça movimentos quando eles falham ou rolam com Medo.</p>" }
+        };
+
+        window.exibirTopico = function(id) { if(topicos[id]) { document.getElementById('escudo-conteudo').innerHTML = topicos[id].conteudo; document.getElementById('modal-escudo').classList.add('ativo'); } }
+        window.fecharEscudo = function() { document.getElementById('modal-escudo').classList.remove('ativo'); }
+        document.getElementById('modal-escudo').addEventListener('click', function(e) { if(e.target===this) fecharEscudo(); });
+
+        // Hover para ver cartas
+        document.addEventListener('mouseover', (e) => {
+            const carta = e.target.closest('.mini-carta');
+            if (carta && !carta.classList.contains('status-vazio')) {
+                const preview = document.getElementById('preview-carta-mestre');
+                if (preview && carta.style.backgroundImage) {
+                    preview.style.backgroundImage = carta.style.backgroundImage;
+                    preview.innerHTML = carta.innerHTML;
+                    preview.style.display = 'flex';
+                }
+            }
+        });
+        document.addEventListener('mouseout', (e) => { if (e.target.closest('.mini-carta')) document.getElementById('preview-carta-mestre').style.display = 'none'; });
+
     </script>
     
     <script src="ficha.js?v=4.0"></script>
