@@ -25,117 +25,87 @@
 }
 
 #sheet-bg { width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
-#sheet-inputs-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 
-/* --- BARRA DE FERRAMENTAS --- */
-.sheet-toolbar {
-    position: absolute; top: 20px; left: -60px; width: 50px; background: #222;
-    border: 2px solid var(--gold); border-radius: 8px; padding: 10px 0;
-    display: flex; flex-direction: column; gap: 15px; z-index: 10000;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.5); align-items: center;
-}
-.tool-btn {
-    background: #444; color: #fff; border: 1px solid #666; width: 40px; height: 40px;
-    border-radius: 5px; cursor: pointer; font-size: 1.2rem; display: flex;
-    align-items: center; justify-content: center; transition: all 0.2s;
-}
-.tool-btn:hover { background: #666; border-color: #fff; }
-.tool-btn.active {
-    background: var(--gold); color: #000; border-color: #fff;
-    box-shadow: 0 0 10px var(--gold); transform: scale(1.1);
-}
-.btn-close-sheet {
-    position: absolute; top: -15px; right: -55px; width: 45px; height: 45px;
-    background: #8b0000; color: #fff; border: 2px solid #fff; border-radius: 50%;
-    font-weight: bold; font-size: 1.2rem; cursor: pointer; z-index: 10000;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: 0 0 10px rgba(0,0,0,0.8); transition: transform 0.2s;
-}
-.btn-close-sheet:hover { background: #ff0000; transform: scale(1.1) rotate(90deg); }
-
-/* --- ELEMENTOS DO JOGADOR --- */
-
-.element-wrapper {
-    position: absolute; pointer-events: auto; z-index: 100;
-    /* Removido padding que atrapalhava o resize */
+#sheet-inputs-layer {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10;
 }
 
-/* Estado Selecionado */
-.element-wrapper.selected { border: 1px dashed var(--gold); z-index: 1000; }
+/* Elementos de Input (Texto) */
+.input-wrapper {
+    position: absolute; cursor: grab; padding: 2px;
+    border: 1px dashed transparent; transition: border 0.2s;
+}
+.input-wrapper:hover { border-color: rgba(0,0,0,0.3); }
+.input-wrapper.is-editing { border-color: var(--gold); background: rgba(255,255,255,0.8); z-index: 100; cursor: text; }
 
-/* === NOVO: CAMADA DE ARRASTE (Fica por cima do texto) === */
+.sheet-input {
+    background: transparent; border: none; font-family: 'Courier New', Courier, monospace;
+    font-weight: bold; font-size: 1.5vh; color: #000; width: 100%; height: 100%;
+    resize: none; overflow: hidden; white-space: pre-wrap; outline: none; pointer-events: none; 
+}
+.is-editing .sheet-input { pointer-events: auto; }
+
 .drag-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    cursor: grab; /* Mãozinha para arrastar */
-    z-index: 5; /* Fica acima do textarea (z-index auto) */
-    background: transparent;
+    z-index: 5; cursor: grab;
 }
-.element-wrapper:hover .drag-overlay {
-    background: rgba(0, 0, 255, 0.05); /* Leve destaque ao passar o mouse */
-    border: 1px dotted rgba(0, 0, 255, 0.3);
-}
+.is-editing .drag-overlay { display: none; }
 
-/* === MODO EDIÇÃO (Quando dá duplo clique) === */
-.element-wrapper.is-editing .drag-overlay {
-    display: none; /* Esconde a camada de arraste para permitir digitação */
-}
-.element-wrapper.is-editing .user-textarea {
-    cursor: text; /* Volta cursor de texto */
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid var(--gold);
-    z-index: 10; /* Traz o textarea para frente */
-}
-
-
-/* CAIXA DE TEXTO (Oculta sob o overlay normalmente) */
-.user-textarea {
-    width: 100%; height: 100%;
-    background: rgba(255, 255, 255, 0.1);
-    border: none; /* Borda controlada pelo overlay agora */
-    color: #000; /* Cor padrão, sobrescrita pelo JS */
-    font-family: 'Courier New', monospace; font-weight: 900; line-height: 1.1;
-    padding: 4px; resize: none; overflow: hidden; outline: none;
-    pointer-events: none; /* Ignora mouse por padrão (overlay captura) */
-}
-/* No modo edição, reativa os eventos */
-.element-wrapper.is-editing .user-textarea { pointer-events: auto; }
-
-
-/* ALÇA DE REDIMENSIONAMENTO */
-.resize-handle {
-    position: absolute; bottom: 0; right: 0; width: 15px; height: 15px;
-    background: linear-gradient(135deg, transparent 50%, var(--gold) 50%);
-    cursor: nwse-resize; z-index: 20; /* Acima do overlay */
-    display: none;
-}
-.element-wrapper:hover .resize-handle, .element-wrapper.selected .resize-handle { display: block; }
-
-/* MARCADOR (Intacto) */
+/* Marcadores (Bolinhas) */
 .user-marker {
-    width: 100%; height: 100%; background-color: #000; border-radius: 50%;
+    width: 1.8vh; height: 1.8vh; background: #000; border-radius: 50%;
     box-shadow: 0 0 2px #fff; pointer-events: none;
 }
+
+/* Botão de Deletar (X) */
 .delete-handle {
-    position: absolute; top: -10px; right: -10px; background: red; color: white;
-    border-radius: 50%; width: 18px; height: 18px; font-size: 12px; font-weight: bold;
-    cursor: pointer; display: none; align-items: center; justify-content: center;
-    z-index: 200; border: 1px solid white;
+    position: absolute; top: -10px; right: -10px;
+    width: 15px; height: 15px; background: red; color: white;
+    border-radius: 50%; font-size: 10px; display: none;
+    align-items: center; justify-content: center; cursor: pointer; z-index: 20;
 }
-.delete-handle::after { content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; }
-.element-wrapper:hover .delete-handle { display: flex; }
+.input-wrapper:hover .delete-handle { display: flex; }
 
-/* MENU CONTEXTO (Atualizado com Cores) */
-.element-context-menu {
-    position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
-    background: #222; border: 1px solid var(--gold); border-radius: 5px;
-    display: none; gap: 5px; padding: 5px; z-index: 2000;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.8); align-items: center;
+/* Barra de Ferramentas */
+.sheet-toolbar {
+    height: 50px; background: #333; display: flex; align-items: center; gap: 10px; padding: 0 15px;
+    border-bottom: 2px solid var(--gold);
 }
-.element-wrapper.selected .element-context-menu { display: flex; }
 
-.ctx-btn {
-    background: #444; color: #fff; border: 1px solid #666; border-radius: 4px;
-    width: 30px; height: 30px; cursor: pointer; font-size: 14px; font-weight: bold;
+.tool-btn {
+    width: 35px; height: 35px; background: #222; border: 1px solid #555;
+    color: #aaa; border-radius: 5px; cursor: pointer; font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center; transition: 0.2s;
+}
+.tool-btn:hover, .tool-btn.active { background: #444; color: var(--gold); border-color: var(--gold); }
+
+/* --- ESTILO NOVO PARA O BOTÃO GUIA --- */
+.sheet-toolbar .btn-guia {
+    width: auto !important; /* Remove largura fixa */
+    padding: 0 15px;       /* Mais espaço lateral */
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.9rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+    background: rgba(212, 175, 55, 0.1);
+    border: 1px solid var(--gold);
+}
+.sheet-toolbar .btn-guia:hover {
+    background: var(--gold);
+    color: #000;
+}
+
+.btn-close-sheet {
+    position: absolute; top: 10px; right: 10px; background: #8b0000; color: #fff;
+    border: 2px solid #ff4444; width: 30px; height: 30px; border-radius: 50%;
+    cursor: pointer; font-weight: bold; z-index: 200;
+}
+
+/* Botões de Contexto (Tamanho/Cor) */
+.ctx-menu { display: flex; gap: 5px; margin-left: 15px; border-left: 1px solid #555; padding-left: 10px; }
+.ctx-btn { 
+    width: 25px; height: 25px; background: #444; border: 1px solid #666; 
+    color: #fff; border-radius: 3px; cursor: pointer; font-size: 0.8rem; font-weight: bold;
     display: flex; align-items: center; justify-content: center;
 }
 .ctx-btn:hover { background: var(--gold); color: #000; }
@@ -160,74 +130,70 @@
 /* Footer */
 .sheet-footer {
     height: 50px; background: #222; display: flex; align-items: center; justify-content: center;
-    gap: 20px; border-top: 1px solid #444; color: #fff; flex-shrink: 0;
+    border-top: 2px solid var(--gold); color: var(--gold); font-family: 'MedievalSharp', cursive; font-size: 1.2rem;
+    gap: 20px;
 }
 .nav-simple-btn {
-    background: none; border: 1px solid #666; color: #ccc;
-    padding: 5px 15px; cursor: pointer; font-family: 'MedievalSharp', cursive; border-radius: 4px;
+    background: none; border: 1px solid var(--gold); color: var(--gold);
+    width: 30px; height: 30px; border-radius: 50%; cursor: pointer;
 }
-.nav-simple-btn:hover { border-color: var(--gold); color: var(--gold); }
+.nav-simple-btn:hover { background: var(--gold); color: #000; }
 
-@media (max-width: 1100px) {
-    .sheet-toolbar { top: -60px; left: 0; width: 100%; height: 50px; flex-direction: row; justify-content: center; }
-    .btn-close-sheet { top: -60px; right: 0; }
-    .sheet-content { margin-top: 60px; }
-
-    /* =========================================================
-   ESTILOS DO TUTORIAL (GUIA)
+/* =========================================================
+   ESTILOS DO TUTORIAL (OVERLAY)
    ========================================================= */
 
 #tutorial-overlay {
-    display: none; /* Oculto por padrão */
-    position: absolute;
+    display: none; /* Começa oculto */
+    position: absolute; /* Relativo ao container da ficha */
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente */
-    z-index: 5000; /* Acima dos inputs da ficha */
+    background: rgba(0, 0, 0, 0.85); /* Mais escuro para focar */
+    z-index: 99999; /* Garante que fique acima de tudo dentro da ficha */
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(2px);
+    backdrop-filter: blur(3px);
 }
 
 .tutorial-box {
     width: 90%;
     max-width: 500px;
-    height: 80%;
+    height: 85%;
     background: #1a1a1a;
     border: 2px solid var(--gold);
     border-radius: 8px;
-    box-shadow: 0 0 30px rgba(0,0,0,0.9);
+    box-shadow: 0 0 30px rgba(0,0,0,1);
     position: relative;
     display: flex;
     flex-direction: column;
     color: #ddd;
-    font-family: sans-serif; /* Fonte mais legível para leitura longa */
+    font-family: sans-serif;
 }
 
 .tutorial-scroll {
     padding: 20px;
     overflow-y: auto;
     flex: 1;
-    line-height: 1.5;
+    line-height: 1.6;
 }
 
 .tutorial-scroll h3 {
     color: #fff9c4;
     border-bottom: 1px solid #444;
-    margin-top: 20px;
+    margin-top: 25px;
     padding-bottom: 5px;
     font-family: 'MedievalSharp', cursive;
 }
 
 .tutorial-scroll ul {
     padding-left: 20px;
-    color: #bbb;
+    color: #ccc;
 }
 
 .tutorial-scroll li {
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .close-tutorial-btn {
@@ -237,17 +203,17 @@
     background: none;
     border: none;
     color: #fff;
-    font-size: 1.5rem;
+    font-size: 2rem;
     cursor: pointer;
     z-index: 10;
+    line-height: 1;
 }
 .close-tutorial-btn:hover {
     color: var(--gold);
 }
 
-/* Scrollbar personalizada para o tutorial */
+/* Scrollbar personalizada */
 .tutorial-scroll::-webkit-scrollbar { width: 8px; }
 .tutorial-scroll::-webkit-scrollbar-track { background: #222; }
 .tutorial-scroll::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
 .tutorial-scroll::-webkit-scrollbar-thumb:hover { background: var(--gold); }
-}

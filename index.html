@@ -72,16 +72,22 @@
 
     <div id="classe-selection-modal" class="modal-selecao"><div class="classe-carousel-wrapper"><div class="selecao-header"><h2>Escolha sua Classe</h2><p>Clique na imagem para ler</p></div><div class="carousel-main"><button class="nav-btn prev" onclick="window.mudarClasse(-1)">❮</button><div class="card-display" onclick="window.verDetalhesClasse()"><div class="card-glow"></div><img id="img-classe-perfil" class="img-perfil-animada"><div class="card-label"><span id="nome-classe-selecao">CLASSE</span></div></div><button class="nav-btn next" onclick="window.mudarClasse(1)">❯</button></div><div class="selecao-footer"><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasse()">✓ Confirmar <span id="btn-nome-classe">Classe</span></button></div></div></div>
     <div id="modal-detalhes-classe" class="modal" style="z-index: 7000;"><div class="modal-detalhes-content"><button class="close-detalhes" onclick="window.fecharDetalhesClasse()">X</button><div class="pdf-wrapper"><button class="nav-pdf-btn prev" onclick="window.mudarPaginaPDF(-1)">❮</button><div class="pdf-container"><img id="img-classe-pdf"></div><button class="nav-pdf-btn next" onclick="window.mudarPaginaPDF(1)">❯</button></div><div class="detalhes-footer"><div class="page-counter" id="pdf-page-counter">1/2</div><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasseDeDentro()">Escolher</button></div></div></div>
+    
     <div id="sheet-modal" class="modal">
         <div class="sheet-content">
             
             <div class="sheet-toolbar">
-                <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Texto">T</button>
+                <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Ferramenta de Texto">T</button>
                 <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador">●</button>
-                <button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;" title="Limpar Página">🗑️</button>
+                <button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;" title="Limpar Tudo">🗑️</button>
                 
-                <div class="color-separator" style="height: 1px; width: 30px; background: #555; margin: 5px 0;"></div>
-                <button class="tool-btn" onclick="toggleTutorial()" style="color: var(--gold);" title="Guia de Preenchimento">📖</button>
+                <div class="color-separator"></div>
+                <button class="tool-btn color-btn active-color" onclick="mudarCorTexto('black')" style="background:#000" title="Preto"></button>
+                <button class="tool-btn color-btn" onclick="mudarCorTexto('red')" style="background:#cc0000" title="Vermelho"></button>
+                <button class="tool-btn color-btn" onclick="mudarCorTexto('white')" style="background:#fff" title="Branco"></button>
+
+                <div class="color-separator" style="height: 1px; width: 20px; background: #555; margin: 5px 0;"></div>
+                <button class="tool-btn btn-guia" onclick="toggleTutorial()" title="Guia de Preenchimento">Guia</button>
             </div>
 
             <button class="btn-close-sheet" onclick="fecharFicha()">X</button>
