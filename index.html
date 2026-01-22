@@ -81,6 +81,11 @@
                 <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador">●</button>
                 <button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;" title="Limpar Tudo">🗑️</button>
                 
+                <div class="color-separator"></div>
+                <button class="tool-btn color-btn active-color" onclick="mudarCorTexto('black')" style="background:#000" title="Preto"></button>
+                <button class="tool-btn color-btn" onclick="mudarCorTexto('red')" style="background:#cc0000" title="Vermelho"></button>
+                <button class="tool-btn color-btn" onclick="mudarCorTexto('white')" style="background:#fff" title="Branco"></button>
+
                 <div class="color-separator" style="height: 1px; width: 20px; background: #555; margin: 5px 0;"></div>
                 <button class="tool-btn btn-guia" onclick="toggleTutorial()" title="Guia de Preenchimento">Guia</button>
             </div>
@@ -158,8 +163,13 @@
             <button onclick="toggleMusic()" id="btn-music">🔊</button>
             <input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()">
         </div>
+        
         <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio>
         <audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
+        
+        <audio id="sound-medo-add"><source src="audio/sound-recolhe-medo.mp3" type="audio/mpeg"></audio>
+        <audio id="sound-medo-use"><source src="audio/sound-usa-medo.mp3" type="audio/mpeg"></audio>
+
         <div id="system-message"></div>
         
         <div id="area-inimigos"></div>

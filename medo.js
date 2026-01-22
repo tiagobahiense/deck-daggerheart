@@ -32,40 +32,43 @@ window.usarMedo = function() {
     });
 };
 
-// Remove clicando (sem aviso global)
 window.removerMedoSilencioso = function() {
     window.get(window.ref(window.db, REF_MEDO)).then(snap => {
         const atual = (snap.exists() && snap.val().qtd) ? snap.val().qtd : 0;
         if (atual > 0) {
-            // Atualiza só a qtd, sem o objeto 'aviso'
             window.update(window.ref(window.db, REF_MEDO), { qtd: atual - 1 });
         }
     });
 };
 
-// --- RENDERIZAÇÃO E LISTENERS (TODOS) ---
+// --- OUVINTE REALTIME (TODOS) ---
 
 window.iniciarSistemaMedo = function() {
-    if (!window.db || !window.onValue) {
-        setTimeout(window.iniciarSistemaMedo, 500);
-        return;
-    }
-
-    const container = document.getElementById('medo-grid-slots');
-    const overlay = document.getElementById('medo-overlay-msg');
+    const elContainer = document.getElementById('medo-container'); // Só existe no Mestre
     
-    // Listener do Firebase
-    window.onValue(window.ref(window.db, REF_MEDO), (snap) => {
-        const dados = snap.val() || { qtd: 0 };
+    window.onValue(window.ref(window.db, REF_MEDO), (snapshot) => {
+        const dados = snapshot.val();
+        if (!dados) return;
+
         const qtd = dados.qtd || 0;
 
-        // 1. Atualiza o Grid (Visual das bolinhas)
-        if (container) {
-            container.innerHTML = '';
+        // 1. Atualiza visual do painel do Mestre (se existir)
+        if (elContainer) {
+            elContainer.innerHTML = `
+                <div class="medo-header">
+                    <span class="medo-titulo">MEDO: ${qtd}/${MAX_MEDO}</span>
+                    <div class="medo-botoes">
+                        <button class="btn-medo btn-add" onclick="window.adicionarMedo()">+ Adicionar</button>
+                        <button class="btn-medo btn-use" onclick="window.usarMedo()">⚡ Usar</button>
+                    </div>
+                </div>
+                <div id="medo-tokens-grid"></div>
+            `;
+            const container = document.getElementById('medo-tokens-grid');
+            // Preenche slots
             for (let i = 0; i < MAX_MEDO; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'medo-slot';
-                
                 if (i < qtd) {
                     const token = document.createElement('div');
                     token.className = 'medo-token';
@@ -83,7 +86,7 @@ window.iniciarSistemaMedo = function() {
             }
         }
 
-        // 2. Dispara a Mensagem Sombria (Se houver aviso recente < 3s)
+        // 2. Dispara a Mensagem Sombria E O SOM (Se houver aviso recente < 3s)
         if (dados.aviso && (Date.now() - dados.aviso.timestamp < 3000)) {
             mostrarMensagemMedo(dados.aviso.tipo);
         }
@@ -94,15 +97,31 @@ function mostrarMensagemMedo(tipo) {
     const overlay = document.getElementById('medo-overlay-msg');
     if (!overlay) return;
 
-    // Reseta animação
+    // Reseta animação visual
     overlay.className = '';
     void overlay.offsetWidth; // Força reflow
+
+    // --- LÓGICA DE ÁUDIO NOVA ---
+    const idAudio = (tipo === 'add') ? 'sound-medo-add' : 'sound-medo-use';
+    const audio = document.getElementById(idAudio);
+    
+    if (audio) {
+        audio.volume = 0.35; // Igual ao uso de carta
+        audio.currentTime = 0; // Reinicia se estiver tocando
+        audio.play().catch(e => console.log("Erro ao tocar som de medo:", e));
+    }
+    // ----------------------------
 
     if (tipo === 'add') {
         overlay.innerHTML = `<div class="msg-medo-texto">👁️ O Mestre recolheu <span style="color:#d0a0ff">MEDO</span>...</div>`;
     } else if (tipo === 'use') {
-        overlay.innerHTML = `<div class="msg-medo-texto msg-medo-gasto">🔥 O Mestre impôs <span style="color:#ffcccc">MEDO</span>!</div>`;
+        overlay.innerHTML = `<div class="msg-medo-texto msg-medo-uso">⚡ O Mestre usou um token de <span style="color:#bf00ff">MEDO</span>!</div>`;
     }
 
-    overlay.classList.add('anim-medo-aparecer');
+    overlay.classList.add('ativo');
+
+    // Remove a mensagem após 4s
+    setTimeout(() => {
+        overlay.classList.remove('ativo');
+    }, 4000);
 }
