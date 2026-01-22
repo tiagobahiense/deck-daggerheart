@@ -56,7 +56,7 @@
         input, textarea { width: 100%; box-sizing: border-box; background: #222; border: 1px solid #444; color: white; padding: 5px; }
         
         /* Preview Card */
-        #preview-carta-mestre { display: none; position: fixed; top: 50%; left: 50%; width: 320px; height: 480px; z-index: 9999; transform: translate(-50%, -50%); border: 3px solid var(--gold); background: #000; pointer-events: none; background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 0 60px rgba(255,215,0,0.4); border-radius: 10px; }
+        #preview-carta-mestre { display: none; position: fixed; top: 50%; left: 50%; width: 300px; height: 450px; z-index: 9999; transform: translate(-50%, -50%); border: 3px solid var(--gold); background: #000; pointer-events: none; background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 0 60px rgba(255,215,0,0.4); border-radius: 10px; }
         #preview-carta-mestre .token-count { position: absolute; top: -10px; right: -10px; background: #000; border: 2px solid #fff; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; }
         
         /* Modal Escudo */
@@ -121,8 +121,13 @@
     <div id="modal-criar-inimigo">
         <div class="modal-criar-content">
             <h2 style="color:var(--gold); text-align:center; margin-top:0;">Invocar Inimigo</h2>
+            
             <div class="form-grid">
-                <div class="form-group form-full"><label>Nome</label><input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz"></div>
+                <div class="form-group form-full">
+                    <label>Nome</label>
+                    <input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz">
+                </div>
+                
                 <div class="form-group form-full">
                     <label>Imagem (Upload ou Link)</label>
                     <div style="display:flex; gap:5px;">
@@ -132,16 +137,42 @@
                         <img id="preview-img-mini" style="width:30px; height:30px; display:none; border:1px solid #555;">
                     </div>
                 </div>
-                <div class="form-group"><label>PV Max</label><input type="number" id="new-enemy-pv" value="4"></div>
-                <div class="form-group"><label>Estresse (PF)</label><input type="number" id="new-enemy-pf" value="0"></div>
-                <div class="form-group"><label>Dificuldade</label><input type="number" id="new-enemy-dif" value="12"></div>
-                <div class="form-group"><label>Ataque</label><input type="text" id="new-enemy-atk" value="+2"></div>
-                <div class="form-group"><label>Dano</label><input type="text" id="new-enemy-dmg" value="1d6+2"></div>
-                <div class="form-group"><label>Limiares</label><input type="text" id="new-enemy-limiares" placeholder="5/10"></div>
-                <div class="form-group form-full"><label>Habilidades</label><textarea id="new-enemy-desc" rows="3"></textarea></div>
+
+                <div class="form-group">
+                    <label>PV Max</label>
+                    <input type="number" id="new-enemy-pv" value="4">
+                </div>
+                <div class="form-group">
+                    <label>Estresse (PF)</label>
+                    <input type="number" id="new-enemy-pf" value="0">
+                </div>
+
+                <div class="form-group">
+                    <label>Dificuldade</label>
+                    <input type="number" id="new-enemy-dif" value="12">
+                </div>
+                <div class="form-group">
+                    <label>Ataque</label>
+                    <input type="text" id="new-enemy-atk" value="+2">
+                </div>
+                
+                <div class="form-group">
+                    <label>Dano</label>
+                    <input type="text" id="new-enemy-dmg" value="1d6+2">
+                </div>
+                <div class="form-group">
+                    <label>Limiares (Menor/Maior/Sev)</label>
+                    <input type="text" id="new-enemy-limiares" placeholder="5/10/15">
+                </div>
+
+                <div class="form-group form-full">
+                    <label>Habilidades</label>
+                    <textarea id="new-enemy-desc" rows="3" placeholder="Cole as habilidades aqui..."></textarea>
+                </div>
             </div>
+
             <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn-rest" style="background:#4CAF50; flex:1;" onclick="salvarNovoInimigo()">Invocar</button>
+                <button class="btn-rest btn-invocar" style="background:#4CAF50; flex:1;" onclick="salvarNovoInimigo()">Invocar</button>
                 <button class="btn-rest" style="background:#f44336; flex:1;" onclick="fecharCriadorInimigo()">Cancelar</button>
             </div>
         </div>
@@ -149,12 +180,12 @@
 
     <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
         <div class="dados-content">
-            <div class="dados-header">Rolagem de Dados</div>
+            <div class="dados-header">Rolagem</div>
             <div class="dualidade-box">
-                <span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span>
-                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button>
+                <span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span>
+                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button>
             </div>
-            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
+            <hr style="border-top:1px solid #444; width:100%;">
             <div class="grid-dados">
                 <div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div>
                 <div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div>
@@ -163,14 +194,14 @@
                 <div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div>
                 <div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div>
             </div>
-            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
+            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button>
         </div>
     </div>
 
     <div id="overlay-rolagem">
         <div id="quem-rolou-label"></div>
         <div id="container-dados-rolando"></div>
-        <button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button>
+        <button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar</button>
     </div>
 
     <div id="modal-escudo">
@@ -193,8 +224,6 @@
         </div>
     </div>
 
-    <div id="carta-usada-animada" class="carta-tabuleiro-animada"></div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get, onChildChanged, push, query, limitToLast, onChildAdded, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -215,12 +244,12 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // EXPORTS
+        // Exportações globais
         window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
         window.onValue = onValue; window.push = push; window.update = update;
         window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
         
-        window.nomeJogador = "Mestre";
+        window.nomeJogador = "Mestre"; 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
         window.fazerLogout = function() {
@@ -232,7 +261,7 @@
             get(ref(db, `mesa_rpg/jogadores/${nome}/slots/Fundamental`)).then(snap => {
                 if(snap.exists() && snap.val().profissao) {
                     localStorage.setItem('profissaoSelecionada', snap.val().profissao);
-                    if(window.abrirFichaPersonagem) window.abrirFichaPersonagem();
+                    if(typeof window.abrirFichaPersonagem === 'function') window.abrirFichaPersonagem();
                 } else alert("Jogador sem classe.");
             });
         };
@@ -242,7 +271,6 @@
             if(el) el.classList.toggle('ativo');
         };
 
-        // RENDERIZAÇÃO DOS JOGADORES COM DETALHES
         function iniciarPainelJogadores() {
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
             const accountsRef = ref(db, 'mesa_rpg/accounts');
@@ -260,7 +288,6 @@
                     const p = cacheJogadores[nome] || {};
                     const card = document.createElement('div');
                     card.className = 'card-jogador';
-                    const safeName = nome.replace(/'/g, "\\'");
 
                     let htmlMao = "";
                     if(p.mao && p.mao.length > 0) {
@@ -288,13 +315,13 @@
 
                     let classeNome = "";
                     if(p.slots && p.slots.Fundamental && p.slots.Fundamental.profissao) classeNome = p.slots.Fundamental.profissao;
+                    
+                    const safeName = nome.replace(/'/g, "\\'");
 
                     card.innerHTML = `
                         <div class="card-header">
                             <div><div class="nome">${nome}</div>${classeNome ? `<div class="tag-classe">${classeNome}</div>` : ''}</div>
-                            <div style="display:flex;align-items:center;">
-                                <button class="btn-abrir-ficha-mestre" onclick="window.abrirFichaDoJogador('${safeName}')">📝</button>
-                            </div>
+                            <button class="btn-abrir-ficha-mestre" onclick="window.abrirFichaDoJogador('${safeName}')">📝</button>
                         </div>
                         <div class="label">Mão</div><div class="grid-mini" data-jogador="${nome}">${htmlMao}</div>
                         <button class="btn-expandir-mesa" onclick="window.toggleMesaJogador('${safeName}')">📂 Ver Mesa</button>
@@ -393,14 +420,14 @@
             }, 1000);
         });
 
-        // HOVER PREVIEW ATUALIZADO (DETECTA CARTA DE MESA TAMBÉM)
+        // Hover Preview (Detecta cartas na mão, na mesa expandida e na reserva)
         document.addEventListener('mouseover', (e) => {
-            // Verifica se o alvo ou algum pai é .mini-carta (MÃO E MESA USAM ESSA CLASSE)
-            const c = e.target.closest('.mini-carta');
+            // Seletor abrangente para cartas
+            const c = e.target.closest('.mini-carta, .slot-ativo, .carta-reserva-visual');
             if (c && !c.classList.contains('status-vazio')) {
                 const p = document.getElementById('preview-carta-mestre');
                 
-                // Tenta pegar imagem do estilo inline (Mão) ou computado (Mesa pode ter classes)
+                // Tenta pegar imagem do estilo inline (Mão) ou computado (Mesa)
                 let bg = c.style.backgroundImage;
                 if (!bg || bg === 'none') {
                      bg = window.getComputedStyle(c).backgroundImage;
@@ -408,362 +435,30 @@
                 
                 if (bg && bg !== 'none') {
                     p.style.backgroundImage = bg;
-                    p.innerHTML = c.innerHTML; // Copia tokens se tiver
+                    // Limpa conteúdo anterior (como tokens da mão) para cartas da mesa
+                    p.innerHTML = c.classList.contains('mini-carta') ? c.innerHTML : '';
                     p.style.display = 'flex';
                 }
             }
         });
         
         document.addEventListener('mouseout', (e) => { 
-            if (e.target.closest('.mini-carta')) {
+            if (e.target.closest('.mini-carta, .slot-ativo, .carta-reserva-visual')) {
                 document.getElementById('preview-carta-mestre').style.display = 'none';
             }
         });
 
     </script>
     
-    <script src="ficha.js?v=4.0"></script>
-    <script src="dados.js?v=2.0"></script>
-    <script src="inimigos.js?v=4.0"></script>
-</body>
-</html>
-
-### 3. `index.html` (V5.0 - Sincronia de Inimigos)
-Adicionei a chamada de `iniciarSistemaInimigos()` **dentro** da função `selecionarPersonagem()`, para garantir que o listener de inimigos reinicie e sincronize assim que o jogador entra na mesa.
-
-```html
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grimório Daggerheart</title>
-    <link rel="icon" type="image/png" href="img/favicon.png" />
-    <link rel="stylesheet" href="style.css?v=10.1">
-    <link rel="stylesheet" href="profissao.css?v=1.0">
-    <link rel="stylesheet" href="selecao-classe.css?v=3.0">
-    <link rel="stylesheet" href="ficha.css?v=4.0">
-    <link rel="stylesheet" href="dados.css?v=2.0">
-    <link rel="stylesheet" href="inimigos.css?v=3.6">
-    <link href="[https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap](https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap)" rel="stylesheet">
-</head>
-<body>
-
-    <div id="login-screen">
-        <div class="login-box" id="fase-selecao">
-            <h1>Grimório Daggerheart</h1>
-            <p>Escolha seu destino</p>
-            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
-                <button type="button" class="btn-main" onclick="irParaLoginJogador()">Sou Jogador</button>
-                <button type="button" class="btn-main" onclick="irParaLoginNarrador()" style="background: #8b0000; color: #fff; border: 2px solid #ff4444;">Sou Narrador</button>
-            </div>
-            <button type="button" onclick="forcarLogout()" style="background: transparent; color: #666; border: none; font-size: 0.8rem; margin-top: 20px;">Forçar Logout (Reset)</button>
-        </div>
-
-        <div class="login-box" id="fase-login-jogador" style="display: none;">
-            <h1>Acesso do Jogador</h1>
-            <p>Insira suas credenciais</p>
-            <div class="input-group">
-                <input type="email" id="player-email" placeholder="Email" class="input-login">
-            </div>
-            <div class="input-group">
-                <input type="password" id="player-pass" placeholder="Senha" class="input-login">
-                <span class="toggle-password" onclick="togglePassword('player-pass')">👁️</span>
-            </div>
-            <div id="error-msg-player"></div>
-            <button type="button" class="btn-entrar" onclick="fazerLoginJogador()">Entrar</button>
-            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
-        </div>
-
-        <div class="login-box" id="fase-login-narrador" style="display: none;">
-            <h1>Acesso do Narrador</h1>
-            <p>Área Restrita</p>
-            <div class="input-group">
-                <input type="email" id="narrador-email" placeholder="Email" class="input-login">
-            </div>
-            <div class="input-group">
-                <input type="password" id="narrador-pass" placeholder="Senha" class="input-login">
-                <span class="toggle-password" onclick="togglePassword('narrador-pass')">👁️</span>
-            </div>
-            <div id="error-msg-narrador"></div>
-            <button type="button" class="btn-entrar" onclick="fazerLoginNarrador()">Acessar Admin</button>
-            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
-        </div>
-
-        <div class="login-box" id="fase-personagem" style="display: none;">
-            <h1>Seus Personagens</h1>
-            <p>Escolha um personagem existente ou crie um novo</p>
-            <div id="lista-personagens" style="margin: 20px 0; min-height: 100px;">
-                <p style="color: #888; text-align: center;">Carregando...</p>
-            </div>
-            <div style="border-top: 1px solid #444; padding-top: 15px; margin-top: 15px;">
-                <p style="margin-bottom: 10px; color: #aaa; font-size: 0.9rem;">Criar novo personagem:</p>
-                <input type="text" id="nome-personagem" placeholder="Nome do Novo Personagem" class="input-login" autocomplete="off" style="margin-bottom: 10px;">
-                <button type="button" class="btn-entrar" onclick="criarNovoPersonagem()">Criar e Jogar</button>
-            </div>
-            <button type="button" class="btn-voltar" onclick="voltarParaSelecao()" style="margin-top: 15px;">Cancelar</button>
-        </div>
-    </div>
-
-    <div id="classe-selection-modal" class="modal-selecao">
-        <div class="classe-carousel-wrapper">
-            <div class="selecao-header">
-                <h2>Escolha sua Classe</h2>
-                <p>Clique na imagem para ler as habilidades</p>
-            </div>
-            <div class="carousel-main">
-                <button class="nav-btn prev" onclick="window.mudarClasse(-1)">❮</button>
-                <div class="card-display" onclick="window.verDetalhesClasse()">
-                    <div class="card-glow"></div>
-                    <img id="img-classe-perfil" src="" alt="Imagem da Classe" class="img-perfil-animada">
-                    <div class="card-label">
-                        <span id="nome-classe-selecao">CLASSE</span>
-                    </div>
-                    <div class="click-hint">🔍 Clique para ver Habilidades</div>
-                </div>
-                <button class="nav-btn next" onclick="window.mudarClasse(1)">❯</button>
-            </div>
-            <div class="selecao-footer">
-                <div class="carousel-dots" id="carousel-dots"></div>
-                <button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasse()">
-                    ✓ Confirmar <span id="btn-nome-classe">Classe</span>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-detalhes-classe" class="modal" style="z-index: 7000;">
-        <div class="modal-detalhes-content">
-            <button class="close-detalhes" onclick="window.fecharDetalhesClasse()">X</button>
-            <div class="pdf-wrapper">
-                <button class="nav-pdf-btn prev" id="btn-pdf-prev" onclick="window.mudarPaginaPDF(-1)">❮</button>
-                <div class="pdf-container">
-                    <img id="img-classe-pdf" src="" alt="Detalhes da Classe">
-                </div>
-                <button class="nav-pdf-btn next" id="btn-pdf-next" onclick="window.mudarPaginaPDF(1)">❯</button>
-            </div>
-            <div class="detalhes-footer">
-                <div class="page-counter" id="pdf-page-counter">Página 1 de 2</div>
-                <button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasseDeDentro()">
-                    Escolher esta Classe
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <div id="sheet-modal" class="modal">
-        <div class="sheet-content">
-            <div class="sheet-toolbar">
-                <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Texto (T)">T</button>
-                <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador (Bolinha)">●</button>
-                <div style="height: 1px; background: #444; width: 100%; margin: 5px 0;"></div>
-                <button class="tool-btn" onclick="limparPaginaAtual()" title="Limpar Página" style="color: #ff6666;">🗑️</button>
-            </div>
-            <button class="btn-close-sheet" onclick="fecharFicha()" title="Fechar">X</button>
-            <div class="sheet-container" id="sheet-container">
-                <img id="sheet-bg" src="" alt="Ficha">
-                <div id="sheet-inputs-layer"></div>
-            </div>
-            <div class="sheet-footer">
-                <button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮ Anterior</button>
-                <span id="sheet-page-indicator">Página 1</span>
-                <button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">Próxima ❯</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="hover-preview" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 525px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(255, 215, 0, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
-    <div id="hover-preview-modal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; height: 525px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
-    <div id="hover-preview-slot" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 600px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
-
-    <div id="app-container" style="display: none; opacity: 0;">
-        <div id="aura-profissao"></div>
-        <div id="particulas-profissao"></div>
-
-        <div id="audio-control">
-            <button onclick="toggleMusic()" id="btn-music">🔊</button>
-            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()">
-        </div>
-        <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio>
-        <audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
-        <div id="system-message"></div>
-
-        <div id="area-inimigos"></div>
-
-        <div id="area-jogo">
-            <section id="mesa-area">
-                <div class="grupo-fixo">
-                    <div class="titulo-grupo">Identidade</div>
-                    <div class="slots-row">
-                        <div class="slot-fixo" onclick="abrirGrimorio('Ancestralidade', 'Ancestralidade')" id="slot-Ancestralidade">
-                            <span class="label-slot">Ancestralidade</span>
-                            <button class="btn-limpar" onclick="limparSlot('Ancestralidade', event)">×</button>
-                        </div>
-                        <div class="slot-fixo" onclick="abrirGrimorio('Comunidade', 'Comunidade')" id="slot-Comunidade">
-                            <span class="label-slot">Comunidade</span>
-                            <button class="btn-limpar" onclick="limparSlot('Comunidade', event)">×</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="grupo-fixo destaque-classe">
-                    <div class="titulo-grupo">Evolução de Subclasse</div>
-                    <div class="slots-row">
-                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Fundamental')" id="slot-Fundamental">
-                            <span class="label-slot">Fundamental</span> <span class="nivel-req">Nível 1</span>
-                            <button class="btn-limpar" onclick="limparSlot('Fundamental', event)">×</button>
-                        </div>
-                        <div class="seta-evolucao">➜</div>
-                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Especializacao')" id="slot-Especializacao">
-                            <span class="label-slot">Especialização</span> <span class="nivel-req">Avanço</span>
-                            <button class="btn-limpar" onclick="limparSlot('Especializacao', event)">×</button>
-                        </div>
-                        <div class="seta-evolucao">➜</div>
-                        <div class="slot-classe" onclick="abrirGrimorio('Classes', 'Maestria')" id="slot-Maestria">
-                            <span class="label-slot">Maestria</span> <span class="nivel-req">Avanço</span>
-                            <button class="btn-limpar" onclick="limparSlot('Maestria', event)">×</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            <div id="deck-container-wrapper">
-                <div id="deck-area" onclick="abrirGrimorio('Geral')">
-                    <div class="pote-glow"></div>
-                    <img src="img/pote_deck.png" alt="Deck" class="pote-img">
-                    <div class="label-deck">Grimório</div>
-                </div>
-            </div>
-            <section id="reserva-area">
-                <div class="titulo-reserva">Reserva (Inativas)</div>
-                <div id="cartas-reserva"></div>
-            </section>
-        </div> 
-        <footer id="mao-area">
-            <div id="cartas-mao"></div>
-            
-            <button onclick="window.abrirFichaPersonagem()" style="
-                position: absolute; bottom: 20px; right: 20px; z-index: 2000; pointer-events: auto;
-                padding: 10px 20px; background: var(--gold); border: 2px solid #fff; border-radius: 5px;
-                cursor: pointer; font-weight: bold; font-family: 'MedievalSharp', cursive;
-                font-size: 1rem; box-shadow: 0 0 10px rgba(0,0,0,0.8); color: #000;
-            ">
-                📝 Ficha
-            </button>
-        </footer>
-        
-        <div id="btn-abrir-dados" onclick="abrirSeletorDados()" title="Rolar Dados">🎲</div>
-        
-        <div id="carta-tabuleiro-animada" class="carta-tabuleiro-animada"></div>
-    </div>
-
-    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
-        <div class="dados-content">
-            <div class="dados-header">Rolagem de Dados</div>
-            <div class="dualidade-box">
-                <span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span>
-                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button>
-            </div>
-            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
-            <div class="grid-dados">
-                <div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div>
-            </div>
-            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
-        </div>
-    </div>
-
-    <div id="overlay-rolagem">
-        <div id="quem-rolou-label"></div>
-        <div id="container-dados-rolando"></div>
-        <button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button>
-    </div>
-
-    <div id="grimorio-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-titulo">Escolha uma Carta</h2>
-                <button class="close-btn" onclick="fecharGrimorio()">X</button>
-            </div>
-            <div id="grid-cartas"></div>
-        </div>
-    </div>
-
-    <div id="decisao-modal" class="modal" style="z-index: 6000;">
-        <div class="modal-decisao-content">
-            <h3>Gerenciar Carta</h3>
-            <div class="carta-preview-decisao" id="preview-decisao"></div>
-            <div class="grupo-tokens">
-                <span>Tokens:</span>
-                <button class="btn-token" onclick="alterarToken(-1)">-</button>
-                <span id="label-token-qtd">0</span>
-                <button class="btn-token" onclick="alterarToken(1)">+</button>
-            </div>
-            <div class="grupo-tokens">
-                <button class="btn-estado" onclick="definirEstado('curto')">Descanso Curto</button>
-                <button class="btn-estado" onclick="definirEstado('longo')">Descanso Longo</button>
-            </div>
-            <div class="botoes-decisao">
-                <button class="btn-usar-carta" id="btn-usar-carta" onclick="usarCarta()" style="display: none;">⚡ Usar Carta</button>
-                <button class="btn-confirmar" onclick="confirmarEdicao()">OK / Voltar</button>
-                <button class="btn-reserva" id="btn-para-reserva" onclick="moverParaReserva()" style="display: none;">Para Reserva</button>
-                <button class="btn-deck" id="btn-devolver-mao" onclick="devolverParaMao()" style="display: none;">Devolver à Mão</button>
-                <button class="btn-deck" id="btn-devolver-deck" onclick="devolverAoDeck()" style="display: none;">Devolver ao Deck</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="reserva-modal" class="modal" style="z-index: 6000;">
-        <div class="modal-reserva-content">
-            <div class="modal-header">
-                <h2 id="modal-titulo-reserva">Cartas em Reserva</h2>
-                <button class="close-btn" onclick="window.fecharReserva()">X</button>
-            </div>
-            <div id="grid-reserva"></div>
-        </div>
-    </div>
-
-    <div id="troca-modal" class="modal" style="z-index: 6100;">
-        <div class="modal-decisao-content">
-            <h3>Sua mão está cheia!</h3>
-            <p style="color: #aaa; margin: 10px 0;">Escolha qual carta descartar:</p>
-            <div id="grid-troca" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 15px 0; max-height: 300px; overflow-y: auto;"></div>
-            <div class="botoes-decisao">
-                <button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module" src="script.js?v=10.2"></script>
-    <script type="module">
-        // EXPOSIÇÃO GLOBAL CRÍTICA PARA DADOS.JS, FICHA.JS e INIMIGOS.JS
-        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update } from "[https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js](https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js)";
-        
-        window.db = getDatabase(); 
-        window.ref = ref;
-        window.push = push;
-        window.query = query;
-        window.limitToLast = limitToLast;
-        window.onChildAdded = onChildAdded;
-        window.set = set;
-        window.get = get;
-        window.remove = remove;
-        window.onValue = onValue;
-        window.update = update;
-
-        // Inicia escuta de rolagens e inimigos
-        // CORREÇÃO DE SYNC: Chama logo após carregar
-        setTimeout(() => {
-            if(window.escutarRolagens) window.escutarRolagens();
-        }, 3000);
+    <script>
+        function loadScript(src) {
+            const s = document.createElement('script');
+            s.src = src + '?t=' + Date.now();
+            document.body.appendChild(s);
+        }
+        loadScript("ficha.js");
+        loadScript("dados.js");
+        loadScript("inimigos.js");
     </script>
-    
-    <script src="profissao.js?v=1.0"></script>
-    <script src="selecao-classe.js?v=3.0"></script>
-    <script src="ficha.js?v=4.0"></script>
-    <script src="dados.js?v=2.0"></script>
-    <script src="inimigos.js?v=4.0"></script>
 </body>
 </html>
