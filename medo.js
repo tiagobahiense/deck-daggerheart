@@ -1,8 +1,7 @@
 // =========================================================
-// SISTEMA DE MEDO (FEAR) - SINCRONIA E EFEITOS
+// SISTEMA DE MEDO (FEAR) - ATUALIZADO
 // =========================================================
 
-// Configurações
 const MAX_MEDO = 10;
 const REF_MEDO = 'mesa_rpg/medo';
 
@@ -14,7 +13,7 @@ window.adicionarMedo = function() {
         if (atual < MAX_MEDO) {
             window.update(window.ref(window.db, REF_MEDO), {
                 qtd: atual + 1,
-                aviso: { tipo: 'add', timestamp: Date.now() } // Dispara mensagem
+                aviso: { tipo: 'add', timestamp: Date.now() }
             });
         }
     });
@@ -26,7 +25,7 @@ window.usarMedo = function() {
         if (atual > 0) {
             window.update(window.ref(window.db, REF_MEDO), {
                 qtd: atual - 1,
-                aviso: { tipo: 'use', timestamp: Date.now() } // Dispara mensagem
+                aviso: { tipo: 'use', timestamp: Date.now() }
             });
         }
     });
@@ -44,7 +43,7 @@ window.removerMedoSilencioso = function() {
 // --- OUVINTE REALTIME (TODOS) ---
 
 window.iniciarSistemaMedo = function() {
-    const elContainer = document.getElementById('medo-container'); // Só existe no Mestre
+    const elContainer = document.getElementById('medo-container');
     
     window.onValue(window.ref(window.db, REF_MEDO), (snapshot) => {
         const dados = snapshot.val();
@@ -52,31 +51,30 @@ window.iniciarSistemaMedo = function() {
 
         const qtd = dados.qtd || 0;
 
-        // 1. Atualiza visual do painel do Mestre (se existir)
+        // 1. Atualiza Painel Mestre
         if (elContainer) {
             elContainer.innerHTML = `
                 <div class="medo-header">
                     <span class="medo-titulo">MEDO: ${qtd}/${MAX_MEDO}</span>
                     <div class="medo-botoes">
-                        <button class="btn-medo btn-add" onclick="window.adicionarMedo()">+ Adicionar</button>
+                        <button class="btn-medo btn-add" onclick="window.adicionarMedo()">+ Add</button>
                         <button class="btn-medo btn-use" onclick="window.usarMedo()">⚡ Usar</button>
                     </div>
                 </div>
                 <div id="medo-tokens-grid"></div>
             `;
+            
             const container = document.getElementById('medo-tokens-grid');
-            // Preenche slots
             for (let i = 0; i < MAX_MEDO; i++) {
                 const slot = document.createElement('div');
                 slot.className = 'medo-slot';
                 if (i < qtd) {
                     const token = document.createElement('div');
                     token.className = 'medo-token';
-                    token.title = "Clique para remover silenciosamente";
-                    // Se for mestre, permite clicar para remover
+                    // Clique silencioso para mestre corrigir
                     if (window.nomeJogador === 'Mestre') {
                         token.onclick = (e) => {
-                            e.stopPropagation(); // Evita bugs
+                            e.stopPropagation();
                             window.removerMedoSilencioso();
                         };
                     }
@@ -86,7 +84,8 @@ window.iniciarSistemaMedo = function() {
             }
         }
 
-        // 2. Dispara a Mensagem Sombria E O SOM (Se houver aviso recente < 3s)
+        // 2. Dispara Efeitos (Som e Tela)
+        // Verifica se o aviso tem menos de 3 segundos
         if (dados.aviso && (Date.now() - dados.aviso.timestamp < 3000)) {
             mostrarMensagemMedo(dados.aviso.tipo);
         }
@@ -97,30 +96,30 @@ function mostrarMensagemMedo(tipo) {
     const overlay = document.getElementById('medo-overlay-msg');
     if (!overlay) return;
 
-    // Reseta animação visual
-    overlay.className = '';
-    void overlay.offsetWidth; // Força reflow
+    // Reset para permitir re-animar
+    overlay.classList.remove('ativo');
+    void overlay.offsetWidth; // Força o navegador a recalcular (reflow)
 
-    // --- LÓGICA DE ÁUDIO NOVA ---
+    // Tocar Som
     const idAudio = (tipo === 'add') ? 'sound-medo-add' : 'sound-medo-use';
     const audio = document.getElementById(idAudio);
-    
     if (audio) {
-        audio.volume = 0.35; // Igual ao uso de carta
-        audio.currentTime = 0; // Reinicia se estiver tocando
-        audio.play().catch(e => console.log("Erro ao tocar som de medo:", e));
+        audio.volume = 0.35;
+        audio.currentTime = 0;
+        audio.play().catch(err => console.log("Erro som:", err));
     }
-    // ----------------------------
 
+    // Configurar Texto
     if (tipo === 'add') {
         overlay.innerHTML = `<div class="msg-medo-texto">👁️ O Mestre recolheu <span style="color:#d0a0ff">MEDO</span>...</div>`;
     } else if (tipo === 'use') {
         overlay.innerHTML = `<div class="msg-medo-texto msg-medo-uso">⚡ O Mestre usou um token de <span style="color:#bf00ff">MEDO</span>!</div>`;
     }
 
+    // Ativar Animação CSS
     overlay.classList.add('ativo');
 
-    // Remove a mensagem após 4s
+    // Remover após 4s
     setTimeout(() => {
         overlay.classList.remove('ativo');
     }, 4000);

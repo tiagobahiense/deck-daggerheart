@@ -8,8 +8,7 @@
     <link rel="stylesheet" href="ficha.css?v=5.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
-    <link rel="stylesheet" href="medo.css?v=1.0">
-    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="medo.css?v=1.1"> <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; margin: 0; overflow: hidden; }
         
@@ -17,84 +16,72 @@
 
         #container-principal { display: flex; flex: 1; overflow: hidden; gap: 0; }
         
-        /* 1. JOGADORES (ESQUERDA) */
+        /* JOGADORES */
         #area-jogadores { width: 350px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 2px solid var(--gold); background: #0a0a0a; }
         #painel { padding: 10px; overflow-y: auto; height: 100%; display: flex; flex-direction: column; gap: 10px; }
         
         .card-jogador { width: 100%; background: rgba(20,20,20,0.9); border: 1px solid #444; border-radius:8px; padding:8px; box-sizing: border-box; }
         .card-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:5px; }
-        
-        /* Nome e Status */
         .nome-wrapper { display: flex; align-items: center; gap: 8px; }
         .nome { color: var(--gold); font-weight: bold; font-size: 0.9rem; }
         .tag-classe { font-size: 0.65rem; color: #aaa; background: #222; padding: 1px 4px; border-radius: 4px; }
         
-        /* Bolinha de Status */
-        .status-dot {
-            width: 10px; height: 10px; border-radius: 50%;
-            display: inline-block;
-            box-shadow: 0 0 5px rgba(0,0,0,0.8);
-            transition: background-color 0.3s;
-        }
+        /* Status Dot */
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px rgba(0,0,0,0.8); transition: background-color 0.3s; }
         .status-online { background-color: #00ff00; box-shadow: 0 0 8px #00ff00; }
         .status-offline { background-color: #ff0000; opacity: 0.4; }
 
         .btn-abrir-ficha-mestre { background: var(--gold); color: #000; border: none; border-radius: 15px; padding: 2px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-left:5px; }
         .btn-expandir-mesa { background: #333; color: #ccc; border: 1px solid #555; width: 100%; padding: 4px; cursor: pointer; font-size: 0.75rem; margin-top:5px; border-radius: 4px; }
-        .btn-expandir-mesa:hover { background: #444; color: #fff; }
         .mesa-expandida { display: none; margin-top: 5px; border-top: 1px dashed #444; padding-top: 5px; }
         .mesa-expandida.ativo { display: block; }
         .grid-mini { display: flex; flex-wrap: wrap; gap: 4px; min-height: 40px; }
 
-        /* 2. ÁREA DE BATALHA (CENTRO) */
+        /* TABULEIRO */
         #area-batalha-gm { flex-grow: 1; background: url('img/background_epico.png') no-repeat center center; background-size: cover; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         #titulo-batalha { background: rgba(0,0,0,0.8); color: var(--gold); text-align: center; padding: 5px; font-family: 'MedievalSharp', cursive; border-bottom: 1px solid var(--gold); }
         #area-inimigos { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 15px; }
 
-        /* 3. ESCUDO E DADOS (DIREITA) */
+        /* SIDEBAR (Escudo) */
         #sidebar-escudo { width: 280px; flex-shrink: 0; background: #0f0f0f; border-left: 2px solid var(--gold); padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .escudo-topicos { display: flex; flex-direction: column; gap: 5px; }
         .btn-topico { background: #222; border: 1px solid #444; color: #ddd; padding: 8px; text-align: left; cursor: pointer; border-radius: 5px; transition: 0.2s; }
         .btn-topico:hover { border-color: var(--gold); background: #333; }
 
-        /* Controles Gerais */
+        /* Top Bar */
         #controles-mestre { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: #111; border-bottom: 2px solid var(--gold); z-index: 100; }
         .btn-rest { font-size: 0.8rem; padding: 5px 10px; cursor: pointer; color: white; border-radius: 4px; border:none; }
         .curto { background: #f57c00; } .longo { background: #d32f2f; }
         .btn-nav-mestre { background: #333; color: #fff; padding: 5px 10px; border: 1px solid #555; cursor: pointer; border-radius: 4px; }
-        
-        /* Botão Refresh */
         .btn-refresh { background: none; border: 1px solid #555; color: #aaa; cursor: pointer; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .btn-refresh:hover { color: var(--gold); border-color: var(--gold); transform: rotate(180deg); }
         .spin-anim { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* Modal Criar */
-        #modal-criar-inimigo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9000; align-items: center; justify-content: center; }
-        .modal-criar-content { background: #1a1a1a; width: 450px; padding: 20px; border: 2px solid var(--gold); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; max-height:90vh; overflow-y:auto; }
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .form-full { grid-column: 1 / -1; }
-        input, textarea { width: 100%; box-sizing: border-box; background: #222; border: 1px solid #444; color: white; padding: 5px; }
-        
-        /* Preview Card */
+        /* Preview Grande */
         #preview-carta-mestre { display: none; position: fixed; top: 50%; left: 50%; width: 320px; height: 480px; z-index: 9999; transform: translate(-50%, -50%); border: 3px solid var(--gold); background: #000; pointer-events: none; background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 0 60px rgba(255,215,0,0.4); border-radius: 10px; }
         #preview-carta-mestre .token-count { position: absolute; top: -10px; right: -10px; background: #000; border: 2px solid #fff; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; }
-        
+
         /* Modal Escudo */
         #modal-escudo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; }
         #modal-escudo.ativo { display: flex; }
         .modal-escudo-content { background: #1a1a1a; padding: 30px; border: 2px solid var(--gold); max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; color: #ddd; border-radius: 10px; }
         .modal-escudo-content h2 { color:var(--gold); margin-top:0; }
-        .modal-escudo-content h3 { color:#ffff99; margin-top:15px; }
         #btn-fechar-escudo { position: absolute; top: 10px; right: 10px; background: var(--gold); border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
 
-        /* Slots e Cartas Visuais */
+        /* Criar Inimigo Modal Styles */
+        #modal-criar-inimigo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9000; align-items: center; justify-content: center; }
+        .modal-criar-content { background: #1a1a1a; width: 450px; padding: 20px; border: 2px solid var(--gold); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; max-height:90vh; overflow-y:auto; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .form-full { grid-column: 1 / -1; }
+        input, textarea { width: 100%; box-sizing: border-box; background: #222; border: 1px solid #444; color: white; padding: 5px; }
+
+        /* Miniaturas */
         .mini-carta { width: 50px; height: 70px; background-size: cover; background-position: center; border: 1px solid #555; border-radius: 4px; position: relative; cursor: help; }
         .mini-carta.indisponivel { filter: grayscale(100%); opacity: 0.5; }
         .icone-descanso-mini { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; }
         .icone-descanso-mini img { width: 100%; height: 100%; }
         .token-count { position: absolute; bottom: -5px; right: -5px; background: var(--gold); color: black; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
-        
         .slot-ativo { width: 40px; height: 40px; background-size: cover; background-position: center; border-radius: 50%; border: 1px solid var(--gold); cursor: help; }
         .carta-reserva-visual { width: 40px; height: 56px; background-size: cover; border: 1px dashed #666; opacity: 0.7; }
     </style>
@@ -102,9 +89,7 @@
 <body>
     
     <div id="loading-screen">Carregando Mesa...</div>
-
     <div id="medo-overlay-msg"></div>
-
     <div id="preview-carta-mestre"></div>
 
     <audio id="sound-medo-add"><source src="audio/sound-recolhe-medo.mp3" type="audio/mpeg"></audio>
@@ -127,12 +112,9 @@
     </div>
 
     <div id="container-principal">
-        
         <div id="area-jogadores">
             <h3 style="color:#aaa; text-align:center; margin:5px 0; border-bottom:1px solid #333;">JOGADORES</h3>
-            <div id="painel">
-                <p style="text-align:center; color:#666;">Carregando...</p>
-            </div>
+            <div id="painel"><p style="text-align:center; color:#666;">Carregando...</p></div>
         </div>
 
         <div id="area-batalha-gm">
@@ -141,17 +123,8 @@
         </div>
 
         <div id="sidebar-escudo">
-            
             <div id="medo-container">
-                <div class="medo-header">
-                    <span class="medo-titulo">MEDO</span>
-                    <div class="medo-botoes">
-                        <button class="btn-medo btn-add" onclick="adicionarMedo()">Adicionar</button>
-                        <button class="btn-medo btn-use" onclick="usarMedo()">Usar</button>
-                    </div>
                 </div>
-                <div id="medo-tokens-grid"></div>
-            </div>
 
             <h3 style="color:var(--gold); text-align:center; border-bottom:1px solid #333; padding-bottom:5px; margin-top:20px;">ESCUDO GM</h3>
             <div class="escudo-topicos">
@@ -169,11 +142,10 @@
     </div>
 
     <div id="modal-criar-inimigo"><div class="modal-criar-content"><h2 style="color:var(--gold); text-align:center; margin-top:0;">Invocar Inimigo</h2><div class="form-grid"><div class="form-group form-full"><label>Nome</label><input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz"></div><div class="form-group form-full"><label>Imagem</label><div style="display:flex; gap:5px;"><input type="text" id="new-enemy-img" placeholder="URL ou Upload..." style="flex:1"><label for="upload-file-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer; color:white;">📁</label><input type="file" id="upload-file-input" accept="image/*" style="display:none" onchange="processarUploadImagem()"><img id="preview-img-mini" style="width:30px; height:30px; display:none; border:1px solid #555;"></div></div><div class="form-group"><label>PV Max</label><input type="number" id="new-enemy-pv" value="4"></div><div class="form-group"><label>Estresse (PF)</label><input type="number" id="new-enemy-pf" value="0"></div><div class="form-group"><label>Dificuldade</label><input type="number" id="new-enemy-dif" value="12"></div><div class="form-group"><label>Ataque</label><input type="text" id="new-enemy-atk" value="+2"></div><div class="form-group"><label>Dano</label><input type="text" id="new-enemy-dmg" value="1d6+2"></div><div class="form-group"><label>Limiares</label><input type="text" id="new-enemy-limiares" placeholder="5/10"></div><div class="form-group form-full"><label>Habilidades</label><textarea id="new-enemy-desc" rows="3"></textarea></div></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-rest btn-invocar" style="background:#4CAF50; flex:1;" onclick="salvarNovoInimigo()">Invocar</button><button class="btn-rest" style="background:#f44336; flex:1;" onclick="fecharCriadorInimigo()">Cancelar</button></div></div></div>
-
+    
     <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()"><div class="dados-content"><div class="dados-header">Rolagem</div><div class="dualidade-box"><span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button></div><hr style="border-top:1px solid #444; width:100%;"><div class="grid-dados"><div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div></div><button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button></div></div>
     <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button></div>
     <div id="modal-escudo"><div class="modal-escudo-content"><button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button><div id="escudo-conteudo"></div></div></div>
-    
     <div id="sheet-modal" class="modal"><div class="sheet-content"><div class="sheet-toolbar"><button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button><button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button><button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button></div><button class="btn-close-sheet" onclick="fecharFicha()">X</button><div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div><div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div></div></div>
 
     <script type="module">
@@ -198,7 +170,6 @@
         
         setPersistence(auth, browserSessionPersistence).catch(console.error);
 
-        // Exportações globais
         window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
         window.onValue = onValue; window.push = push; window.update = update; window.off = off; window.onDisconnect = onDisconnect;
         window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
@@ -225,15 +196,14 @@
             if(el) el.classList.toggle('ativo');
         };
 
-        // FUNÇÃO DE RESSINCRONIZAÇÃO
         window.atualizarSincronia = function() {
             const btn = document.querySelector('.btn-refresh');
             if(btn) btn.classList.add('spin-anim');
             document.getElementById('painel').innerHTML = '<p style="color:#666;text-align:center">Ressincronizando...</p>';
             document.getElementById('area-inimigos').innerHTML = '';
             
-            iniciarMonitoramentoPresenca(); // Reseta listener de presença
-            iniciarPainelJogadores(); // Reseta listener de jogadores
+            iniciarMonitoramentoPresenca();
+            iniciarPainelJogadores();
 
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
             if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
@@ -242,13 +212,11 @@
             setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
         };
 
-        // --- SISTEMA DE PRESENÇA NO PAINEL ---
+        // --- SISTEMA DE PRESENÇA ---
         let presencaCache = {};
-
         function iniciarMonitoramentoPresenca() {
             onValue(ref(db, 'mesa_rpg/presenca'), (snap) => {
                 presencaCache = snap.val() || {};
-                // Atualiza visualmente os cards já renderizados
                 document.querySelectorAll('.card-jogador').forEach(card => {
                     const nomeEl = card.querySelector('.nome');
                     if (nomeEl) {
@@ -260,26 +228,15 @@
         }
 
         function atualizarBolinhaPresenca(cardElement, nomePersonagem) {
-            // Remove bolinha anterior se existir
             const oldDot = cardElement.querySelector('.status-dot');
             if(oldDot) oldDot.remove();
-
             const dot = document.createElement('span');
             dot.className = 'status-dot';
-            
-            // Verifica no cache se o nome está presente (Case Insensitive)
             const isOnline = Object.keys(presencaCache).some(k => k.toUpperCase() === nomePersonagem.toUpperCase());
-            
             dot.classList.add(isOnline ? 'status-online' : 'status-offline');
-            dot.title = isOnline ? 'Online no Tabuleiro' : 'Offline';
-            
-            // Adiciona ao lado do nome (dentro do .nome-wrapper)
             const nomeWrapper = cardElement.querySelector('.nome-wrapper');
-            if(nomeWrapper) {
-                nomeWrapper.appendChild(dot);
-            }
+            if(nomeWrapper) nomeWrapper.appendChild(dot);
         }
-        // --------------------------------------
 
         function iniciarPainelJogadores() {
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
@@ -314,9 +271,7 @@
                     let htmlMesa = "";
                     if(p.slots) {
                         ['Ancestralidade', 'Comunidade', 'Fundamental', 'Especializacao', 'Maestria'].forEach(k => {
-                            if(p.slots[k]) {
-                                htmlMesa += `<div class="mini-carta slot-ativo" style="background-image: url('${p.slots[k].caminho}')" title="${k}"></div>`;
-                            }
+                            if(p.slots[k]) htmlMesa += `<div class="mini-carta slot-ativo" style="background-image: url('${p.slots[k].caminho}')" title="${k}"></div>`;
                         });
                     }
                     if(p.reserva && p.reserva.length > 0) {
@@ -343,8 +298,6 @@
                         </div>
                     `;
                     painel.appendChild(card);
-                    
-                    // Aplica status inicial
                     atualizarBolinhaPresenca(card, nome);
                 });
             }
@@ -383,22 +336,15 @@
 
         onAuthStateChanged(auth, u => {
             document.getElementById('loading-screen').style.display = 'none';
-            // SEGURANÇA: Se não estiver logado, não tira a tela de loading e redireciona
-            if(!u || u.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { 
-                window.location.href="index.html"; 
-                return; 
-            }
-            
-            iniciarMonitoramentoPresenca(); // INICIA MONITORAMENTO DAS BOLINHAS
+            if(!u || u.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { window.location.href="index.html"; return; }
+            iniciarMonitoramentoPresenca();
             iniciarPainelJogadores();
             
-            // FUNÇÃO PARA CARREGAR SCRIPT DINÂMICO
             function loadScript(src) {
                 const script = document.createElement('script');
                 script.src = src + "?t=" + Date.now();
                 document.body.appendChild(script);
             }
-
             loadScript("ficha.js");
             loadScript("dados.js");
             loadScript("inimigos.js");
@@ -431,7 +377,6 @@
             }
         });
 
-        // Funções de Descanso e Animação de Carta (Reutilizadas para economizar espaço - já estavam corretas no bloco anterior)
         window.realizarDescanso = function(t){ get(ref(db,'mesa_rpg/jogadores')).then(s=>{if(s.exists()){Object.keys(s.val()).forEach(n=>{const p=s.val()[n]; if(p.mao){let m=false;p.mao.forEach(c=>{if(c&&(t==='longo'||c.estado==='curto')){c.estado='ativo';m=true}});if(m)set(ref(db,`mesa_rpg/jogadores/${n}/mao`),p.mao)} if(p.slots){let m=false;Object.keys(p.slots).forEach(k=>{if(p.slots[k]&&(t==='longo'||p.slots[k].estado==='curto')){p.slots[k].estado='ativo';m=true}});if(m)set(ref(db,`mesa_rpg/jogadores/${n}/slots`),p.slots)}})}})};
         function animarCartaEspecifica(n,c){const g=document.querySelector(`[data-jogador="${n}"]`);if(!g)return;const i=g.querySelectorAll('.mini-carta');i.forEach(e=>{if(e.style.backgroundImage.includes(c.caminho.split('/').pop())){e.style.transform="scale(1.2)";e.style.boxShadow="0 0 15px gold";setTimeout(()=>{e.style.transform="";e.style.boxShadow=""},1000)}});const p=document.getElementById('preview-carta-mestre');p.style.backgroundImage=`url('${c.caminho}')`;p.style.display='block';setTimeout(()=>p.style.display='none',3000)};
     </script>

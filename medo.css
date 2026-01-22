@@ -1,30 +1,33 @@
 /* =========================================================
-   SISTEMA DE MEDO (FEAR) - DAGGERHEART
+   SISTEMA DE MEDO (FEAR) - ESTILO CORRIGIDO
    ========================================================= */
 
 /* --- O GRID NO PAINEL DO MESTRE --- */
 #medo-container {
-    background: rgba(10, 5, 15, 0.95);
-    border: 1px solid #6a0dad; /* Roxo */
-    border-radius: 8px;
+    background: rgba(20, 10, 30, 0.95);
+    border: 1px solid #9d4edd;
+    border-radius: 6px;
     padding: 10px;
-    margin-top: 15px;
-    box-shadow: 0 0 15px rgba(75, 0, 130, 0.3);
+    margin-top: 10px;
+    box-shadow: 0 0 10px rgba(138, 43, 226, 0.2);
+    /* Garante que não cresça demais */
+    flex-shrink: 0; 
 }
 
 .medo-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
-    border-bottom: 1px solid #444;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #555;
     padding-bottom: 5px;
 }
 
 .medo-titulo {
-    color: #d896ff;
+    color: #e0b0ff;
     font-family: 'MedievalSharp', cursive;
     font-size: 1rem;
+    font-weight: bold;
     text-shadow: 0 0 5px #6a0dad;
 }
 
@@ -33,120 +36,111 @@
     gap: 5px;
 }
 
+/* Botões Estilizados (Não brancos) */
 .btn-medo {
-    border: none;
+    border: 1px solid #7b2cbf;
     border-radius: 4px;
-    padding: 4px 10px;
-    font-family: 'MedievalSharp', cursive;
-    font-size: 0.8rem;
+    padding: 2px 8px;
     cursor: pointer;
-    transition: 0.2s;
+    font-size: 0.75rem;
     color: #fff;
+    font-family: sans-serif;
+    font-weight: bold;
+    transition: 0.2s;
 }
 
-.btn-medo-add {
-    background: #4b0082;
-    border: 1px solid #8a2be2;
-    box-shadow: 0 0 5px #4b0082;
+.btn-medo.btn-add {
+    background: #3c096c;
 }
-.btn-medo-add:hover { background: #8a2be2; box-shadow: 0 0 15px #8a2be2; }
-
-.btn-medo-use {
-    background: #2a0040;
-    border: 1px solid #ff4444;
-    color: #ffcccc;
+.btn-medo.btn-add:hover {
+    background: #5a189a;
+    box-shadow: 0 0 5px #9d4edd;
 }
-.btn-medo-use:hover { background: #500000; box-shadow: 0 0 10px red; }
 
-/* O Grid de Slots */
-.medo-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 2 linhas de 5 */
-    gap: 8px;
-    justify-items: center;
+.btn-medo.btn-use {
+    background: #240046;
+}
+.btn-medo.btn-use:hover {
+    background: #3c096c;
+    box-shadow: 0 0 5px #ff0055;
+}
+
+/* Grid de Tokens (Horizontal) */
+#medo-tokens-grid {
+    display: flex;
+    flex-wrap: wrap; /* Permite quebrar linha se precisar, mas tenta manter horizontal */
+    gap: 5px;
+    justify-content: flex-start;
+    align-items: center;
+    min-height: 25px;
 }
 
 .medo-slot {
-    width: 30px;
-    height: 30px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
-    border: 2px dashed #333;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid #444;
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
 }
 
-/* A ESFERA ROXA FLAMEJANTE */
 .medo-token {
-    width: 100%;
-    height: 100%;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, #e0b0ff, #800080, #2a0040);
-    box-shadow: 
-        0 0 10px #8a2be2, 
-        0 0 20px #4b0082, 
-        inset 0 0 5px rgba(255, 255, 255, 0.5);
+    background: radial-gradient(circle, #e0b0ff, #7b2cbf);
+    box-shadow: 0 0 8px #9d4edd;
+    animation: pulso-medo 2s infinite;
     cursor: pointer;
-    animation: chama-roxa 2s infinite alternate;
-    transition: transform 0.2s;
 }
 
-.medo-token:hover {
-    transform: scale(1.2);
-    box-shadow: 0 0 25px #bf00ff;
-}
-
-@keyframes chama-roxa {
-    0% { box-shadow: 0 0 8px #8a2be2; transform: scale(0.95); }
-    100% { box-shadow: 0 0 18px #bf00ff; transform: scale(1.05); }
+@keyframes pulso-medo {
+    0% { transform: scale(0.9); box-shadow: 0 0 5px #7b2cbf; }
+    50% { transform: scale(1.1); box-shadow: 0 0 12px #e0b0ff; }
+    100% { transform: scale(0.9); box-shadow: 0 0 5px #7b2cbf; }
 }
 
 /* --- MENSAGEM SOMBRIA NA TELA (OVERLAY) --- */
 #medo-overlay-msg {
     position: fixed;
-    top: 40%;
+    top: 30%;
     left: 50%;
     transform: translate(-50%, -50%);
     font-family: 'MedievalSharp', cursive;
     text-align: center;
-    pointer-events: none; /* Deixa clicar através */
+    pointer-events: none;
     z-index: 10000;
-    opacity: 0; /* Invisível por padrão */
+    
+    /* Estado inicial invisível */
+    opacity: 0;
+    visibility: hidden; 
+    transition: opacity 0.5s ease, transform 0.5s ease;
+    
     width: 100%;
+}
+
+/* CLASSE QUE ATIVA A ANIMAÇÃO */
+#medo-overlay-msg.ativo {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -60%); /* Leve subida */
 }
 
 .msg-medo-texto {
     font-size: 2.5rem;
     color: #e0b0ff;
-    text-shadow: 
-        0 0 10px #000, 
-        0 0 20px #4b0082, 
-        0 0 40px #800080;
-    background: rgba(0, 0, 0, 0.8);
+    text-shadow: 0 0 10px #000, 0 0 20px #4b0082;
+    background: linear-gradient(90deg, transparent, rgba(0,0,0,0.9), transparent);
     padding: 20px;
-    border-top: 2px solid #8a2be2;
-    border-bottom: 2px solid #8a2be2;
-    box-shadow: 0 0 50px rgba(0,0,0,0.9);
-    letter-spacing: 2px;
+    display: inline-block;
+    border-top: 2px solid #9d4edd;
+    border-bottom: 2px solid #9d4edd;
 }
 
-/* Animação de Entrada e Saída */
-.anim-medo-aparecer {
-    animation: medoFade 4s ease-in-out forwards;
-}
-
-@keyframes medoFade {
-    0% { opacity: 0; transform: translate(-50%, -40%) scale(0.9); }
-    15% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-    100% { opacity: 0; transform: translate(-50%, -60%); }
-}
-
-/* Cor diferente para "Gastou Medo" */
-.msg-medo-gasto {
+.msg-medo-uso {
     color: #ff9999;
-    border-color: #8b0000;
-    text-shadow: 0 0 20px red;
+    text-shadow: 0 0 10px #500, 0 0 20px #ff0000;
+    border-color: #ff0000;
 }
