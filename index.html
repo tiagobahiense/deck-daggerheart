@@ -22,7 +22,7 @@
     <meta property="twitter:description" content="Ficha de personagem digital e mesa virtual para Daggerheart.">
     <meta property="twitter:image" content="https://tiagobahiense.github.io/deck-daggerheart/img/DH-portrait.webp">
     <link rel="icon" type="image/png" href="img/favicon.png" />
-    <link rel="stylesheet" href="style.css?v=10.2">
+    <link rel="stylesheet" href="style.css?v=10.3">
     <link rel="stylesheet" href="profissao.css?v=1.0">
     <link rel="stylesheet" href="selecao-classe.css?v=3.0">
     <link rel="stylesheet" href="ficha.css?v=6.0"> 
@@ -90,6 +90,25 @@
     <div id="classe-selection-modal" class="modal-selecao"><div class="classe-carousel-wrapper"><div class="selecao-header"><h2>Escolha sua Classe</h2><p>Clique na imagem para ler</p></div><div class="carousel-main"><button class="nav-btn prev" onclick="window.mudarClasse(-1)">❮</button><div class="card-display" onclick="window.verDetalhesClasse()"><div class="card-glow"></div><img id="img-classe-perfil" class="img-perfil-animada"><div class="card-label"><span id="nome-classe-selecao">CLASSE</span></div></div><button class="nav-btn next" onclick="window.mudarClasse(1)">❯</button></div><div class="selecao-footer"><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasse()">✓ Confirmar <span id="btn-nome-classe">Classe</span></button></div></div></div>
     <div id="modal-detalhes-classe" class="modal" style="z-index: 7000;"><div class="modal-detalhes-content"><button class="close-detalhes" onclick="window.fecharDetalhesClasse()">X</button><div class="pdf-wrapper"><button class="nav-pdf-btn prev" onclick="window.mudarPaginaPDF(-1)">❮</button><div class="pdf-container"><img id="img-classe-pdf"></div><button class="nav-pdf-btn next" onclick="window.mudarPaginaPDF(1)">❯</button></div><div class="detalhes-footer"><div class="page-counter" id="pdf-page-counter">1/2</div><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasseDeDentro()">Escolher</button></div></div></div>
     
+    <div id="modal-leitor-pdf" class="modal" style="z-index: 7500;">
+        <div class="modal-leitor-content">
+            <button class="close-detalhes" onclick="window.fecharLeitorPDF()">X</button>
+            <div class="leitor-header">
+                <h2 id="titulo-leitor-pdf" style="color: var(--gold); margin: 0;">Consulta</h2>
+            </div>
+            <div class="pdf-wrapper">
+                <button class="nav-pdf-btn prev" onclick="window.mudarPaginaLeitor(-1)">❮</button>
+                <div class="pdf-container">
+                    <img id="img-leitor-pdf" src="" alt="Página">
+                </div>
+                <button class="nav-pdf-btn next" onclick="window.mudarPaginaLeitor(1)">❯</button>
+            </div>
+            <div class="detalhes-footer">
+                <div class="page-counter" id="leitor-page-counter">1/1</div>
+            </div>
+        </div>
+    </div>
+
     <div id="sheet-modal" class="modal">
         <div class="sheet-content">
             
@@ -222,6 +241,10 @@
         
         <div id="area-jogo">
             <section id="mesa-area">
+                <div class="botoes-laterais">
+                    <button class="btn-lateral" onclick="abrirLeitorPDF('Comunidade')">Comunidade</button>
+                    <button class="btn-lateral" onclick="abrirLeitorPDF('Ancestralidade')">Ancestralidade</button>
+                </div>
                 <div class="grupo-fixo"><div class="titulo-grupo">Identidade</div><div class="slots-row"><div class="slot-fixo" onclick="abrirGrimorio('Ancestralidade', 'Ancestralidade')" id="slot-Ancestralidade"><span class="label-slot">Ancestralidade</span><button class="btn-limpar" onclick="limparSlot('Ancestralidade', event)">×</button></div><div class="slot-fixo" onclick="abrirGrimorio('Comunidade', 'Comunidade')" id="slot-Comunidade"><span class="label-slot">Comunidade</span><button class="btn-limpar" onclick="limparSlot('Comunidade', event)">×</button></div></div></div>
                 <div class="grupo-fixo destaque-classe"><div class="titulo-grupo">Evolução de Subclasse</div><div class="slots-row"><div class="slot-classe" onclick="abrirGrimorio('Classes', 'Fundamental')" id="slot-Fundamental"><span class="label-slot">Fundamental</span><span class="nivel-req">Nível 1</span><button class="btn-limpar" onclick="limparSlot('Fundamental', event)">×</button></div><div class="seta-evolucao">➜</div><div class="slot-classe" onclick="abrirGrimorio('Classes', 'Especializacao')" id="slot-Especializacao"><span class="label-slot">Especialização</span><span class="nivel-req">Avanço</span><button class="btn-limpar" onclick="limparSlot('Especializacao', event)">×</button></div><div class="seta-evolucao">➜</div><div class="slot-classe" onclick="abrirGrimorio('Classes', 'Maestria')" id="slot-Maestria"><span class="label-slot">Maestria</span><span class="nivel-req">Avanço</span><button class="btn-limpar" onclick="limparSlot('Maestria', event)">×</button></div></div></div>
             </section>
@@ -240,7 +263,7 @@
     <div id="reserva-modal" class="modal" style="z-index: 6000;"><div class="modal-reserva-content"><div class="modal-header"><h2>Reserva</h2><button class="close-btn" onclick="window.fecharReserva()">X</button></div><div id="grid-reserva"></div></div></div>
     <div id="troca-modal" class="modal" style="z-index: 6100;"><div class="modal-decisao-content"><h3>Mão cheia!</h3><div id="grid-troca"></div><div class="botoes-decisao"><button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button></div></div></div>
 
-    <script type="module" src="script.js?v=12.2"></script>
+    <script type="module" src="script.js?v=12.3"></script>
     
     <script>
         function loadScript(src) {

@@ -40,6 +40,11 @@ let slotDestinoAtual = null;
 let cartaDaReservaParaResgatar = null;
 const LIMITE_MAO = 5;
 
+// Variáveis para Leitor de PDF
+let paginaAtualPDF = 1;
+let totalPaginasPDF = 1;
+let tipoAtualPDF = ""; // 'Ancestralidade' ou 'Comunidade'
+
 window.togglePassword = function(id) { const input = document.getElementById(id); if (input) input.type = input.type === "password" ? "text" : "password"; };
 
 // Funções de Modal
@@ -565,3 +570,55 @@ window.abrirReserva = function() {
 
 window.toggleMusic = function() { const a=document.getElementById('bg-music'); if(a.paused) { a.play(); document.getElementById('btn-music').innerText='🔊'; } else { a.pause(); document.getElementById('btn-music').innerText='🔇'; } };
 window.setVolume = function() { document.getElementById('bg-music').volume = parseFloat(document.getElementById('volume').value); };
+
+// --- FUNÇÕES DE LEITURA DE PDF (ANCESTRALIDADE/COMUNIDADE) ---
+
+window.abrirLeitorPDF = function(tipo) {
+    tipoAtualPDF = tipo; // 'Ancestralidade' ou 'Comunidade'
+    paginaAtualPDF = 1;
+    
+    // Define total com base na pasta (hardcoded conforme pedido baseado nos arquivos)
+    if (tipo === 'Ancestralidade') {
+        totalPaginasPDF = 20; 
+    } else {
+        totalPaginasPDF = 14; 
+    }
+
+    document.getElementById('titulo-leitor-pdf').innerText = tipo;
+    atualizarImagemLeitor();
+    document.getElementById('modal-leitor-pdf').style.display = 'flex';
+};
+
+window.fecharLeitorPDF = function() {
+    document.getElementById('modal-leitor-pdf').style.display = 'none';
+};
+
+window.mudarPaginaLeitor = function(direcao) {
+    const novaPagina = paginaAtualPDF + direcao;
+    if (novaPagina >= 1 && novaPagina <= totalPaginasPDF) {
+        paginaAtualPDF = novaPagina;
+        atualizarImagemLeitor();
+    }
+};
+
+function atualizarImagemLeitor() {
+    const imgElement = document.getElementById('img-leitor-pdf');
+    const contador = document.getElementById('leitor-page-counter');
+    
+    // Formata o número com zeros à esquerda (001, 002...)
+    const numFormatado = String(paginaAtualPDF).padStart(3, '0');
+    
+    let caminho = "";
+    if (tipoAtualPDF === 'Ancestralidade') {
+        // Pasta: img/ancestralidade-pdf/
+        // Arquivo: Ancestralidades_pag_XXX.jpg (PLURAL no arquivo, conforme print)
+        caminho = `img/ancestralidade-pdf/Ancestralidades_pag_${numFormatado}.jpg`;
+    } else {
+        // Pasta: img/comunidade-pdf/
+        // Arquivo: Comunidade_pag_XXX.jpg (SINGULAR no arquivo, conforme print)
+        caminho = `img/comunidade-pdf/Comunidade_pag_${numFormatado}.jpg`;
+    }
+    
+    imgElement.src = caminho;
+    contador.innerText = `${paginaAtualPDF}/${totalPaginasPDF}`;
+}
