@@ -1,6 +1,8 @@
 /* =========================================================
-   ESTILOS DO SISTEMA DE DADOS (DAGGERHEART)
+   ESTILOS DO SISTEMA DE DADOS - UPDATE V2 (MULTIPLAYER)
    ========================================================= */
+
+/* ... (Mantenha o CSS anterior do botão e modal de seleção igual) ... */
 
 /* Botão Flutuante no Rodapé */
 #btn-abrir-dados {
@@ -154,6 +156,16 @@
     flex-direction: column;
 }
 
+/* NOVO: Rótulo de quem está rolando */
+#quem-rolou-label {
+    color: var(--gold);
+    font-size: 2rem;
+    margin-bottom: 30px;
+    text-shadow: 0 2px 10px rgba(0,0,0,1);
+    font-family: 'MedievalSharp', cursive;
+    animation: fadeIn 0.5s;
+}
+
 #container-dados-rolando {
     display: flex;
     flex-wrap: wrap;
@@ -232,4 +244,9 @@
     0% { transform: scale(1); }
     50% { transform: scale(1.3); }
     100% { transform: scale(1); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }

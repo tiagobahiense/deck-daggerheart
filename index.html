@@ -9,13 +9,12 @@
     <link rel="stylesheet" href="profissao.css?v=1.0">
     <link rel="stylesheet" href="selecao-classe.css?v=3.0">
     <link rel="stylesheet" href="ficha.css?v=4.0">
-    <link rel="stylesheet" href="dados.css?v=1.0">
+    <link rel="stylesheet" href="dados.css?v=2.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div id="login-screen">
-        
         <div class="login-box" id="fase-selecao">
             <h1>Grimório Daggerheart</h1>
             <p>Escolha seu destino</p>
@@ -29,7 +28,6 @@
         <div class="login-box" id="fase-login-jogador" style="display: none;">
             <h1>Acesso do Jogador</h1>
             <p>Insira suas credenciais</p>
-            
             <div class="input-group">
                 <input type="email" id="player-email" placeholder="Email" class="input-login">
             </div>
@@ -37,9 +35,7 @@
                 <input type="password" id="player-pass" placeholder="Senha" class="input-login">
                 <span class="toggle-password" onclick="togglePassword('player-pass')">👁️</span>
             </div>
-            
             <div id="error-msg-player"></div>
-            
             <button type="button" class="btn-entrar" onclick="fazerLoginJogador()">Entrar</button>
             <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
         </div>
@@ -47,7 +43,6 @@
         <div class="login-box" id="fase-login-narrador" style="display: none;">
             <h1>Acesso do Narrador</h1>
             <p>Área Restrita</p>
-            
             <div class="input-group">
                 <input type="email" id="narrador-email" placeholder="Email" class="input-login">
             </div>
@@ -55,9 +50,7 @@
                 <input type="password" id="narrador-pass" placeholder="Senha" class="input-login">
                 <span class="toggle-password" onclick="togglePassword('narrador-pass')">👁️</span>
             </div>
-            
             <div id="error-msg-narrador"></div>
-            
             <button type="button" class="btn-entrar" onclick="fazerLoginNarrador()">Acessar Admin</button>
             <button type="button" class="btn-voltar" onclick="voltarParaSelecao()">Voltar</button>
         </div>
@@ -75,20 +68,16 @@
             </div>
             <button type="button" class="btn-voltar" onclick="voltarParaSelecao()" style="margin-top: 15px;">Cancelar</button>
         </div>
-
     </div>
 
     <div id="classe-selection-modal" class="modal-selecao">
         <div class="classe-carousel-wrapper">
-            
             <div class="selecao-header">
                 <h2>Escolha sua Classe</h2>
                 <p>Clique na imagem para ler as habilidades</p>
             </div>
-
             <div class="carousel-main">
                 <button class="nav-btn prev" onclick="window.mudarClasse(-1)">❮</button>
-                
                 <div class="card-display" onclick="window.verDetalhesClasse()">
                     <div class="card-glow"></div>
                     <img id="img-classe-perfil" src="" alt="Imagem da Classe" class="img-perfil-animada">
@@ -97,10 +86,8 @@
                     </div>
                     <div class="click-hint">🔍 Clique para ver Habilidades</div>
                 </div>
-
                 <button class="nav-btn next" onclick="window.mudarClasse(1)">❯</button>
             </div>
-
             <div class="selecao-footer">
                 <div class="carousel-dots" id="carousel-dots"></div>
                 <button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasse()">
@@ -113,17 +100,13 @@
     <div id="modal-detalhes-classe" class="modal" style="z-index: 7000;">
         <div class="modal-detalhes-content">
             <button class="close-detalhes" onclick="window.fecharDetalhesClasse()">X</button>
-            
             <div class="pdf-wrapper">
                 <button class="nav-pdf-btn prev" id="btn-pdf-prev" onclick="window.mudarPaginaPDF(-1)">❮</button>
-                
                 <div class="pdf-container">
                     <img id="img-classe-pdf" src="" alt="Detalhes da Classe">
                 </div>
-
                 <button class="nav-pdf-btn next" id="btn-pdf-next" onclick="window.mudarPaginaPDF(1)">❯</button>
             </div>
-
             <div class="detalhes-footer">
                 <div class="page-counter" id="pdf-page-counter">Página 1 de 2</div>
                 <button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasseDeDentro()">
@@ -135,21 +118,17 @@
 
     <div id="sheet-modal" class="modal">
         <div class="sheet-content">
-            
             <div class="sheet-toolbar">
                 <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Texto (T)">T</button>
                 <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador (Bolinha)">●</button>
                 <div style="height: 1px; background: #444; width: 100%; margin: 5px 0;"></div>
                 <button class="tool-btn" onclick="limparPaginaAtual()" title="Limpar Página" style="color: #ff6666;">🗑️</button>
             </div>
-
             <button class="btn-close-sheet" onclick="fecharFicha()" title="Fechar">X</button>
-            
             <div class="sheet-container" id="sheet-container">
                 <img id="sheet-bg" src="" alt="Ficha">
                 <div id="sheet-inputs-layer"></div>
             </div>
-            
             <div class="sheet-footer">
                 <button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮ Anterior</button>
                 <span id="sheet-page-indicator">Página 1</span>
@@ -225,31 +204,44 @@
             <div id="cartas-mao"></div>
             
             <button onclick="window.abrirFichaPersonagem()" style="
-                position: absolute; 
-                bottom: 20px; 
-                right: 20px; 
-                z-index: 2000; 
-                pointer-events: auto;
-                padding: 10px 20px; 
-                background: var(--gold); 
-                border: 2px solid #fff; 
-                border-radius: 5px; 
-                cursor: pointer; 
-                font-weight: bold; 
-                font-family: 'MedievalSharp', cursive; 
-                font-size: 1rem; 
-                box-shadow: 0 0 10px rgba(0,0,0,0.8);
-                color: #000;
+                position: absolute; bottom: 20px; right: 20px; z-index: 2000; pointer-events: auto;
+                padding: 10px 20px; background: var(--gold); border: 2px solid #fff; border-radius: 5px;
+                cursor: pointer; font-weight: bold; font-family: 'MedievalSharp', cursive;
+                font-size: 1rem; box-shadow: 0 0 10px rgba(0,0,0,0.8); color: #000;
             ">
                 📝 Ficha
             </button>
         </footer>
-        
-        <div id="btn-abrir-dados" onclick="abrirSeletorDados()" title="Rolar Dados">
-            🎲
-        </div>
+
+        <div id="btn-abrir-dados" onclick="abrirSeletorDados()" title="Rolar Dados">🎲</div>
         
         <div id="carta-tabuleiro-animada" class="carta-tabuleiro-animada"></div>
+    </div>
+
+    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
+        <div class="dados-content">
+            <div class="dados-header">Rolagem de Dados</div>
+            <div class="dualidade-box">
+                <span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span>
+                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button>
+            </div>
+            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
+            <div class="grid-dados">
+                <div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div>
+                <div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div>
+            </div>
+            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
+        </div>
+    </div>
+
+    <div id="overlay-rolagem">
+        <div id="quem-rolou-label"></div>
+        <div id="container-dados-rolando"></div>
+        <button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button>
     </div>
 
     <div id="grimorio-modal" class="modal">
@@ -307,82 +299,30 @@
         </div>
     </div>
 
-    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
-        <div class="dados-content">
-            <div class="dados-header">Rolagem de Dados</div>
-            
-            <div class="dualidade-box">
-                <span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span>
-                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button>
-            </div>
-
-            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
-
-            <div class="grid-dados">
-                <div class="dado-control">
-                    <span class="dado-label">d4</span>
-                    <div class="dado-btn-group">
-                        <button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button>
-                        <span id="count-d4" class="dado-count">0</span>
-                        <button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button>
-                    </div>
-                </div>
-                <div class="dado-control">
-                    <span class="dado-label">d6</span>
-                    <div class="dado-btn-group">
-                        <button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button>
-                        <span id="count-d6" class="dado-count">0</span>
-                        <button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button>
-                    </div>
-                </div>
-                <div class="dado-control">
-                    <span class="dado-label">d8</span>
-                    <div class="dado-btn-group">
-                        <button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button>
-                        <span id="count-d8" class="dado-count">0</span>
-                        <button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button>
-                    </div>
-                </div>
-                <div class="dado-control">
-                    <span class="dado-label">d10</span>
-                    <div class="dado-btn-group">
-                        <button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button>
-                        <span id="count-d10" class="dado-count">0</span>
-                        <button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button>
-                    </div>
-                </div>
-                <div class="dado-control">
-                    <span class="dado-label">d12</span>
-                    <div class="dado-btn-group">
-                        <button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button>
-                        <span id="count-d12" class="dado-count">0</span>
-                        <button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button>
-                    </div>
-                </div>
-                <div class="dado-control">
-                    <span class="dado-label">d20</span>
-                    <div class="dado-btn-group">
-                        <button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button>
-                        <span id="count-d20" class="dado-count">0</span>
-                        <button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button>
-                    </div>
-                </div>
-            </div>
-
-            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
-        </div>
-    </div>
-
-    <div id="overlay-rolagem">
-        <div id="container-dados-rolando">
-            </div>
-        <button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button>
-    </div>
-
     <script type="module" src="script.js?v=10.2"></script>
+    <script type="module">
+        // EXPOSIÇÃO GLOBAL CRÍTICA PARA DADOS.JS e FICHA.JS
+        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        
+        window.db = getDatabase(); // Garante que pega a instância correta (já inicializada no script.js)
+        window.ref = ref;
+        window.push = push;
+        window.query = query;
+        window.limitToLast = limitToLast;
+        window.onChildAdded = onChildAdded;
+        window.set = set;
+        window.get = get;
+        window.remove = remove;
+        window.onValue = onValue;
+
+        // Inicia escuta de rolagens
+        setTimeout(() => {
+            if(window.escutarRolagens) window.escutarRolagens();
+        }, 3000);
+    </script>
     <script src="profissao.js?v=1.0"></script>
     <script src="selecao-classe.js?v=3.0"></script>
     <script src="ficha.js?v=4.0"></script>
-    <script src="dados.js?v=1.0"></script>
+    <script src="dados.js?v=2.0"></script>
 </body>
 </html>

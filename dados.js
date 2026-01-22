@@ -1,15 +1,11 @@
 // =========================================================
-// SISTEMA DE DADOS - DAGGERHEART
+// SISTEMA DE DADOS MULTIPLAYER - DAGGERHEART
 // =========================================================
 
-// Estado da seleção de dados
-let selecaoDados = {
-    d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0,
-    esperanca: 0, // d12 especial
-    medo: 0       // d12 especial
-};
+let selecaoDados = { d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0, esperanca: 0, medo: 0 };
+let audioRolagem = null; // Preparado para futuro audio
 
-// --- CONTROLE DE UI ---
+// --- CONTROLE DE UI LOCAL ---
 
 window.abrirSeletorDados = function() {
     zerarSelecao();
@@ -28,67 +24,122 @@ window.alterarQtdDado = function(tipo, delta) {
 };
 
 window.adicionarDualidade = function() {
-    // Adiciona 1 Esperança e 1 Medo
     selecaoDados.esperanca = 1;
     selecaoDados.medo = 1;
-    
-    // Feedback visual ou rolar direto? 
-    // Vamos rolar direto para agilidade, conforme pedido "clica e roda"
     window.rolarDadosConfirmados();
 };
 
 function zerarSelecao() {
     selecaoDados = { d4: 0, d6: 0, d8: 0, d10: 0, d12: 0, d20: 0, esperanca: 0, medo: 0 };
-    // Reseta visual dos contadores
     ['d4','d6','d8','d10','d12','d20'].forEach(d => {
         const el = document.getElementById(`count-${d}`);
         if(el) el.innerText = '0';
     });
 }
 
-// --- LÓGICA DE ROLAGEM ---
+// --- 1. ENVIO: CALCULA E MANDA PRO FIREBASE ---
 
 window.rolarDadosConfirmados = function() {
     window.fecharSeletorDados();
     
-    // Monta array de dados para rolar
-    let pilhaDeDados = [];
-
-    // Adiciona dados normais
+    let dadosCalculados = [];
+    
+    // Gera os resultados localmente antes de enviar
+    // Assim todos verão o mesmo número final
+    
+    // Dados Normais
     ['d4','d6','d8','d10','d12','d20'].forEach(tipo => {
+        const faces = parseInt(tipo.substring(1));
         for(let i=0; i < selecaoDados[tipo]; i++) {
-            pilhaDeDados.push({ tipo: tipo, faces: parseInt(tipo.substring(1)), classe: 'dado-normal', label: tipo });
+            dadosCalculados.push({
+                tipo: tipo,
+                faces: faces,
+                classe: 'dado-normal',
+                label: tipo,
+                valorFinal: Math.floor(Math.random() * faces) + 1
+            });
         }
     });
 
-    // Adiciona dados especiais Daggerheart
+    // Dados Especiais
     for(let i=0; i < selecaoDados.esperanca; i++) {
-        pilhaDeDados.push({ tipo: 'd12', faces: 12, classe: 'dado-esperanca', label: 'Esperança' });
+        dadosCalculados.push({
+            tipo: 'd12', faces: 12, classe: 'dado-esperanca', label: 'Esperança',
+            valorFinal: Math.floor(Math.random() * 12) + 1
+        });
     }
     for(let i=0; i < selecaoDados.medo; i++) {
-        pilhaDeDados.push({ tipo: 'd12', faces: 12, classe: 'dado-medo', label: 'Medo' });
+        dadosCalculados.push({
+            tipo: 'd12', faces: 12, classe: 'dado-medo', label: 'Medo',
+            valorFinal: Math.floor(Math.random() * 12) + 1
+        });
     }
 
-    if (pilhaDeDados.length === 0) return; // Nada para rolar
+    if (dadosCalculados.length === 0) return;
 
-    iniciarAnimacaoRolagem(pilhaDeDados);
+    // Identifica quem rolou
+    const quem = window.nomeJogador || "Mestre"; // window.nomeJogador vem do script.js ou mestre.html
+
+    // Envia para o Firebase
+    // Usamos 'push' para criar uma nova entrada única na lista de rolagens
+    if (window.push && window.ref && window.db) {
+        const rolagensRef = window.ref(window.db, 'mesa_rpg/rolagens');
+        window.push(rolagensRef, {
+            quem: quem,
+            dados: dadosCalculados,
+            timestamp: Date.now()
+        });
+    } else {
+        console.error("Erro: Firebase não disponível para enviar rolagem.");
+        // Fallback local se estiver offline
+        iniciarAnimacaoRolagem(quem, dadosCalculados);
+    }
 };
 
-// --- ANIMAÇÃO ---
+// --- 2. RECEBIMENTO: ESCUTA FIREBASE E ANIMA ---
 
-function iniciarAnimacaoRolagem(dados) {
+window.escutarRolagens = function() {
+    if (!window.ref || !window.db || !window.onChildAdded) {
+        console.log("Aguardando conexão Firebase para dados...");
+        setTimeout(window.escutarRolagens, 1000);
+        return;
+    }
+
+    const rolagensRef = window.ref(window.db, 'mesa_rpg/rolagens');
+    
+    // Ouve novas rolagens adicionadas
+    // limitToLast(1) evita carregar todo o histórico ao entrar,
+    // mas precisamos filtrar por timestamp para não animar rolagens velhas
+    window.onChildAdded(window.query(rolagensRef, window.limitToLast(1)), (snapshot) => {
+        const rolagem = snapshot.val();
+        if (!rolagem) return;
+
+        // Só anima se a rolagem aconteceu nos últimos 10 segundos
+        // Isso evita que, ao dar F5, a última rolagem apareça de novo
+        const agora = Date.now();
+        if (agora - rolagem.timestamp < 10000) {
+            iniciarAnimacaoRolagem(rolagem.quem, rolagem.dados);
+        }
+    });
+    
+    console.log("🎲 Sistema de dados conectado ao Firebase.");
+};
+
+// --- ANIMAÇÃO VISUAL ---
+
+function iniciarAnimacaoRolagem(nomeQuemRolou, dados) {
     const overlay = document.getElementById('overlay-rolagem');
     const container = document.getElementById('container-dados-rolando');
     const btnFechar = document.getElementById('btn-fechar-rolagem');
+    const labelQuem = document.getElementById('quem-rolou-label');
     
+    // Configura a tela
+    labelQuem.innerText = `${nomeQuemRolou} está rolando...`;
     overlay.style.display = 'flex';
-    btnFechar.style.display = 'none'; // Esconde botão de fechar durante animação
+    btnFechar.style.display = 'none';
     container.innerHTML = '';
 
-    // Som de dados (opcional, se tiver o arquivo)
-    // const audio = new Audio('audio/dice-roll.mp3'); audio.play();
-
-    // 1. Cria os elementos visuais
+    // Cria elementos visuais
     const elementosAnimados = dados.map(dado => {
         const el = document.createElement('div');
         el.className = `dado-visual ${dado.classe}`;
@@ -97,46 +148,39 @@ function iniciarAnimacaoRolagem(dados) {
         return { 
             el: el, 
             faces: dado.faces, 
-            valorFinal: Math.floor(Math.random() * dado.faces) + 1,
+            valorFinal: dado.valorFinal, // O valor já veio decidido do Firebase
             interval: null 
         };
     });
 
-    // 2. Animação de números rodando (Shuffle)
+    // Animação de Shuffle (números aleatórios visuais)
     elementosAnimados.forEach(item => {
         const spanValor = item.el.querySelector('.valor');
-        
-        // Troca números a cada 50ms
         item.interval = setInterval(() => {
             spanValor.innerText = Math.floor(Math.random() * item.faces) + 1;
-        }, 50);
+        }, 50); // Troca bem rápido
     });
 
-    // 3. Parar e Fixar Resultado após 3 segundos (3000ms)
+    // Finaliza após 2.5 segundos
     setTimeout(() => {
         elementosAnimados.forEach(item => {
-            clearInterval(item.interval); // Para a troca aleatória
-            
+            clearInterval(item.interval);
             const spanValor = item.el.querySelector('.valor');
             spanValor.innerText = item.valorFinal;
             
-            // Remove tremedeira e aplica efeito de "chegada"
+            // Efeito visual de parada
             item.el.style.animation = 'resultadoFinal 0.3s ease-out forwards';
             
-            // Destaque visual para Críticos no D12 (Esperança/Medo)
+            // Destaque Crítico (Esperança/Medo com valor 12)
             if (item.faces === 12 && item.valorFinal === 12) {
-                item.el.style.boxShadow = "0 0 50px #fff"; // Brilho extra
+                item.el.style.boxShadow = "0 0 50px #fff";
                 item.el.style.borderColor = "#fff";
+                item.el.style.zIndex = "100";
             }
         });
         
-        // Mostra botão de fechar
         btnFechar.style.display = 'block';
-
-        // Aqui você poderia adicionar lógica para enviar o resultado para o chat/log do Firebase
-        // registrarRolagemNoFirebase(elementosAnimados);
-
-    }, 3000);
+    }, 2500);
 }
 
 window.fecharResultadoRolagem = function() {
