@@ -11,7 +11,8 @@
     <link rel="stylesheet" href="ficha.css?v=5.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
-    <link rel="stylesheet" href="medo.css?v=1.0"> <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="medo.css?v=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         /* Estilos do Botão Refresh para Jogador (Fixo no canto superior) */
         .btn-refresh-player {
@@ -180,7 +181,7 @@
 
     <div id="app-container" style="display: none; opacity: 0;">
         
-        <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar Mesa">🔄</button>
+        <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar">🔄</button>
 
         <div id="aura-profissao"></div>
         <div id="particulas-profissao"></div>
@@ -343,43 +344,65 @@
 
     <script type="module" src="script.js?v=10.2"></script>
     <script type="module">
-        // EXPOSIÇÃO GLOBAL CRÍTICA
-        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
-        window.db = getDatabase(); 
-        window.ref = ref;
-        window.push = push;
-        window.query = query;
-        window.limitToLast = limitToLast;
-        window.onChildAdded = onChildAdded;
-        window.set = set;
-        window.get = get;
-        window.remove = remove;
-        window.onValue = onValue;
-        window.update = update;
-        window.off = off;
+        window.db = getDatabase(); window.ref = ref; window.push = push; window.query = query;
+        window.limitToLast = limitToLast; window.onChildAdded = onChildAdded; window.set = set;
+        window.get = get; window.remove = remove; window.onValue = onValue; window.update = update; window.off = off; window.onDisconnect = onDisconnect;
 
-        // FUNÇÃO DE RESSINCRONIZAÇÃO MANUAL
+        // --- SISTEMA DE PRESENÇA (CORREÇÃO DE SINCRONIA) ---
+        
+        // 1. Função para registrar que este personagem está online
+        window.registrarPresenca = function(nomePersonagem) {
+            if (!nomePersonagem) return;
+            const presencaRef = ref(db, `mesa_rpg/presenca/${nomePersonagem}`);
+            
+            // Marca como online
+            set(presencaRef, true);
+            
+            // Se desconectar (fechar aba), remove automaticamente
+            onDisconnect(presencaRef).remove();
+            console.log(`🟢 Presença registrada para: ${nomePersonagem}`);
+        };
+
+        // 2. Intercepta a seleção de personagem para ativar a presença
+        const originalSelecionar = window.selecionarPersonagem;
+        window.selecionarPersonagem = async function(charName) {
+            await originalSelecionar(charName); // Executa lógica original
+            window.registrarPresenca(charName); // Ativa bolinha verde
+            
+            // Garante que o sistema de medo inicie
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
+            
+            // Inicia heartbeat para garantir que não caia
+            setInterval(() => {
+                if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
+            }, 60000); // A cada 1 minuto renova a presença
+        };
+
+        // 3. Atualização Manual (Botão Refresh)
         window.atualizarSincronia = function() {
             const btn = document.querySelector('.btn-refresh-player');
             if(btn) btn.classList.add('spin-anim');
             
-            // Limpa visualmente para dar feedback
-            const container = document.getElementById('area-inimigos');
-            if(container) container.innerHTML = "";
+            // Limpa visualmente
+            document.getElementById('area-inimigos').innerHTML = "";
             
             // Reinicia sistemas
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
             if(window.escutarRolagens) window.escutarRolagens();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // REINICIA MEDO
-            
-            // Se tiver função de renderizar cartas (script.js), chama também
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
             if(window.renderizar) window.renderizar();
+
+            // REFORÇA PRESENÇA SE JÁ TIVER JOGADOR
+            if (window.nomeJogador) {
+                window.registrarPresenca(window.nomeJogador);
+            }
 
             setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
         };
 
-        // LOADER DE SCRIPTS DINÂMICOS
+        // LOADER DE SCRIPTS DINÂMICOS (ANTI-CACHE)
         function loadScript(src) {
             const script = document.createElement('script');
             script.src = src + "?t=" + Date.now();
@@ -391,13 +414,16 @@
         loadScript("ficha.js");
         loadScript("dados.js");
         loadScript("inimigos.js");
-        loadScript("medo.js"); // CARREGA MEDO
+        loadScript("medo.js");
 
-        // GARANTE A INICIALIZAÇÃO IMEDIATA
+        // GARANTE A INICIALIZAÇÃO TARDIA
         setTimeout(() => {
             if(window.escutarRolagens) window.escutarRolagens();
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // INICIA MEDO
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
+            
+            // Se já tiver personagem carregado (ex: refresh), registra presença
+            if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
         }, 2000);
     </script>
 </body>
