@@ -167,99 +167,128 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
     modal.style.display = 'flex';
 };
 
-// Renderizar Slots e Mão (COM CORREÇÃO DA RESERVA)
+// ... (Mantenha as importações iguais) ...
+
+// ... (Mantenha as configurações iniciais iguais até a função renderizar) ...
+
+// Função para renderizar as cartas (ATUALIZADA PARA CORRIGIR RESERVA)
 function renderizar() {
-    // Slots Fixos
-    Object.keys(slotsFixos).forEach(id => {
-        const div = document.getElementById(`slot-${id}`);
-        if(div) {
-            div.innerHTML = `<span class="label-slot">${id}</span>` + 
-                            (['Fundamental','Especializacao','Maestria'].includes(id) ? `<span class="nivel-req">${id==='Fundamental'?'Nível 1':'Avanço'}</span>` : '') +
-                            `<button class="btn-limpar" onclick="limparSlot('${id}', event)">×</button>`;
-            const carta = slotsFixos[id];
-            const btn = div.querySelector('.btn-limpar');
-            if(carta) {
-                const img = document.createElement('img');
-                img.src = carta.caminho || carta.caminho_perfil || '';
-                img.onmouseenter = () => { const p = document.getElementById('hover-preview-slot'); if(p) { p.style.display='block'; p.style.backgroundImage=`url('${img.src}')`; }};
-                img.onmouseleave = () => document.getElementById('hover-preview-slot').style.display='none';
-                div.appendChild(img);
-                btn.style.display = 'flex';
-            } else btn.style.display = 'none';
-        }
-    });
-
-    // Mão
     const divMao = document.getElementById('cartas-mao');
-    divMao.innerHTML = '';
-    maoDoJogador.forEach((c, i) => {
-        const el = document.createElement('div'); el.className = 'carta lazy-card'; el.dataset.src = c.caminho; el.style.backgroundColor='#1a1a1a';
-        const rot = (i - (maoDoJogador.length-1)/2) * 4; el.style.transform = `rotate(${rot}deg)`;
-        
-        if(c.estado==='curto'||c.estado==='longo') {
-            el.classList.add('indisponivel');
-            el.innerHTML = `<div class="icone-descanso"><img src="${c.estado==='curto'?'img/meia-lua.png':'img/lua-cheia.png'}"></div>`;
-        }
-        if(c.tokens > 0) el.innerHTML += `<div class="token-badge token-${c.tokens}">${c.tokens}</div>`;
+    const divRes = document.getElementById('cartas-reserva');
 
-        el.onclick = () => window.abrirDecisao(i);
-        el.onmouseenter = () => { const p = document.getElementById('hover-preview'); if(p) { p.style.display='block'; p.style.backgroundImage=`url('${c.caminho}')`; }};
-        el.onmouseleave = () => document.getElementById('hover-preview').style.display='none';
+    if (!divMao || !divRes) return;
+
+    renderizarSlots(); 
+
+    // MÃO
+    divMao.innerHTML = '';
+    maoDoJogador.forEach((carta, i) => {
+        const el = document.createElement('div');
+        el.className = 'carta lazy-card';
+        el.dataset.src = carta.caminho;
+        el.style.backgroundColor = '#1a1a1a';
+        
+        // Fallback: se a imagem falhar, mostra o nome
+        const nomeFallback = document.createElement('div');
+        nomeFallback.style.cssText = "position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#666; font-size:0.7rem; text-align:center; width:90%; pointer-events:none; z-index:0;";
+        nomeFallback.innerText = carta.nome || "Carta";
+        el.appendChild(nomeFallback);
+
+        const centro = (maoDoJogador.length - 1) / 2;
+        const rotacao = (i - centro) * 4;
+        el.style.transform = `rotate(${rotacao}deg)`;
+
+        if (carta.estado === 'curto' || carta.estado === 'longo') {
+            el.classList.add('indisponivel');
+            const iconoDiv = document.createElement('div');
+            iconoDiv.className = carta.estado === 'curto' ? 'icone-descanso icone-descanso-curto' : 'icone-descanso icone-descanso-longo';
+            const img = document.createElement('img');
+            img.src = carta.estado === 'curto' ? 'img/meia-lua.png' : 'img/lua-cheia.png';
+            iconoDiv.appendChild(img);
+            el.appendChild(iconoDiv);
+        }
+
+        if (carta.tokens > 0) {
+            const badge = document.createElement('div');
+            badge.className = `token-badge token-${carta.tokens}`;
+            badge.innerText = carta.tokens;
+            el.appendChild(badge);
+        }
+
+        el.onmouseenter = function() {
+            const preview = document.getElementById('hover-preview');
+            if (preview && carta.caminho) {
+                preview.style.display = 'block';
+                preview.style.backgroundImage = `url('${carta.caminho}')`;
+            }
+        };
+        el.onmouseleave = function() { if (document.getElementById('hover-preview')) document.getElementById('hover-preview').style.display = 'none'; };
+        
+        el.onclick = () => { if (window.abrirDecisao) window.abrirDecisao(i); };
         divMao.appendChild(el);
         imageObserver.observe(el);
     });
 
-    // === CORREÇÃO 2: VISUALIZAÇÃO DA RESERVA ===
-    const divRes = document.getElementById('cartas-reserva');
+    // RESERVA (CORREÇÃO VISUAL)
     divRes.innerHTML = '';
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0.3';
     
-    if(reservaDoJogador.length > 0) {
-        const con = document.createElement('div');
-        con.className='reserva-container';
-        con.style.cssText="position:relative;width:100%;height:100%;cursor:pointer;";
+    if (reservaDoJogador.length > 0) {
+        const container = document.createElement('div');
+        container.className = 'reserva-container';
+        container.style.cssText = 'position: relative; width: 100%; height: 100%; cursor: pointer;';
         
-        // Renderiza as 3 ÚLTIMAS cartas (Topo da pilha)
+        // Lógica: Mostra as últimas 3 cartas (topo da pilha)
+        // Se a carta é a última do array (índice length-1), ela tem que ficar no topo visual (z-index maior)
         const total = reservaDoJogador.length;
-        const mostrarAte = Math.min(3, total);
+        const mostrar = Math.min(3, total);
         
-        // Loop reverso para garantir a ordem visual correta (mais recente no topo)
-        for(let i = 0; i < mostrarAte; i++) {
-            // Se tem 5 cartas: Indices 4, 3, 2
-            const indexReal = total - 1 - i; 
+        for (let i = 0; i < mostrar; i++) {
+            // Pega do final para o começo (LIFO - Last In First Out visual)
+            const indexReal = total - 1 - i;
             const carta = reservaDoJogador[indexReal];
             
-            const el = document.createElement('div'); 
-            el.className='carta-reserva-stacked lazy-card'; 
-            el.dataset.src = carta.caminho;
+            const cartaEl = document.createElement('div');
+            cartaEl.className = 'carta-reserva-stacked lazy-card';
+            cartaEl.dataset.src = carta.caminho;
             
-            // Offset visual invertido: a do fundo fica deslocada
-            // Mas vamos simplificar: empilha uma sobre a outra com leve rotação
-            // i=0 é a do topo (z-index maior). i=2 é a do fundo.
-            const offset = (mostrarAte - 1 - i) * 4; 
-            
-            el.style.cssText=`
-                background-color:#1a1a1a;
-                position:absolute;
-                width:100%; height:100%;
-                top:${offset}px; left:${offset}px;
-                z-index:${mostrarAte - i};
-                pointer-events:none;
-                border: 1px solid #333;
-                box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            // Estilo para garantir que cubra o cinza
+            cartaEl.style.cssText = `
+                background-color: #1a1a1a;
+                position: absolute;
+                width: 100%; height: 100%;
+                top: ${i * 2}px; left: ${i * 2}px; /* Deslocamento leve */
+                z-index: ${mostrar - i}; /* A primeira do loop (ultima carta real) fica com z-index maior */
+                border: 1px solid #444;
+                border-radius: 6px;
+                box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+                pointer-events: none;
+                background-size: cover;
+                background-position: center;
             `;
-            con.appendChild(el); 
-            imageObserver.observe(el);
+            
+            // Fallback de texto caso a imagem falhe (para não ficar só cinza)
+            const fallbackText = document.createElement('span');
+            fallbackText.innerText = carta.nome ? carta.nome.split('-')[1] || carta.nome : "Carta";
+            fallbackText.style.cssText = "position:absolute; top:40%; left:5px; right:5px; text-align:center; color:#555; font-size:0.6rem; z-index:-1;";
+            cartaEl.appendChild(fallbackText);
+
+            container.appendChild(cartaEl);
+            imageObserver.observe(cartaEl);
         }
         
-        con.innerHTML += `<div style="position:absolute;bottom:8px;right:8px;background:rgba(218,165,32,0.9);color:#fff;padding:4px 8px;border-radius:4px;font-weight:bold;z-index:100">${total}</div>`;
-        con.onclick = window.abrirReserva;
-        divRes.appendChild(con);
+        const label = document.createElement('div');
+        label.style.cssText = 'position:absolute; bottom:-5px; right:-5px; background:var(--gold); color:#000; padding:2px 6px; border-radius:4px; font-weight:bold; z-index:100; font-size:0.8rem; box-shadow:0 0 5px black;';
+        label.innerText = total;
+        container.appendChild(label);
+        
+        container.onclick = () => { if (window.abrirReserva) window.abrirReserva(); };
+        divRes.appendChild(container);
     }
-    // ===============================================
-
+    
     if (typeof window.monitorarClasseFundamental === 'function') window.monitorarClasseFundamental();
 }
+
 
 window.renderizar = renderizar;
 

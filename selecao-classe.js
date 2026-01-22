@@ -1,17 +1,61 @@
 // =========================================================
-// SELEÇÃO DE CLASSE & CARROSSEL
+// SELEÇÃO DE CLASSE & CARROSSEL (CORRIGIDO PARA SUAS PASTAS)
 // =========================================================
 
+/* IMPORTANTE: Baseado nos seus prints:
+   - Perfis estão na pasta: img/classes-perfil/ (ex: bardoperfil.png)
+   - PDFs estão na pasta: img/classes-pdf/ (ex: bardo1.jpg)
+   
+   Se as imagens não aparecerem, verifique se são .png ou .jpg e ajuste abaixo.
+   Estou assumindo: Perfis = .png, PDFs = .jpg (padrão comum)
+*/
+
 const classesDisponiveis = [
-    { nome: 'Bardo', img: 'img/perfil/Bardo.png', pdfs: ['img/classes/Bardo-1.png', 'img/classes/Bardo-2.png'] },
-    { nome: 'Druida', img: 'img/perfil/Druida.png', pdfs: ['img/classes/Druida-1.png', 'img/classes/Druida-2.png'] },
-    { nome: 'Feiticeiro', img: 'img/perfil/Feiticeiro.png', pdfs: ['img/classes/Feiticeiro-1.png', 'img/classes/Feiticeiro-2.png'] },
-    { nome: 'Guardião', img: 'img/perfil/Guardiao.png', pdfs: ['img/classes/Guardiao-1.png', 'img/classes/Guardiao-2.png'] },
-    { nome: 'Guerreiro', img: 'img/perfil/Guerreiro.png', pdfs: ['img/classes/Guerreiro-1.png', 'img/classes/Guerreiro-2.png'] },
-    { nome: 'Ladino', img: 'img/perfil/Ladino.png', pdfs: ['img/classes/Ladino-1.png', 'img/classes/Ladino-2.png'] },
-    { nome: 'Mago', img: 'img/perfil/Mago.png', pdfs: ['img/classes/Mago-1.png', 'img/classes/Mago-2.png'] },
-    { nome: 'Patrulheiro', img: 'img/perfil/Patrulheiro.png', pdfs: ['img/classes/Patrulheiro-1.png', 'img/classes/Patrulheiro-2.png'] },
-    { nome: 'Serafim', img: 'img/perfil/Serafim.png', pdfs: ['img/classes/Serafim-1.png', 'img/classes/Serafim-2.png'] }
+    { 
+        nome: 'Bardo', 
+        img: 'img/classes-perfil/bardoperfil.png', 
+        pdfs: ['img/classes-pdf/bardo1.jpg', 'img/classes-pdf/bardo2.jpg'] 
+    },
+    { 
+        nome: 'Druida', 
+        img: 'img/classes-perfil/druidaperfil.png', 
+        pdfs: ['img/classes-pdf/druida1.jpg', 'img/classes-pdf/druida2.jpg', 'img/classes-pdf/druida3.jpg', 'img/classes-pdf/druida4.jpg', 'img/classes-pdf/druida5.jpg', 'img/classes-pdf/druida6.jpg'] 
+    },
+    { 
+        nome: 'Feiticeiro', 
+        img: 'img/classes-perfil/feiticeiroperfil.png', 
+        pdfs: ['img/classes-pdf/feiticeiro1.jpg', 'img/classes-pdf/feiticeiro2.jpg'] 
+    },
+    { 
+        nome: 'Guardião', 
+        img: 'img/classes-perfil/guardiaoperfil.png', 
+        pdfs: ['img/classes-pdf/guardiao1.jpg', 'img/classes-pdf/guardiao2.jpg'] 
+    },
+    { 
+        nome: 'Guerreiro', 
+        img: 'img/classes-perfil/guerreiroperfil.png', 
+        pdfs: ['img/classes-pdf/guerreiro1.jpg', 'img/classes-pdf/guerreiro2.jpg'] 
+    },
+    { 
+        nome: 'Ladino', 
+        img: 'img/classes-perfil/ladinoperfil.png', 
+        pdfs: ['img/classes-pdf/ladino1.jpg', 'img/classes-pdf/ladino2.jpg'] 
+    },
+    { 
+        nome: 'Mago', 
+        img: 'img/classes-perfil/magoperfil.png', 
+        pdfs: ['img/classes-pdf/mago1.jpg', 'img/classes-pdf/mago2.jpg'] 
+    },
+    { 
+        nome: 'Patrulheiro', 
+        img: 'img/classes-perfil/patrulheiroperfil.png', 
+        pdfs: ['img/classes-pdf/patrulheiro1.jpg', 'img/classes-pdf/patrulheiro2.jpg', 'img/classes-pdf/patrulheiro3.jpg', 'img/classes-pdf/patrulheiro4.jpg'] 
+    },
+    { 
+        nome: 'Serafim', 
+        img: 'img/classes-perfil/serafimperfil.png', 
+        pdfs: ['img/classes-pdf/serafim1.jpg', 'img/classes-pdf/serafim2.jpg'] 
+    }
 ];
 
 let indiceClasse = 0;
@@ -33,10 +77,14 @@ function atualizarCarrossel() {
     const cls = classesDisponiveis[indiceClasse];
     const img = document.getElementById('img-classe-perfil');
     
-    // Animação simples de troca
+    // Reset visual
     img.style.opacity = 0;
+    
+    // Pequeno delay para transição suave
     setTimeout(() => {
         img.src = cls.img;
+        // Se a imagem falhar, avisa no console
+        img.onerror = () => console.warn(`Imagem não encontrada: ${cls.img}`);
         img.style.opacity = 1;
     }, 200);
 
@@ -44,8 +92,9 @@ function atualizarCarrossel() {
     document.getElementById('btn-nome-classe').innerText = cls.nome;
 }
 
-// === FUNÇÃO REATIVADA: VER DETALHES (PDF) ===
+// === LÓGICA DO MODAL DE DETALHES ===
 window.verDetalhesClasse = function() {
+    console.log("Abrindo detalhes da classe...");
     paginaPDFAtual = 0;
     const modal = document.getElementById('modal-detalhes-classe');
     if(modal) {
@@ -76,6 +125,10 @@ function atualizarPDF() {
     
     if (cls.pdfs && cls.pdfs.length > 0) {
         img.src = cls.pdfs[paginaPDFAtual];
+        img.onerror = () => {
+            console.warn(`PDF/Imagem não encontrado: ${cls.pdfs[paginaPDFAtual]}`);
+            img.alt = "Imagem não encontrada (Verifique o nome do arquivo na pasta)";
+        };
         contador.innerText = `${paginaPDFAtual + 1}/${cls.pdfs.length}`;
     } else {
         img.alt = "Sem descrição disponível";
@@ -83,7 +136,7 @@ function atualizarPDF() {
     }
 }
 
-// Lógica de Confirmação
+// === CONFIRMAÇÃO E SALVAMENTO ===
 window.confirmarSelecaoClasse = function() {
     finalizarEscolha();
 };
@@ -95,31 +148,26 @@ window.confirmarSelecaoClasseDeDentro = function() {
 
 function finalizarEscolha() {
     const cls = classesDisponiveis[indiceClasse];
-    const nomeClasse = cls.nome; // Ex: "Guerreiro"
+    const nomeClasse = cls.nome; 
 
-    // Salva local
     localStorage.setItem('profissaoSelecionada', nomeClasse);
-    
-    // Fecha modal
     document.getElementById('classe-selection-modal').style.display = 'none';
     
-    // Atualiza Firebase
     if(window.nomeJogador && window.set && window.ref && window.db) {
-        // Encontra a carta fundamental correspondente
+        // Tenta encontrar a carta fundamental na lista V2, senão usa o perfil
         fetch('./lista_cartas_v2.json')
             .then(res => res.json())
             .then(cartas => {
-                // Procura a carta "Fundamental - Classe"
                 const cartaFundamental = cartas.find(c => 
                     c.categoria === 'Classes' && 
                     c.profissao === nomeClasse && 
-                    c.nome.includes('Fundamental')
+                    c.nome.toLowerCase().includes('fundamental')
                 );
 
                 const dadosSalvar = {
                     nome: cartaFundamental ? cartaFundamental.nome : `Fundamental - ${nomeClasse}`,
                     caminho: cartaFundamental ? cartaFundamental.caminho : cls.img,
-                    caminho_perfil: cls.img, // Salva imagem de perfil para usar no slot se a carta falhar
+                    caminho_perfil: cls.img, 
                     profissao: nomeClasse
                 };
 
@@ -127,9 +175,6 @@ function finalizarEscolha() {
             });
     }
 
-    // Ativa efeitos visuais
     if(window.ativarProfissao) window.ativarProfissao(nomeClasse);
-    
-    // Renderiza
     if(window.renderizar) window.renderizar();
 }
