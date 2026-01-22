@@ -79,10 +79,18 @@
     <div id="hover-preview-slot" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:600px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
 
     <div id="app-container" style="display: none; opacity: 0;">
-        <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar">🔄</button>
-        <div id="aura-profissao"></div><div id="particulas-profissao"></div>
-        <div id="audio-control"><button onclick="toggleMusic()" id="btn-music">🔊</button><input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()"></div>
-        <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio><audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
+        
+        <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar Mesa">🔄</button>
+
+        <div id="aura-profissao"></div>
+        <div id="particulas-profissao"></div>
+
+        <div id="audio-control">
+            <button onclick="toggleMusic()" id="btn-music">🔊</button>
+            <input type="range" id="volume" min="0" max="1" step="0.01" value="0.05" oninput="setVolume()">
+        </div>
+        <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio>
+        <audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
         <div id="system-message"></div>
         
         <div id="area-inimigos"></div>
@@ -107,8 +115,7 @@
     <div id="reserva-modal" class="modal" style="z-index: 6000;"><div class="modal-reserva-content"><div class="modal-header"><h2>Reserva</h2><button class="close-btn" onclick="window.fecharReserva()">X</button></div><div id="grid-reserva"></div></div></div>
     <div id="troca-modal" class="modal" style="z-index: 6100;"><div class="modal-decisao-content"><h3>Mão cheia!</h3><div id="grid-troca"></div><div class="botoes-decisao"><button class="btn-confirmar" onclick="window.cancelarTroca()">Cancelar</button></div></div></div>
 
-    <script type="module" src="script.js?v=10.2"></script>
-    <script type="module">
+    <script type="module" src="script.js?v=10.2"></script> <script type="module">
         import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
@@ -130,12 +137,13 @@
         // Garante que a autenticação persista apenas na sessão
         setPersistence(auth, browserSessionPersistence).catch(console.error);
 
-        // Exportações globais (CRUCIAIS PARA OS OUTROS SCRIPTS)
+        // Exportações globais
         window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
         window.onValue = onValue; window.push = push; window.update = update; window.off = off; window.onDisconnect = onDisconnect;
         window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
         
-        // === RESTAURAÇÃO DA LÓGICA DO JOGADOR ===
+        // === RESTAURAÇÃO DA LÓGICA DO JOGADOR (MANUAL PARA GARANTIR FUNCIONAMENTO) ===
+        // Isso garante que mesmo se o script.js falhar ou demorar, a lógica crítica de jogo esteja aqui
         window.nomeJogador = "";
         let maoDoJogador = [];
         let reservaDoJogador = [];
@@ -147,13 +155,8 @@
         let slotDestinoAtual = null;
         const LIMITE_MAO = 5;
 
-        // SISTEMA DE PRESENÇA (Bolinha)
-        window.registrarPresenca = function(nomePersonagem) {
-            if (!nomePersonagem) return;
-            const presencaRef = ref(db, `mesa_rpg/presenca/${nomePersonagem}`);
-            set(presencaRef, true);
-            onDisconnect(presencaRef).remove();
-        };
+        // Função de Debug
+        function debug(msg, data) { console.log(msg, data||""); }
 
         // Carrega cartas (JSON)
         async function carregarDados() {
@@ -166,66 +169,6 @@
                 }
             } catch(e) { console.error("Erro loading cards", e); }
         }
-
-        // --- SELEÇÃO DE PERSONAGEM (CORREÇÃO DE FLUXO) ---
-        // Aqui verificamos se o personagem tem classe, se não tiver, abre o modal
-        const originalSelecionar = window.selecionarPersonagem; // Backup se existir
-        
-        window.selecionarPersonagem = async function(charName) {
-            window.nomeJogador = charName.toUpperCase();
-            
-            // 1. Esconde Login e Mostra Jogo
-            document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('app-container').style.display = 'flex';
-            setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
-
-            // 2. Registra Presença
-            window.registrarPresenca(window.nomeJogador);
-
-            // 3. Carrega Dados do Firebase
-            const snap = await get(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}`));
-            if(snap.exists()) {
-                const d = snap.val();
-                maoDoJogador = d.mao || [];
-                reservaDoJogador = d.reserva || [];
-                if(d.slots) slotsFixos = d.slots;
-            } else {
-                // Novo char
-                maoDoJogador = []; reservaDoJogador = [];
-                slotsFixos = { 'Ancestralidade': null, 'Comunidade': null, 'Fundamental': null, 'Especializacao': null, 'Maestria': null };
-            }
-
-            // 4. Carrega Catálogo
-            await carregarDados();
-
-            // 5. Verifica se é novo (Sem carta Fundamental)
-            if (!slotsFixos['Fundamental'] || !slotsFixos['Fundamental'].profissao) {
-                // ABRE MODAL DE CLASSE
-                const modalClasse = document.getElementById('classe-selection-modal');
-                if(modalClasse) modalClasse.style.display = 'flex';
-                // Chama a função do script selecao-classe.js
-                if (window.inicializarSelecaoClasse) window.inicializarSelecaoClasse();
-            } else {
-                // Já tem classe, carrega tudo normal
-                localStorage.setItem('profissaoSelecionada', slotsFixos['Fundamental'].profissao);
-                if(window.ativarProfissao) window.ativarProfissao(slotsFixos['Fundamental'].profissao);
-                renderizar();
-            }
-
-            // 6. Toca Som
-            const audio = document.getElementById('bg-music');
-            if (audio) { audio.volume = 0.05; audio.play().catch(e => console.warn(e)); }
-
-            // 7. Inicia Sistemas Auxiliares
-            if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-            
-            // 8. Heartbeat Presença
-            if (window.presencaInterval) clearInterval(window.presencaInterval);
-            window.presencaInterval = setInterval(() => {
-                if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
-            }, 30000);
-        };
 
         // Funções de Interface (GRIMÓRIO)
         window.abrirGrimorio = async function(tipo, slotDestino = null) {
@@ -290,11 +233,6 @@
 
         window.preencherSlotFixo = function(carta, idSlot) {
             slotsFixos[idSlot] = carta;
-            // Se for Fundamental, salva a profissão
-            if(idSlot === 'Fundamental' && carta.profissao) {
-                localStorage.setItem('profissaoSelecionada', carta.profissao);
-                if(window.ativarProfissao) window.ativarProfissao(carta.profissao);
-            }
             salvarNaNuvem(); renderizar();
         };
 
@@ -471,27 +409,57 @@
             onDisconnect(presencaRef).remove();
         };
 
-        // REFRESH MANUAL
+        // INTERCEPTA A SELEÇÃO
+        const originalSelecionar = window.selecionarPersonagem;
+        window.selecionarPersonagem = async function(charName) {
+            window.nomeJogador = charName.toUpperCase();
+            
+            // Carrega dados do Firebase para popular variáveis locais
+            const snap = await get(ref(db, `mesa_rpg/jogadores/${window.nomeJogador}`));
+            if(snap.exists()) {
+                const d = snap.val();
+                maoDoJogador = d.mao || [];
+                reservaDoJogador = d.reserva || [];
+                if(d.slots) slotsFixos = d.slots;
+            }
+
+            await originalSelecionar(charName); // Lógica visual de esconder login
+            
+            window.registrarPresenca(window.nomeJogador);
+            
+            // Inicia sistemas externos e renderização
+            await carregarDados();
+            renderizar();
+            
+            if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
+            
+            // HEARTBEAT
+            if (window.presencaInterval) clearInterval(window.presencaInterval);
+            window.presencaInterval = setInterval(() => {
+                if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
+            }, 30000);
+        };
+
+        // FUNÇÃO DE RESSINCRONIZAÇÃO MANUAL
         window.atualizarSincronia = function() {
             const btn = document.querySelector('.btn-refresh-player');
             if(btn) btn.classList.add('spin-anim');
             document.getElementById('area-inimigos').innerHTML = "";
             
+            // Reload lógica
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
             if(window.escutarRolagens) window.escutarRolagens();
             if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-            
-            renderizar(); // Atualiza cartas
+            renderizar();
 
             // REFORÇA PRESENÇA
-            if (window.nomeJogador) {
-                window.registrarPresenca(window.nomeJogador);
-            }
+            if (window.nomeJogador) window.registrarPresenca(window.nomeJogador);
 
             setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
         };
 
-        // LOADER DE SCRIPTS
+        // LOADER DE SCRIPTS DINÂMICOS
         function loadScript(src) {
             const script = document.createElement('script');
             script.src = src + "?t=" + Date.now();
@@ -508,10 +476,7 @@
         setTimeout(() => {
             if(window.escutarRolagens) window.escutarRolagens();
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
-            
-            // Se já tiver personagem carregado, registra presença agora
-            if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // INICIA MEDO
         }, 2000);
     </script>
 </body>
