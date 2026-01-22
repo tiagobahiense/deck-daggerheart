@@ -1,6 +1,5 @@
 // =========================================================
-// FICHA DIGITAL - PRANCHETA V2.1
-// (Auto-Resize, Zoom Marcador, Correção de Cliques)
+// FICHA DIGITAL - PRANCHETA REALTIME V2.2 (Auto-Resize Fix)
 // =========================================================
 
 const FICHAS_IMAGENS = {
@@ -112,19 +111,15 @@ function configurarEventosMouse() {
     container.onmouseup = null;
 
     container.onmousedown = (e) => {
-        // Se clicar no botão do menu, não faz nada aqui (já tem onclick no botão)
         if(e.target.tagName === 'BUTTON' || e.target.closest('.element-context-menu')) return;
 
         const rect = container.getBoundingClientRect();
-        
-        // Clicou num elemento existente (Mover/Selecionar)
         const clickedWrapper = e.target.closest('.element-wrapper');
         
         if (clickedWrapper) {
             const id = clickedWrapper.id.replace('wrap_', '');
             selecionarElemento(id);
             
-            // Inicia movimento apenas se clicar na borda/wrapper, não no texto editável
             if (e.target.tagName !== 'TEXTAREA') {
                 isMoving = true;
                 movingElementId = id;
@@ -136,7 +131,6 @@ function configurarEventosMouse() {
             return;
         }
 
-        // Clicou no vazio (Criar)
         deselecionarTudo();
         startX = e.clientX - rect.left;
         startY = e.clientY - rect.top;
@@ -219,13 +213,11 @@ function configurarEventosMouse() {
         }
 
         if (ferramentaAtual === 'marcador') {
-            // Se clicou em botão ou menu, aborta
             if(e.target.tagName === 'BUTTON' || e.target.closest('.element-wrapper')) return;
 
             const xPct = ((e.clientX - rect.left) / rect.width) * 100;
             const yPct = ((e.clientY - rect.top) / rect.height) * 100;
             
-            // Tamanho inicial menor (1.5%)
             criarElementoFinal(xPct, yPct, 1.5, 0, 'marcador'); 
         }
     };
@@ -237,16 +229,16 @@ function criarElementoFinal(x, y, w, h, tipo) {
         id: idUnico, tipo: tipo, x: x, y: y, w: w, h: h,
         pagina: paginaFichaAtual,
         valor: tipo === 'texto' ? '' : true,
-        fontSize: tipo === 'texto' ? 1.6 : 1.5 // Texto 1.6vh, Marcador 1.5%
+        fontSize: tipo === 'texto' ? 1.6 : 1.5
     };
     salvarElementoNoFirebase(novoElemento);
 }
 
-// --- AÇÕES DO MENU (AGORA COM STOP PROPAGATION) ---
+// --- AÇÕES DO MENU (RESIZE INTELIGENTE) ---
 window.alterarTamanhoElemento = function(id, delta) {
     if (!elementosFicha[id]) return;
     
-    // Se for texto, altera fontSize. Se for marcador, altera W (largura/zoom)
+    // Texto = Fonte | Marcador = Largura
     let prop = elementosFicha[id].tipo === 'texto' ? 'fontSize' : 'w';
     let val = elementosFicha[id][prop] || (prop === 'fontSize' ? 1.6 : 1.5);
     
@@ -255,17 +247,16 @@ window.alterarTamanhoElemento = function(id, delta) {
     
     elementosFicha[id][prop] = val;
     
-    // Atualiza visual na hora
     const wrap = document.getElementById('wrap_' + id);
     const input = document.getElementById('input_' + id);
     
     if (elementosFicha[id].tipo === 'texto' && input) {
         input.style.fontSize = val + 'vh';
-        // Auto-resize após mudar fonte
-        autoResizeTextarea(input, wrap, id);
+        // AUTO RESIZE: Ajusta a caixa ao novo tamanho de fonte
+        autoResizeTextarea(input, wrap, id); 
     } else if (elementosFicha[id].tipo === 'marcador' && wrap) {
         wrap.style.width = val + '%';
-        wrap.style.height = val + '%'; // Mantém proporção
+        wrap.style.height = val + '%';
     }
     
     salvarElementoNoFirebase(elementosFicha[id]);
@@ -315,20 +306,13 @@ function renderizarElementosNaTela() {
         if(el.tipo === 'texto') {
             wrapper.style.height = el.h + '%';
         } else {
-            // Para marcador, altura = largura (quadrado/circulo)
-            // Mas como é %, precisamos garantir aspecto. O CSS cuida disso com width/height 100% no filho.
-            // Aqui definimos o tamanho do wrapper.
-            // Nota: % de altura e largura podem distorcer se a tela não for quadrada.
-            // Simplificação: vamos usar o W salvo para os dois.
             wrapper.style.width = el.w + '%'; 
             wrapper.style.aspectRatio = '1/1';
-            wrapper.style.transform = 'translate(-50%, -50%)'; // Centralizar
+            wrapper.style.transform = 'translate(-50%, -50%)'; 
         }
         
         if (elementoSelecionadoId === el.id) wrapper.classList.add('selected');
 
-        // MENU DE CONTEXTO
-        // IMPORTANTE: onclick="event.stopPropagation()" em cada botão
         const menuHTML = `
             <div class="element-context-menu">
                 <button class="ctx-btn" onclick="event.stopPropagation(); alterarTamanhoElemento('${el.id}', ${el.tipo==='texto'?0.2:0.5})" title="Aumentar">+</button>
@@ -348,12 +332,13 @@ function renderizarElementosNaTela() {
             let timeout;
             input.oninput = (e) => {
                 el.valor = e.target.value;
-                autoResizeTextarea(input, wrapper, el.id); // Expandir se necessário
+                // AUTO RESIZE AO DIGITAR
+                autoResizeTextarea(input, wrapper, el.id);
                 clearTimeout(timeout);
                 timeout = setTimeout(() => salvarElementoNoFirebase(el), 500);
             };
             
-            // Auto resize inicial
+            // AUTO RESIZE INICIAL (Ao Carregar)
             setTimeout(() => autoResizeTextarea(input, wrapper, el.id), 0);
             
             wrapper.appendChild(input);
@@ -368,26 +353,38 @@ function renderizarElementosNaTela() {
     });
 }
 
-// Lógica de Expansão Automática para Texto
+// --- LÓGICA DE AUTO-EXPANSÃO (O SEGREDO) ---
 function autoResizeTextarea(input, wrapper, id) {
-    // Reseta altura para medir o scrollHeight correto
-    input.style.height = 'auto'; 
+    // 1. Reseta altura para medir o conteúdo real
+    input.style.height = '0px'; 
     
-    // Se o conteúdo for maior que o container atual
-    if (input.scrollHeight > input.clientHeight) {
-        // Converte pixel para porcentagem relativa ao container pai (sheet-container)
-        const containerHeight = document.getElementById('sheet-container').clientHeight;
-        const newHeightPct = (input.scrollHeight / containerHeight) * 100;
-        
-        // Aplica nova altura e salva
+    // 2. Mede o tamanho do conteúdo (scrollHeight)
+    const contentHeight = input.scrollHeight;
+    
+    // 3. Pega a altura do container pai (A Ficha inteira) para calcular %
+    const containerHeight = document.getElementById('sheet-container').clientHeight;
+    
+    // 4. Se o conteúdo for maior que a altura atual do wrapper, expande
+    //    Mas se for menor (apagou texto), encolhe também.
+    //    Adicionamos um pequeno buffer (+2px) para evitar scrollbar
+    const newHeightPx = contentHeight + 2;
+    const newHeightPct = (newHeightPx / containerHeight) * 100;
+    
+    // 5. Aplica a nova altura no Wrapper (que segura o textarea)
+    //    Se o wrapper for menor que o texto, ele cresce.
+    //    Mas respeitamos o tamanho mínimo original se o texto for curto.
+    const minHeight = elementosFicha[id].minH || elementosFicha[id].h; // Guarda altura original
+    
+    if (newHeightPct > minHeight) {
         wrapper.style.height = newHeightPct + '%';
-        
-        if(elementosFicha[id]) {
-            elementosFicha[id].h = newHeightPct;
-            // Opcional: Salvar no DB aqui ou deixar para o debounce do oninput
-        }
+        elementosFicha[id].h = newHeightPct; // Atualiza dado local
+    } else {
+        wrapper.style.height = minHeight + '%'; // Volta ao tamanho original
+        elementosFicha[id].h = minHeight;
     }
-    input.style.height = '100%'; // Restaura para ocupar o wrapper
+    
+    // 6. Restaura o input para preencher o wrapper
+    input.style.height = '100%'; 
 }
 
 window.limparPaginaAtual = function() {
