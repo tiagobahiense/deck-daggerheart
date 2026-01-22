@@ -1,215 +1,198 @@
 /* =========================================================
-   SISTEMA DE INIMIGOS V3.0 - TOKENS & BATALHA
+   SISTEMA DE INIMIGOS V3.5 - TOKEN, VISIBILIDADE & LAYOUT
    ========================================================= */
 
-/* --- ÁREA DE BATALHA (Onde ficam os tokens) --- */
-/* No Mestre: Fica numa coluna. No Jogador: Flutua no topo. */
+/* --- ÁREA DE BATALHA --- */
 
-#area-inimigos {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    padding: 10px;
-    align-items: flex-start;
-    justify-content: center;
-    z-index: 500;
-}
-
-/* Comportamento específico para o Mestre (Layout em Coluna) */
+/* No Mestre (Dentro da coluna central) */
 .modo-mestre #area-inimigos {
-    position: relative;
     width: 100%;
     height: 100%;
     overflow-y: auto;
-    pointer-events: auto;
+    padding: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    justify-content: center;
+    gap: 20px;
 }
 
-/* Comportamento para Jogador (Flutuante no topo, não atrapalha a mão) */
+/* No Jogador (Flutuante Centralizado) */
 .modo-jogador #area-inimigos {
     position: fixed;
-    top: 15%; /* Fica no topo da tela */
+    top: 50%; 
     left: 50%;
-    transform: translateX(-50%);
-    width: 90%;
-    max-height: 40vh;
-    pointer-events: none; /* Deixa clicar através do vazio */
+    transform: translate(-50%, -50%); /* Exatamente no centro */
+    width: 80%;
+    max-height: 50vh; /* Não ocupa a tela toda */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    z-index: 400; /* Abaixo de menus e dados, acima do tapete */
+    pointer-events: none; /* Clica através do vazio */
 }
 
 /* --- O TOKEN DO INIMIGO --- */
 .inimigo-token {
     pointer-events: auto;
-    width: 140px; /* Bem menor */
+    width: 130px;
     display: flex;
     flex-direction: column;
     align-items: center;
     position: relative;
-    transition: transform 0.2s;
+    transition: all 0.3s ease;
 }
 
 .inimigo-token:hover {
     z-index: 600;
-    transform: scale(1.05);
+    transform: scale(1.1);
 }
 
-/* Imagem do Monstro (Sem fundo preferencialmente) */
+/* Estado Invisível (Apenas para o Mestre) */
+.inimigo-token.invisivel {
+    opacity: 0.5;
+    filter: grayscale(0.8);
+    border: 2px dashed #666;
+    border-radius: 10px;
+    padding: 5px;
+}
+
+/* Imagem */
 .token-img-wrapper {
-    width: 120px;
-    height: 120px;
+    width: 110px;
+    height: 110px;
     position: relative;
     filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8));
 }
 
 .token-img {
-    width: 100%;
-    height: 100%;
+    width: 100%; height: 100%;
     object-fit: contain;
-    /* Se a imagem for quadrada, arredonda. Se for png recortado, fica normal */
-    border-radius: 10px; 
+    border-radius: 8px; 
 }
 
-/* Barras sobre a cabeça (Sempre visíveis) */
+/* Barras (Vida e PF) */
 .token-barras {
     position: absolute;
-    top: -15px;
+    top: -22px; /* Mais espaço para duas barras */
     left: 50%;
     transform: translateX(-50%);
     width: 100px;
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    background: rgba(0,0,0,0.6);
-    padding: 2px;
+    gap: 3px;
+    background: rgba(0,0,0,0.7);
+    padding: 3px;
     border-radius: 4px;
     pointer-events: auto;
 }
 
 .barra-mini {
     width: 100%;
-    height: 6px;
-    background: #333;
+    height: 5px;
+    background: #222;
     border-radius: 2px;
     overflow: hidden;
+    position: relative;
 }
 
 .fill-pv { background: #ff3333; height: 100%; transition: width 0.3s; box-shadow: 0 0 5px red; }
 .fill-pf { background: #3388ff; height: 100%; transition: width 0.3s; box-shadow: 0 0 5px blue; }
 
-/* Nome e Status */
+/* Nome e Info */
 .token-info {
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.9);
     border: 1px solid var(--gold);
-    border-radius: 15px;
-    padding: 2px 10px;
+    border-radius: 12px;
+    padding: 2px 8px;
     text-align: center;
-    margin-top: -10px; /* Sobe um pouco na imagem */
+    margin-top: -10px;
     z-index: 2;
-    min-width: 100px;
+    min-width: 90px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.8);
 }
 
 .token-nome {
     color: var(--gold);
     font-family: 'MedievalSharp', cursive;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 130px;
+    max-width: 120px;
 }
 
-.token-numeros {
-    font-size: 0.7rem;
-    color: #ccc;
-    font-family: monospace;
-}
+.token-numeros { font-size: 0.65rem; color: #ccc; font-family: monospace; }
 
-/* --- CONTROLES DO MESTRE (Hover) --- */
+/* --- CONTROLES GM (Hover) --- */
 .token-gm-controls {
-    display: none; /* Escondido por padrão */
-    flex-direction: row;
-    gap: 5px;
+    display: none;
+    flex-direction: column; /* Organizado verticalmente ou grid */
+    gap: 2px;
     margin-top: 5px;
-    background: rgba(0,0,0,0.9);
+    background: rgba(0,0,0,0.95);
     padding: 5px;
-    border-radius: 5px;
+    border-radius: 6px;
     border: 1px solid #444;
+    width: 100%;
+    z-index: 100;
 }
 
-/* Mostra controles se for mestre E passar o mouse */
+/* Grid de botões do GM */
+.gm-btn-row {
+    display: flex;
+    gap: 2px;
+    justify-content: center;
+}
+
 .modo-mestre .inimigo-token:hover .token-gm-controls {
     display: flex;
 }
 
 .btn-gm-mini {
-    width: 24px;
-    height: 24px;
-    border-radius: 4px;
+    flex: 1;
+    height: 22px;
+    border-radius: 3px;
     border: 1px solid #555;
     cursor: pointer;
     font-weight: bold;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #fff;
+    transition: 0.1s;
 }
 
-.btn-gm-dano { background: #5a0000; border-color: red; }
-.btn-gm-dano:hover { background: red; }
+.btn-gm-dano { background: #4a0000; border-color: red; } .btn-gm-dano:hover { background: red; }
+.btn-gm-cura { background: #003300; border-color: lime; } .btn-gm-cura:hover { background: lime; }
+.btn-gm-est-dano { background: #002266; border-color: #4488ff; } .btn-gm-est-dano:hover { background: #0044cc; }
+.btn-gm-est-cura { background: #003366; border-color: #4488ff; } .btn-gm-est-cura:hover { background: #0055dd; }
 
-.btn-gm-cura { background: #004d00; border-color: lime; }
-.btn-gm-cura:hover { background: lime; }
+.btn-gm-trash { background: #111; color: #666; border-color: #444; } .btn-gm-trash:hover { color: red; border-color: red; }
+.btn-gm-eye { background: #222; color: #aaa; border-color: #555; } .btn-gm-eye:hover { color: #fff; border-color: #fff; }
+.btn-gm-eye.ativo { color: #4CAF50; border-color: #4CAF50; } /* Olho aberto */
 
-.btn-gm-trash { background: #000; border-color: #666; color: #666; }
-.btn-gm-trash:hover { border-color: red; color: red; }
-
-.btn-gm-info { background: #333; border-color: var(--gold); color: var(--gold); }
-.btn-gm-info:hover { background: var(--gold); color: #000; }
-
-/* --- DETALHES EXPANDIDOS (MODAL DE FICHA DO MONSTRO) --- */
-/* Quando clica no 'i', abre um mini modal flutuante */
+/* Detalhes Flutuantes */
 .token-detalhes-float {
     display: none;
     position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 100%; left: 50%; transform: translateX(-50%);
     width: 250px;
-    background: #111;
-    border: 2px solid var(--gold);
-    padding: 10px;
-    border-radius: 8px;
-    z-index: 1000;
+    background: #111; border: 2px solid var(--gold);
+    padding: 10px; border-radius: 8px; z-index: 1000;
     box-shadow: 0 10px 30px rgba(0,0,0,1);
-    color: #ddd;
-    font-size: 0.8rem;
-    max-height: 300px;
-    overflow-y: auto;
-    text-align: left;
+    color: #ddd; font-size: 0.8rem;
+    max-height: 300px; overflow-y: auto; text-align: left;
 }
-
-.token-detalhes-float.ativo {
-    display: block;
-}
-
+.token-detalhes-float.ativo { display: block; }
 .token-detalhes-float strong { color: #fff; }
 
-/* Animações de Dano/Cura */
-.anim-hit-red .token-img-wrapper {
-    animation: flash-red 0.4s ease-out;
-}
-.anim-hit-green .token-img-wrapper {
-    animation: flash-green 0.4s ease-out;
-}
+/* Animações */
+.anim-hit-red .token-img-wrapper { animation: flash-red 0.4s ease-out; }
+.anim-hit-green .token-img-wrapper { animation: flash-green 0.4s ease-out; }
 
-@keyframes flash-red {
-    0% { filter: drop-shadow(0 0 0 red); transform: translateX(0); }
-    25% { filter: drop-shadow(0 0 15px red); transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    100% { filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8)); transform: translateX(0); }
-}
-
-@keyframes flash-green {
-    0% { filter: drop-shadow(0 0 0 lime); transform: scale(1); }
-    50% { filter: drop-shadow(0 0 15px lime); transform: scale(1.1); }
-    100% { filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8)); transform: scale(1); }
-}
+@keyframes flash-red { 0% { filter: drop-shadow(0 0 0 red); } 50% { filter: drop-shadow(0 0 20px red); } 100% { filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8)); } }
+@keyframes flash-green { 0% { filter: drop-shadow(0 0 0 lime); } 50% { filter: drop-shadow(0 0 20px lime); } 100% { filter: drop-shadow(0 5px 10px rgba(0,0,0,0.8)); } }
