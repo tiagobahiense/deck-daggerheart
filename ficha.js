@@ -1,5 +1,5 @@
 // =========================================================
-// FICHA DIGITAL - PRANCHETA V4.0
+// FICHA DIGITAL - PRANCHETA V4.0 
 // (Drag Overlay, Double-Click Edit, Color Picker)
 // =========================================================
 
@@ -30,12 +30,12 @@ let tempBox = null;
 let activeElementId = null;
 let initialRect = {};
 
-// Cores disponíveis
+// Cores disponíveis para o texto
 const TEXT_COLORS = {
     black: '#000000',
-    green: '#006400',  // Verde escuro para contraste
-    red: '#8b0000',    // Vermelho sangue
-    orange: '#d2691e'  // Laranja chocolate
+    red: '#8b0000',
+    green: '#006400',
+    orange: '#d2691e'
 };
 
 // --- INICIALIZAÇÃO ---
@@ -85,7 +85,7 @@ window.selecionarFerramenta = function(f) {
 function configurarTeclado() {
     document.addEventListener('keydown', (e) => {
         if (elementoSelecionadoId && (e.key === 'Delete' || e.key === 'Backspace')) {
-            // Permite apagar texto se estiver editando
+            // Se estiver editando texto (digitando), NÃO deleta o elemento
             const wrapper = document.getElementById('wrap_' + elementoSelecionadoId);
             if (wrapper && wrapper.classList.contains('is-editing')) return;
 
@@ -117,8 +117,15 @@ function deselecionarTudo() {
 function configurarEventosMouse() {
     const container = document.getElementById('sheet-container');
     
-    // Listener para Duplo Clique (Entrar no modo edição)
+    // REMOVE LISTENERS ANTIGOS
+    container.ondblclick = null;
+    container.onmousedown = null;
+    container.onmousemove = null;
+    container.onmouseup = null;
+
+    // 1. DUPLO CLIQUE: ENTRAR NO MODO EDIÇÃO
     container.ondblclick = (e) => {
+        // Verifica se clicou na camada de arraste (overlay)
         const overlay = e.target.closest('.drag-overlay');
         if (overlay) {
             const wrapper = overlay.closest('.element-wrapper');
@@ -126,10 +133,10 @@ function configurarEventosMouse() {
             const input = document.getElementById('input_' + id);
             
             if(input) {
-                deselecionarTudo(); // Remove seleção visual externa
-                wrapper.classList.add('is-editing'); // Esconde overlay, mostra textarea
+                deselecionarTudo();
+                wrapper.classList.add('is-editing'); // CSS esconde o overlay e libera o input
                 input.focus();
-                // Move cursor para o final do texto
+                // Hack para mover cursor para o final
                 const val = input.value;
                 input.value = '';
                 input.value = val;
@@ -138,15 +145,15 @@ function configurarEventosMouse() {
     };
 
     container.onmousedown = (e) => {
-        // Ignora cliques no menu ou na alça de deletar
+        // Ignora cliques no menu, botões ou delete
         if(e.target.tagName === 'BUTTON' || e.target.closest('.element-context-menu') || e.target.classList.contains('delete-handle')) return;
 
-        // Se clicar no textarea enquanto edita, não faz nada (deixa o browser lidar com cursor)
+        // Se estiver editando texto (clicou no textarea), deixa o padrão do navegador (selecionar texto)
         if(e.target.tagName === 'TEXTAREA') return;
 
         const rect = container.getBoundingClientRect();
         
-        // 1. ALÇA DE RESIZE
+        // 2. REDIMENSIONAR (Resize Handle)
         if (e.target.classList.contains('resize-handle')) {
             const wrapper = e.target.closest('.element-wrapper');
             activeElementId = wrapper.id.replace('wrap_', '');
@@ -157,7 +164,8 @@ function configurarEventosMouse() {
             return;
         }
 
-        // 2. ELEMENTO EXISTENTE (Overlay ou Wrapper) -> Mover/Selecionar
+        // 3. MOVER (Clicou no Overlay ou na Bolinha)
+        // O Overlay cobre o texto, então o clique cai nele.
         const clickedWrapper = e.target.closest('.element-wrapper');
         if (clickedWrapper) {
             const id = clickedWrapper.id.replace('wrap_', '');
@@ -171,7 +179,7 @@ function configurarEventosMouse() {
             return;
         }
 
-        // 3. CLIQUE NO VAZIO -> Criar
+        // 4. CRIAR NOVO (Clicou no vazio)
         deselecionarTudo();
         startX = e.clientX - rect.left;
         startY = e.clientY - rect.top;
@@ -191,13 +199,13 @@ function configurarEventosMouse() {
     container.onmousemove = (e) => {
         const rect = container.getBoundingClientRect();
 
-        // REDIMENSIONANDO
+        // Arrastando Resize
         if (isResizing && activeElementId) {
             const wrapper = document.getElementById('wrap_' + activeElementId);
             if(wrapper) {
                 const dx = e.clientX - startX;
                 const dy = e.clientY - startY;
-                const newW = Math.max(20, initialRect.w + dx); // Minimo 20px
+                const newW = Math.max(20, initialRect.w + dx);
                 const newH = Math.max(20, initialRect.h + dy);
                 const wPct = (newW / rect.width) * 100;
                 const hPct = (newH / rect.height) * 100;
@@ -206,7 +214,7 @@ function configurarEventosMouse() {
             }
         }
 
-        // MOVENDO
+        // Arrastando Posição (Mover)
         if (isMoving && activeElementId) {
             const wrapper = document.getElementById('wrap_' + activeElementId);
             if(wrapper) {
@@ -221,7 +229,7 @@ function configurarEventosMouse() {
             }
         }
 
-        // CRIANDO
+        // Criando Caixa
         if (isCreating && ferramentaAtual === 'texto' && tempBox) {
             const currentX = e.clientX - rect.left;
             const currentY = e.clientY - rect.top;
@@ -237,7 +245,7 @@ function configurarEventosMouse() {
     container.onmouseup = (e) => {
         const rect = container.getBoundingClientRect();
 
-        // SALVAR REDIMENSIONAMENTO
+        // Finaliza Resize
         if (isResizing && activeElementId) {
             isResizing = false;
             const wrapper = document.getElementById('wrap_' + activeElementId);
@@ -251,7 +259,7 @@ function configurarEventosMouse() {
             return;
         }
 
-        // SALVAR MOVIMENTO
+        // Finaliza Mover
         if (isMoving && activeElementId) {
             isMoving = false;
             const wrapper = document.getElementById('wrap_' + activeElementId);
@@ -265,7 +273,7 @@ function configurarEventosMouse() {
             return;
         }
 
-        // FINALIZAR CRIAÇÃO (TEXTO)
+        // Finaliza Criar (Texto)
         if (isCreating && ferramentaAtual === 'texto') {
             isCreating = false;
             const finalW = parseFloat(tempBox.style.width);
@@ -275,7 +283,7 @@ function configurarEventosMouse() {
             if (tempBox) tempBox.remove();
             tempBox = null;
 
-            if (finalW < 15 || finalH < 15) return; // Tamanho mínimo para criar
+            if (finalW < 15 || finalH < 15) return; 
 
             const xPct = (finalL / rect.width) * 100;
             const yPct = (finalT / rect.height) * 100;
@@ -286,7 +294,7 @@ function configurarEventosMouse() {
             return;
         }
 
-        // FINALIZAR CRIAÇÃO (MARCADOR)
+        // Finaliza Criar (Marcador)
         if (ferramentaAtual === 'marcador') {
             if(e.target.closest('.element-wrapper') || e.target.classList.contains('delete-handle')) return;
             const xPct = ((e.clientX - rect.left) / rect.width) * 100;
@@ -303,7 +311,7 @@ function criarElementoFinal(x, y, w, h, tipo) {
         pagina: paginaFichaAtual,
         valor: tipo === 'texto' ? '' : true,
         fontSize: tipo === 'texto' ? 1.6 : 1.5,
-        color: tipo === 'texto' ? 'black' : null // Cor padrão
+        color: 'black'
     };
     salvarElementoNoFirebase(novoElemento);
 }
@@ -330,7 +338,6 @@ window.alterarTamanhoElemento = function(id, delta) {
     salvarElementoNoFirebase(elementosFicha[id]);
 };
 
-// NOVA FUNÇÃO: Alterar Cor
 window.alterarCorElemento = function(id, corKey) {
     if (!elementosFicha[id] || elementosFicha[id].tipo !== 'texto') return;
     
@@ -340,9 +347,8 @@ window.alterarCorElemento = function(id, corKey) {
     if(input) input.style.color = TEXT_COLORS[corKey];
     
     salvarElementoNoFirebase(elementosFicha[id]);
-    // Força re-render para atualizar o estado 'active' dos botões de cor no menu
-    renderizarElementosNaTela();
-    selecionarElemento(id); // Mantém selecionado
+    renderizarElementosNaTela(); // Atualiza botões do menu
+    selecionarElemento(id);
 };
 
 window.deletarViaMenu = function(id) {
@@ -396,7 +402,7 @@ function renderizarElementosNaTela() {
         
         if (elementoSelecionadoId === el.id) wrapper.classList.add('selected');
 
-        // MENU DE CONTEXTO (Com Cores para Texto)
+        // GERA BOTOES DE COR
         let colorButtonsHTML = '';
         if (el.tipo === 'texto') {
             const currentColor = el.color || 'black';
@@ -407,7 +413,7 @@ function renderizarElementosNaTela() {
                         <button class="color-btn ${currentColor === key ? 'active-color' : ''}" 
                                 style="background: ${TEXT_COLORS[key]};" 
                                 onclick="event.stopPropagation(); alterarCorElemento('${el.id}', '${key}')" 
-                                title="${key.charAt(0).toUpperCase() + key.slice(1)}">
+                                title="${key}">
                         </button>
                     `).join('')}
                 </div>
@@ -427,7 +433,7 @@ function renderizarElementosNaTela() {
         wrapper.innerHTML = menuHTML;
 
         if (el.tipo === 'texto') {
-            // 1. Campo de Texto Real (Fica embaixo)
+            // CAMPO DE TEXTO
             const input = document.createElement('textarea');
             input.id = 'input_' + el.id;
             input.className = 'user-textarea';
@@ -435,7 +441,7 @@ function renderizarElementosNaTela() {
             input.style.fontSize = (el.fontSize || 1.6) + 'vh';
             input.style.color = TEXT_COLORS[el.color || 'black'];
             
-            // Salvar ao perder foco (blur)
+            // SAIR DA EDIÇÃO (BLUR)
             input.onblur = () => {
                 wrapper.classList.remove('is-editing'); // Traz o overlay de volta
                 if (input.value !== el.valor) {
@@ -446,7 +452,7 @@ function renderizarElementosNaTela() {
 
             wrapper.appendChild(input);
 
-            // 2. Camada de Arraste (Fica por cima)
+            // CAMADA DE ARRASTE (OVERLAY) - O segredo da "mãozinha"
             const overlay = document.createElement('div');
             overlay.className = 'drag-overlay';
             wrapper.appendChild(overlay);
