@@ -104,7 +104,7 @@ function mostrarMensagemMedo(tipo) {
     const idAudio = (tipo === 'add') ? 'sound-medo-add' : 'sound-medo-use';
     const audio = document.getElementById(idAudio);
     if (audio) {
-        audio.volume = 0.25;
+        audio.volume = 0.20;
         audio.currentTime = 0;
         audio.play().catch(err => console.log("Erro som:", err));
     }
