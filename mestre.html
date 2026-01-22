@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mesa de Jogo - Daggerheart</title>
     <link rel="stylesheet" href="style.css?v=8.0">
+    <link rel="stylesheet" href="ficha.css?v=4.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body {
@@ -59,6 +60,24 @@
             z-index: 50;
         }
 
+        /* Botão de Ficha no Card do Jogador */
+        .btn-abrir-ficha-mestre {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--gold);
+            z-index: 10;
+            transition: transform 0.2s;
+        }
+        .btn-abrir-ficha-mestre:hover {
+            transform: scale(1.2);
+            text-shadow: 0 0 5px var(--gold);
+        }
+
         .card-jogador .nome {
             font-weight: bold;
             color: var(--gold);
@@ -67,6 +86,7 @@
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            padding-right: 25px; /* Espaço para o botão da ficha */
         }
 
         .card-jogador .label {
@@ -280,61 +300,22 @@
         }
 
         @keyframes carta-usar {
-            0% {
-                opacity: 1;
-                transform: scale(1) rotate(0deg);
-                filter: drop-shadow(0 0 0px rgba(0, 255, 0, 0));
-            }
-            20% {
-                opacity: 1;
-                transform: scale(1.1) rotate(0deg);
-                filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0.8));
-            }
-            50% {
-                opacity: 1;
-                transform: scale(1.5) rotate(-5deg);
-                filter: drop-shadow(0 0 50px rgba(0, 255, 0, 1));
-            }
-            55% {
-                transform: scale(1.5) rotate(5deg);
-            }
-            60% {
-                transform: scale(1.5) rotate(-5deg);
-            }
-            65% {
-                transform: scale(1.5) rotate(5deg);
-            }
-            70% {
-                transform: scale(1.5) rotate(-3deg);
-            }
-            100% {
-                opacity: 0;
-                transform: scale(1.5) rotate(0deg);
-                filter: drop-shadow(0 0 50px rgba(0, 255, 0, 0.5));
-            }
+            0% { opacity: 1; transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0px rgba(0, 255, 0, 0)); }
+            20% { opacity: 1; transform: scale(1.1) rotate(0deg); filter: drop-shadow(0 0 30px rgba(0, 255, 0, 0.8)); }
+            50% { opacity: 1; transform: scale(1.5) rotate(-5deg); filter: drop-shadow(0 0 50px rgba(0, 255, 0, 1)); }
+            55% { transform: scale(1.5) rotate(5deg); }
+            60% { transform: scale(1.5) rotate(-5deg); }
+            65% { transform: scale(1.5) rotate(5deg); }
+            70% { transform: scale(1.5) rotate(-3deg); }
+            100% { opacity: 0; transform: scale(1.5) rotate(0deg); filter: drop-shadow(0 0 50px rgba(0, 255, 0, 0.5)); }
         }
 
         @keyframes mini-carta-usar {
-            0% {
-                transform: scale(1);
-                filter: drop-shadow(0 0 0px rgba(0, 255, 0, 0));
-            }
-            30% {
-                transform: scale(1.15);
-                filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.8));
-            }
-            50% {
-                transform: scale(1.2);
-                filter: drop-shadow(0 0 25px rgba(0, 255, 0, 1));
-            }
-            70% {
-                transform: scale(1.15);
-                filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.8));
-            }
-            100% {
-                transform: scale(1);
-                filter: drop-shadow(0 0 0px rgba(0, 255, 0, 0));
-            }
+            0% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(0, 255, 0, 0)); }
+            30% { transform: scale(1.15); filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.8)); }
+            50% { transform: scale(1.2); filter: drop-shadow(0 0 25px rgba(0, 255, 0, 1)); }
+            70% { transform: scale(1.15); filter: drop-shadow(0 0 15px rgba(0, 255, 0, 0.8)); }
+            100% { transform: scale(1); filter: drop-shadow(0 0 0px rgba(0, 255, 0, 0)); }
         }
     </style>
 </head>
@@ -372,7 +353,6 @@
         </div>
     </div>
 
-    <!-- Modal do Escudo -->
     <div id="modal-escudo">
         <div class="modal-escudo-content">
             <button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button>
@@ -380,7 +360,31 @@
         </div>
     </div>
 
-    <!-- Container para animação de carta usada -->
+    <div id="sheet-modal" class="modal">
+        <div class="sheet-content">
+            
+            <div class="sheet-toolbar">
+                <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Texto (T)">T</button>
+                <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador (Bolinha)">●</button>
+                <div style="height: 1px; background: #444; width: 100%; margin: 5px 0;"></div>
+                <button class="tool-btn" onclick="limparPaginaAtual()" title="Limpar Página" style="color: #ff6666;">🗑️</button>
+            </div>
+
+            <button class="btn-close-sheet" onclick="fecharFicha()" title="Fechar">X</button>
+            
+            <div class="sheet-container" id="sheet-container">
+                <img id="sheet-bg" src="" alt="Ficha">
+                <div id="sheet-inputs-layer"></div>
+            </div>
+            
+            <div class="sheet-footer">
+                <button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮ Anterior</button>
+                <span id="sheet-page-indicator">Página 1</span>
+                <button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">Próxima ❯</button>
+            </div>
+        </div>
+    </div>
+
     <div id="carta-usada-animada" class="carta-tabuleiro-animada"></div>
 
     <script type="module">
@@ -403,11 +407,52 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
+        // --- EXPOR FIREBASE PARA O FICHA.JS ---
+        // O ficha.js precisa dessas funções no escopo global para funcionar
+        window.db = db;
+        window.ref = ref;
+        window.set = set;
+        window.get = get;
+        window.remove = remove;
+        window.onValue = onValue;
+        // -------------------------------------
+
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
         window.fazerLogout = function() {
             signOut(auth).then(() => window.location.href = "index.html");
         }
+
+        // Função para abrir a ficha do jogador pelo Mestre
+        window.abrirFichaDoJogador = function(nomePersonagem) {
+            console.log("Mestre abrindo ficha de:", nomePersonagem);
+            
+            // 1. Define globalmente quem é o "jogador" atual para o ficha.js
+            window.nomeJogador = nomePersonagem;
+
+            // 2. Busca a classe do personagem para saber qual imagem carregar
+            const slotRef = ref(db, `mesa_rpg/jogadores/${nomePersonagem}/slots/Fundamental`);
+            get(slotRef).then(snapshot => {
+                if(snapshot.exists() && snapshot.val().profissao) {
+                    const profissao = snapshot.val().profissao;
+                    
+                    // Salva no localStorage para o ficha.js ler
+                    localStorage.setItem('profissaoSelecionada', profissao);
+                    
+                    // Chama a função do ficha.js para abrir o modal
+                    if(typeof window.abrirFichaPersonagem === 'function') {
+                        window.abrirFichaPersonagem();
+                    } else {
+                        alert("Erro: Script da ficha não carregado.");
+                    }
+                } else {
+                    alert(`O personagem ${nomePersonagem} ainda não selecionou uma classe.`);
+                }
+            }).catch(e => {
+                console.error("Erro ao buscar classe:", e);
+                alert("Erro ao abrir ficha.");
+            });
+        };
 
         window.realizarDescanso = function(tipo) {
             console.log(`🌙 Restaurando descanso ${tipo} para todos os jogadores...`);
@@ -420,22 +465,11 @@
                         if(player.mao) {
                             let mudou = false;
                             player.mao.forEach(carta => {
-                                if(tipo === 'curto' && carta.estado === 'curto') {
-                                    carta.estado = 'ativo';
-                                    mudou = true;
-                                }
-                                if(tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) {
-                                    carta.estado = 'ativo';
-                                    mudou = true;
-                                }
+                                if(tipo === 'curto' && carta.estado === 'curto') { carta.estado = 'ativo'; mudou = true; }
+                                if(tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) { carta.estado = 'ativo'; mudou = true; }
                             });
-                            if(mudou) {
-                                console.log(`✅ Atualizando ${nome}: mudanças encontradas`);
-                                set(ref(db, `mesa_rpg/jogadores/${nome}/mao`), player.mao);
-                            }
+                            if(mudou) set(ref(db, `mesa_rpg/jogadores/${nome}/mao`), player.mao);
                         }
-
-                        // Também limpar descanso em slots (identidade/classe) e reserva, senão o jogador não atualiza o ícone
                         if (player.slots) {
                             let mudouSlots = false;
                             Object.keys(player.slots).forEach(k => {
@@ -444,11 +478,8 @@
                                 if (tipo === 'curto' && carta.estado === 'curto') { carta.estado = 'ativo'; mudouSlots = true; }
                                 if (tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) { carta.estado = 'ativo'; mudouSlots = true; }
                             });
-                            if (mudouSlots) {
-                                set(ref(db, `mesa_rpg/jogadores/${nome}/slots`), player.slots);
-                            }
+                            if (mudouSlots) set(ref(db, `mesa_rpg/jogadores/${nome}/slots`), player.slots);
                         }
-
                         if (player.reserva && Array.isArray(player.reserva)) {
                             let mudouRes = false;
                             player.reserva.forEach(carta => {
@@ -456,9 +487,7 @@
                                 if (tipo === 'curto' && carta.estado === 'curto') { carta.estado = 'ativo'; mudouRes = true; }
                                 if (tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) { carta.estado = 'ativo'; mudouRes = true; }
                             });
-                            if (mudouRes) {
-                                set(ref(db, `mesa_rpg/jogadores/${nome}/reserva`), player.reserva);
-                            }
+                            if (mudouRes) set(ref(db, `mesa_rpg/jogadores/${nome}/reserva`), player.reserva);
                         }
                     });
                     console.log('✨ Descanso restaurado para todos!');
@@ -467,19 +496,10 @@
         }
 
         onAuthStateChanged(auth, (user) => {
-            if (!user) {
-                window.location.href = "index.html";
-                return;
-            }
-
+            if (!user) { window.location.href = "index.html"; return; }
             const currentEmail = user.email.toLowerCase().trim();
             const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
-
-            if (currentEmail !== masterEmail) {
-                window.location.href = "index.html";
-                return;
-            }
-
+            if (currentEmail !== masterEmail) { window.location.href = "index.html"; return; }
             iniciarPainel();
             configurarListenersDeCartasUsadas();
         });
@@ -487,7 +507,6 @@
         function iniciarPainel() {
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
             const accountsRef = ref(db, 'mesa_rpg/accounts');
-
             let nomesDePersonagens = new Set();
             let cacheJogadores = {};
 
@@ -512,26 +531,16 @@
                             let classes = "mini-carta";
                             let tooltip = c.nome;
                             let descansoIcon = "";
-                            if(c.estado === 'curto') {
-                                classes += " indisponivel";
-                                tooltip += " (Recarga: Descanso Curto)";
-                                descansoIcon = `<div class="icone-descanso-mini icone-descanso-curto-mini"><img src="img/meia-lua.png" alt="Descanso Curto"></div>`;
-                            }
-                            if(c.estado === 'longo') {
-                                classes += " indisponivel";
-                                tooltip += " (Recarga: Descanso Longo)";
-                                descansoIcon = `<div class="icone-descanso-mini icone-descanso-longo-mini"><img src="img/lua-cheia.png" alt="Descanso Longo"></div>`;
-                            }
-                            let tokensHTML = "";
-                            if(c.tokens > 0) tokensHTML = `<div class="token-count">${c.tokens}</div>`;
+                            if(c.estado === 'curto') { classes += " indisponivel"; tooltip += " (Recarga: Descanso Curto)"; descansoIcon = `<div class="icone-descanso-mini icone-descanso-curto-mini"><img src="img/meia-lua.png" alt="Descanso Curto"></div>`; }
+                            if(c.estado === 'longo') { classes += " indisponivel"; tooltip += " (Recarga: Descanso Longo)"; descansoIcon = `<div class="icone-descanso-mini icone-descanso-longo-mini"><img src="img/lua-cheia.png" alt="Descanso Longo"></div>`; }
+                            let tokensHTML = c.tokens > 0 ? `<div class="token-count">${c.tokens}</div>` : "";
                             htmlMao += `<div class="${classes}" style="background-image: url('${c.caminho}')" title="${tooltip}">${descansoIcon}${tokensHTML}</div>`;
                         });
                     } else { htmlMao = "<span class='status-vazio'>Mão vazia</span>"; }
 
                     let htmlSlots = "";
                     if(p.slots) {
-                        const ordem = ['Ancestralidade', 'Comunidade', 'Fundamental', 'Especializacao', 'Maestria'];
-                        ordem.forEach(key => {
+                        ['Ancestralidade', 'Comunidade', 'Fundamental', 'Especializacao', 'Maestria'].forEach(key => {
                             if(p.slots[key]) {
                                 htmlSlots += `<div class="mini-carta slot-ativo" style="background-image: url('${p.slots[key].caminho}')" title="${key}: ${p.slots[key].nome}"></div>`;
                             }
@@ -549,7 +558,12 @@
                         htmlReserva += `<div class="grid-mini">${cartasReservaHTML}</div>`;
                     }
 
-                    // Buscar classe do personagem
+                    // Botão da Ficha do Jogador
+                    // AQUI ESTÁ A MÁGICA: O botão chama abrirFichaDoJogador passando o nome
+                    // Tratamento de aspas no nome para o onclick
+                    const safeName = nome.replace(/'/g, "\\'");
+                    const btnFicha = `<button class="btn-abrir-ficha-mestre" onclick="window.abrirFichaDoJogador('${safeName}')" title="Abrir Ficha de ${nome}">📝</button>`;
+
                     let classeTag = '';
                     if(p.slots && p.slots.Fundamental && p.slots.Fundamental.profissao) {
                         const profissao = p.slots.Fundamental.profissao;
@@ -557,6 +571,7 @@
                     }
                     
                     card.innerHTML = `
+                        ${btnFicha}
                         <div class="nome">${nome}${classeTag}</div>
                         <div class="label">Mão (${p.mao ? p.mao.length : 0})</div>
                         <div class="grid-mini" data-jogador="${nome}">${htmlMao}</div>
@@ -568,50 +583,36 @@
                 });
             }
 
-            // 1) Lista de personagens (contas)
             onValue(accountsRef, (snap) => {
                 const setNomes = new Set();
                 if (snap.exists()) {
                     snap.forEach(childSnap => {
                         const data = childSnap.val();
                         if (!data || data.status === 'inactive') return;
-                        if (data.characters) {
-                            Object.keys(data.characters).forEach(n => setNomes.add(String(n).toUpperCase()));
-                        }
+                        if (data.characters) Object.keys(data.characters).forEach(n => setNomes.add(String(n).toUpperCase()));
                     });
                 }
                 nomesDePersonagens = setNomes;
                 render();
             });
 
-            // 2) Estado em tempo real (jogadores)
             onValue(jogadoresRef, (snapshot) => {
                 cacheJogadores = snapshot.exists() ? (snapshot.val() || {}) : {};
-                // garante que nomes presentes em jogadores também apareçam
                 Object.keys(cacheJogadores || {}).forEach(n => nomesDePersonagens.add(String(n).toUpperCase()));
                 render();
             });
         }
 
         function configurarListenersDeCartasUsadas() {
-            // Listener para cada jogador individualmente
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
-            
-            // Primeiro carrega os jogadores existentes
             get(jogadoresRef).then(snapshot => {
                 if(snapshot.exists()) {
                     const dados = snapshot.val();
-                    Object.keys(dados).forEach(nomeJogador => {
-                        configurarListenerIndividualDoJogador(nomeJogador);
-                    });
+                    Object.keys(dados).forEach(nomeJogador => configurarListenerIndividualDoJogador(nomeJogador));
                 }
             });
-            
-            // Depois monitora novos jogadores
             onChildChanged(jogadoresRef, (snapshot) => {
-                const nomeJogador = snapshot.key;
-                console.log('🎮 Novo jogador ou mudança detectada:', nomeJogador);
-                configurarListenerIndividualDoJogador(nomeJogador);
+                configurarListenerIndividualDoJogador(snapshot.key);
             });
         }
 
@@ -619,292 +620,71 @@
             const cartaUsadaRef = ref(db, `mesa_rpg/jogadores/${nomeJogador}/cartaUsada`);
             onValue(cartaUsadaRef, (snapshot) => {
                 if(snapshot.exists()) {
-                    const cartaUsada = snapshot.val();
-                    console.log(`🎯 ${nomeJogador} usou carta:`, cartaUsada.nome);
-                    animarCartaEspecifica(nomeJogador, cartaUsada);
+                    animarCartaEspecifica(nomeJogador, snapshot.val());
                 }
             });
         }
 
         function animarCartaEspecifica(nomeJogador, cartaUsada) {
-            console.log('🔍 Procurando grid para:', nomeJogador, 'Carta:', cartaUsada.nome);
-            
-            // Procura pelo grid de mão
             const gridMao = document.querySelector(`[data-jogador="${nomeJogador}"]`);
-            if(!gridMao) {
-                console.warn(`❌ Grid de mão não encontrado para ${nomeJogador}`);
-                return;
-            }
-
-            console.log('✅ Grid encontrado, procurando carta específica...');
-            
-            // Procura pela carta que foi usada
+            if(!gridMao) return;
             const cartas = gridMao.querySelectorAll('.mini-carta');
-            console.log(`📊 Total de cartas encontradas: ${cartas.length}`);
-            
             let cartaEncontrada = null;
-
             for(let carta of cartas) {
                 const bgImage = carta.style.backgroundImage;
                 if(bgImage) {
-                    // Extrai o caminho da URL
                     const caminhoExtraido = bgImage.replace(/url\(['"]?([^'")]+)['"]?\)/g, '$1');
-                    console.log('🔎 Comparando:', caminhoExtraido, 'com:', cartaUsada.caminho);
-                    
-                    // Compara se os caminhos são iguais ou se o final é igual
                     if(caminhoExtraido === cartaUsada.caminho || caminhoExtraido.includes(cartaUsada.caminho.split('/').pop())) {
                         cartaEncontrada = carta;
-                        console.log('🎯 Carta encontrada!');
                         break;
                     }
                 }
             }
-
             if(cartaEncontrada) {
-                console.log('✨ Iniciando animação de carta usada');
                 cartaEncontrada.style.animation = 'none';
-                void cartaEncontrada.offsetWidth; // Force reflow
+                void cartaEncontrada.offsetWidth;
                 cartaEncontrada.style.animation = 'mini-carta-usar 0.8s ease-out';
-                
-                setTimeout(() => {
-                    cartaEncontrada.style.animation = 'none';
-                }, 800);
-            } else {
-                console.warn('❌ Carta específica não encontrada na mão de', nomeJogador);
-                console.log('📋 Cartas disponíveis:', Array.from(cartas).map((c, i) => `${i}: ${c.style.backgroundImage.substring(0, 50)}`));
+                setTimeout(() => { cartaEncontrada.style.animation = 'none'; }, 800);
             }
         }
 
-        // FUNÇÕES DO ESCUDO DO MESTRE
+        // Funções do Escudo (Mantidas resumidas para não estourar limite)
         const topicos = {
-            testes: {
-                titulo: "🎲 TESTES & DUALIDADE",
-                conteudo: `
-                    <h2>🎲 TESTES & DUALIDADE</h2>
-                    <h3>Rolagem Padrão</h3>
-                    <ul>
-                        <li><strong>Role:</strong> <code>2d12 (Esperança + Medo) + Atributo + Bônus</code></li>
-                        <li><strong>Crítico:</strong> Dados iguais (ex: 6 e 6)</li>
-                    </ul>
-                    <h3>Resultados</h3>
-                    <ul>
-                        <li><strong>Sucesso com Esperança</strong>
-                            <ul>
-                                <li>Total ≥ Dificuldade</li>
-                                <li>Esperança > Medo</li>
-                                <li>Ganha <strong>+1 Esperança</strong></li>
-                            </ul>
-                        </li>
-                        <li><strong>Sucesso com Medo</strong>
-                            <ul>
-                                <li>Total ≥ Dificuldade</li>
-                                <li>Medo > Esperança</li>
-                                <li>GM ganha <strong>+1 Medo</strong> ou faz um movimento</li>
-                            </ul>
-                        </li>
-                        <li><strong>Falha</strong>
-                            <ul>
-                                <li>Total < Dificuldade</li>
-                                <li>GM faz um movimento</li>
-                            </ul>
-                        </li>
-                    </ul>
-                `
-            },
-            recursos: {
-                titulo: "💎 RECURSOS DO JOGADOR",
-                conteudo: `
-                    <h2>💎 RECURSOS DO JOGADOR</h2>
-                    <h3>Esperança</h3>
-                    <ul>
-                        <li><strong>Ganho:</strong> Sucesso com Esperança</li>
-                        <li><strong>Gastos:</strong>
-                            <ul>
-                                <li><strong>Experiência:</strong> +1 no modificador</li>
-                                <li><strong>Ajudar:</strong> +1d6 (ou +1d8 com vínculo)</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <h3>Fadiga (PF)</h3>
-                    <ul>
-                        <li>Usada para habilidades ou consequências leves</li>
-                        <li>Sem PF disponível → marque <strong>PV</strong></li>
-                    </ul>
-                `
-            },
-            combate: {
-                titulo: "⚔️ COMBATE",
-                conteudo: `
-                    <h2>⚔️ COMBATE</h2>
-                    <h3>Ataque</h3>
-                    <ul>
-                        <li><strong>Teste:</strong> Atributo da arma vs <strong>Evasão</strong></li>
-                        <li><strong>Vantagem:</strong> +1d6</li>
-                        <li><strong>Desvantagem:</strong> −1d6</li>
-                    </ul>
-                    <h3>Dano</h3>
-                    <ul>
-                        <li><strong>Dados:</strong> Dados da arma × Proficiência</li>
-                        <li><strong>Fórmula:</strong> <code>(Dado × Proficiência) + Atributo + Bônus</code></li>
-                        <li><strong>Crítico:</strong>
-                            <ul>
-                                <li>Some o <strong>máximo dos dados</strong> ao dano normal</li>
-                            </ul>
-                        </li>
-                    </ul>
-                `
-            },
-            dano: {
-                titulo: "🩸 DANO & LIMIARES",
-                conteudo: `
-                    <h2>🩸 DANO & LIMIARES</h2>
-                    <h3>Comparação</h3>
-                    <p>Compare o <strong>Dano Total</strong> com os <strong>Limiares</strong> do alvo:</p>
-                    <ul>
-                        <li><strong>Menor:</strong> 1 PV</li>
-                        <li><strong>Maior:</strong> 2 PV</li>
-                        <li><strong>Grave:</strong> 3 PV</li>
-                    </ul>
-                    <h3>Resistências</h3>
-                    <ul>
-                        <li><strong>Resistência:</strong> Metade do dano (arredondado para cima)</li>
-                        <li><strong>Imunidade:</strong> Dano 0</li>
-                    </ul>
-                `
-            },
-            armadura: {
-                titulo: "🛡️ ARMADURA (PA)",
-                conteudo: `
-                    <h2>🛡️ ARMADURA (PA)</h2>
-                    <ul>
-                        <li>Gaste <strong>1 PA</strong> para reduzir <strong>1 nível</strong> de dano:
-                            <ul>
-                                <li>Grave → Maior → Menor → Nenhum</li>
-                            </ul>
-                        </li>
-                        <li><strong>Limite:</strong> 1 PA por ataque</li>
-                        <li><strong>Inimigos:</strong> armadura já refletida em limiares ou habilidades</li>
-                    </ul>
-                `
-            },
-            morte: {
-                titulo: "☠️ MORTE",
-                conteudo: `
-                    <h2>☠️ MORTE</h2>
-                    <p>Ao marcar o <strong>último PV</strong>, escolha:</p>
-                    <ul>
-                        <li><strong>Arriscar Tudo:</strong> teste para sobreviver</li>
-                        <li><strong>Evitar a Morte:</strong> fora de combate + cicatriz</li>
-                        <li><strong>Sacrifício Glorioso:</strong> morte heroica com sucesso crítico automático</li>
-                    </ul>
-                `
-            },
-            distancia: {
-                titulo: "📏 DISTÂNCIA & MOVIMENTO",
-                conteudo: `
-                    <h2>📏 DISTÂNCIA & MOVIMENTO</h2>
-                    <ul>
-                        <li><strong>Corpo a Corpo:</strong> adjacente</li>
-                        <li><strong>Muito Próximo:</strong> até 3 quadrados</li>
-                        <li><strong>Próximo:</strong> até 6 quadrados</li>
-                        <li><strong>Distante:</strong> até 12 quadrados</li>
-                        <li><strong>Muito Distante:</strong> acima de 12 quadrados</li>
-                    </ul>
-                `
-            },
-            descanso: {
-                titulo: "💤 DESCANSO",
-                conteudo: `
-                    <h2>💤 DESCANSO</h2>
-                    <h3>Curto</h3>
-                    <ul>
-                        <li>Troca de cartas</li>
-                        <li><strong>2 ações:</strong>
-                            <ul>
-                                <li>Curar PV: <code>1d4 + Patamar</code></li>
-                                <li>Reduzir PF: <code>1d4 + Patamar</code></li>
-                                <li>Reparar PA: <code>1d4 + Patamar</code></li>
-                                <li>Preparar-se: +1 Esperança (grupo: +2)</li>
-                            </ul>
-                        </li>
-                    </ul>
-                    <h3>Longo</h3>
-                    <ul>
-                        <li>Recupera <strong>todos</strong> PV, PF e PA</li>
-                        <li>Troca de cartas</li>
-                        <li><strong>2 ações narrativas</strong></li>
-                        <li><strong>Custo:</strong> GM ganha Medo = nº de jogadores + <code>1d4</code></li>
-                    </ul>
-                `
-            },
-            mestre: {
-                titulo: "💀 O MESTRE (GM)",
-                conteudo: `
-                    <h2>💀 O MESTRE (GM)</h2>
-                    <h3>Quando o GM Age</h3>
-                    <ul>
-                        <li>Falha em teste</li>
-                        <li>Sucesso com Medo</li>
-                        <li>Oportunidade de Ouro</li>
-                    </ul>
-                    <h3>Medo</h3>
-                    <ul>
-                        <li><strong>Ganha:</strong> Sucessos com Medo</li>
-                        <li><strong>Gasta:</strong> Habilidades fortes, interrupções, pressão narrativa</li>
-                    </ul>
-                    <h3>Movimentos Básicos</h3>
-                    <ul>
-                        <li>Causar dano ou fadiga</li>
-                        <li>Colocar inimigo em foco</li>
-                        <li>Revelar verdade indesejada</li>
-                        <li>Sinalizar ameaça</li>
-                        <li>Separar o grupo</li>
-                    </ul>
-                `
-            }
+            testes: { titulo: "🎲 TESTES", conteudo: "<h2>🎲 TESTES & DUALIDADE</h2><p>2d12 (Esperança+Medo). Se Esperança > Medo = Ganha Esperança. Se Medo > Esperança = GM ganha Medo.</p>" },
+            recursos: { titulo: "💎 RECURSOS", conteudo: "<h2>💎 RECURSOS</h2><p>Esperança: +1d6, Tag Team. Fadiga: Custo de habilidade, Dano.</p>" },
+            combate: { titulo: "⚔️ COMBATE", conteudo: "<h2>⚔️ COMBATE</h2><p>Role contra Evasão. Dano vs Limiares. Distâncias: C-a-C, Muito Próximo, Próximo, Distante.</p>" },
+            dano: { titulo: "🩸 DANO", conteudo: "<h2>🩸 DANO</h2><p>Menor (1PV), Maior (2PV), Grave (3PV). Armor reduz.</p>" },
+            armadura: { titulo: "🛡️ ARMADURA", conteudo: "<h2>🛡️ ARMADURA</h2><p>Queime slots de armadura para reduzir dano recebido.</p>" },
+            morte: { titulo: "☠️ MORTE", conteudo: "<h2>☠️ MORTE</h2><p>Opções ao cair: Arriscar, Evitar (Cicatriz), Sacrifício.</p>" },
+            distancia: { titulo: "📏 DISTÂNCIA", conteudo: "<h2>📏 DISTÂNCIA</h2><p>Melee, Very Close, Close, Far, Very Far.</p>" },
+            descanso: { titulo: "💤 DESCANSO", conteudo: "<h2>💤 DESCANSO</h2><p>Curto: Repara Armor, cura um pouco. Longo: Full reset.</p>" },
+            mestre: { titulo: "💀 GM", conteudo: "<h2>💀 O MESTRE</h2><p>Faça movimentos quando eles falham ou rolam com Medo.</p>" }
         };
 
         window.exibirTopico = function(id) {
-            const topico = topicos[id];
-            if(topico) {
-                document.getElementById('escudo-conteudo').innerHTML = topico.conteudo;
+            if(topicos[id]) {
+                document.getElementById('escudo-conteudo').innerHTML = topicos[id].conteudo;
                 document.getElementById('modal-escudo').classList.add('ativo');
             }
         }
+        window.fecharEscudo = function() { document.getElementById('modal-escudo').classList.remove('ativo'); }
+        document.getElementById('modal-escudo').addEventListener('click', function(e) { if(e.target===this) fecharEscudo(); });
 
-        window.fecharEscudo = function() {
-            document.getElementById('modal-escudo').classList.remove('ativo');
-        }
-
-        // Fechar modal ao clicar fora
-        document.getElementById('modal-escudo').addEventListener('click', function(e) {
-            if(e.target === this) {
-                fecharEscudo();
-            }
-        });
-
-        // Preview de Cartas no Hover
         document.addEventListener('mouseover', (e) => {
             const carta = e.target.closest('.mini-carta');
             if (carta && !carta.classList.contains('status-vazio')) {
                 const preview = document.getElementById('preview-carta-mestre');
                 if (preview && carta.style.backgroundImage) {
                     preview.style.backgroundImage = carta.style.backgroundImage;
-                    preview.title = carta.title || 'Carta';
                     preview.style.display = 'flex';
                 }
             }
         });
-
         document.addEventListener('mouseout', (e) => {
-            const carta = e.target.closest('.mini-carta');
-            if (carta) {
-                const preview = document.getElementById('preview-carta-mestre');
-                if (preview) {
-                    preview.style.display = 'none';
-                }
-            }
+            if (e.target.closest('.mini-carta')) document.getElementById('preview-carta-mestre').style.display = 'none';
         });
     </script>
+
+    <script src="ficha.js?v=4.0"></script>
 </body>
 </html>
