@@ -1,5 +1,5 @@
 // =========================================================
-// SISTEMA DE INIMIGOS V3.5 (VISIBILIDADE & CONTROLE TOTAL)
+// SISTEMA DE INIMIGOS V3.5 (CONTROLES DE PF INCLUÍDOS)
 // =========================================================
 
 // --- FUNÇÕES DE CONTROLE (MESTRE) ---
@@ -20,7 +20,6 @@ window.salvarNovoInimigo = function() {
     const pvMax = parseInt(document.getElementById('new-enemy-pv').value) || 1;
     const pfMax = parseInt(document.getElementById('new-enemy-pf').value) || 0;
     const dif = parseInt(document.getElementById('new-enemy-dif').value) || 12;
-    
     const limiares = document.getElementById('new-enemy-limiares').value || "-";
     const ataque = document.getElementById('new-enemy-atk').value || "+0";
     const dano = document.getElementById('new-enemy-dmg').value || "-";
@@ -36,7 +35,7 @@ window.salvarNovoInimigo = function() {
         ataque: ataque,
         dano: dano,
         detalhes: desc,
-        visivel: false, // PADRÃO: INVISÍVEL
+        visivel: false,
         efeitoVisual: null
     };
 
@@ -59,14 +58,13 @@ window.alterarStatusInimigo = function(id, tipo, delta) {
         const max = tipo === 'pv_atual' ? data.pv_max : data.pf_max;
         let novo = data[tipo] + delta;
         
-        // Regras: PV não passa do max, PF não passa do max, min 0
         if(novo < 0) novo = 0;
         if(novo > max) novo = max;
         
         const updates = {};
         updates[tipo] = novo;
         
-        // Efeito visual (apenas para PV)
+        // Efeito visual apenas para PV
         if(tipo === 'pv_atual') {
             updates['efeitoVisual'] = { tipo: delta < 0 ? 'dano' : 'cura', time: Date.now() };
         }
@@ -79,7 +77,7 @@ window.toggleVisibilidadeInimigo = function(id) {
     const refPath = window.ref(window.db, `mesa_rpg/inimigos/${id}/visivel`);
     window.get(refPath).then(snap => {
         const atual = snap.val();
-        window.set(refPath, !atual); // Inverte
+        window.set(refPath, !atual);
     });
 };
 
@@ -102,7 +100,6 @@ window.iniciarSistemaInimigos = function() {
         return;
     }
     
-    // Detecta se é mestre ou jogador para ajustar classes
     const isGM = (window.nomeJogador === "Mestre") || (document.getElementById('controles-mestre') !== null);
     document.body.classList.add(isGM ? 'modo-mestre' : 'modo-jogador');
 
@@ -115,10 +112,7 @@ window.iniciarSistemaInimigos = function() {
         const inimigos = snap.val();
         Object.keys(inimigos).forEach(key => {
             const data = inimigos[key];
-            
-            // SE FOR JOGADOR E INIMIGO ESTIVER INVISÍVEL, NÃO RENDERIZA
-            if (!isGM && !data.visivel) return;
-
+            if (!isGM && !data.visivel) return; // Jogador não vê invisível
             container.appendChild(criarTokenInimigo(key, data, isGM));
         });
     });
@@ -126,11 +120,8 @@ window.iniciarSistemaInimigos = function() {
 
 function criarTokenInimigo(id, data, isGM) {
     const el = document.createElement('div');
-    
-    // Classes
     el.className = 'inimigo-token';
-    if(isGM && !data.visivel) el.classList.add('invisivel'); // Mestre vê fantasma
-
+    if(isGM && !data.visivel) el.classList.add('invisivel');
     el.id = `token-${id}`;
     
     // Animação
@@ -141,11 +132,9 @@ function criarTokenInimigo(id, data, isGM) {
 
     const pvPct = (data.pv_atual / data.pv_max) * 100;
     const pfPct = data.pf_max > 0 ? (data.pf_atual / data.pf_max) * 100 : 0;
-    
-    // Imagem fallback
     const imgSrc = data.imagem && data.imagem.length > 10 ? data.imagem : 'img/monsters/default.png';
 
-    // Controles GM
+    // CONTROLES GM
     let gmHTML = '';
     if(isGM) {
         gmHTML = `
@@ -156,21 +145,20 @@ function criarTokenInimigo(id, data, isGM) {
                 </div>
                 ${data.pf_max > 0 ? `
                 <div class="gm-btn-row">
-                    <div class="btn-gm-mini btn-gm-est-dano" onclick="alterarStatusInimigo('${id}', 'pf_atual', -1)" title="-PF">-</div>
-                    <div class="btn-gm-mini btn-gm-est-cura" onclick="alterarStatusInimigo('${id}', 'pf_atual', 1)" title="+PF">+</div>
+                    <div class="btn-gm-mini btn-gm-est-dano" onclick="alterarStatusInimigo('${id}', 'pf_atual', 1)" title="+PF (Estresse)">+</div>
+                    <div class="btn-gm-mini btn-gm-est-cura" onclick="alterarStatusInimigo('${id}', 'pf_atual', -1)" title="-PF (Estresse)">-</div>
                 </div>` : ''}
                 <div class="gm-btn-row">
                     <div class="btn-gm-mini btn-gm-eye ${data.visivel ? 'ativo' : ''}" onclick="toggleVisibilidadeInimigo('${id}')" title="Visibilidade">👁️</div>
-                    <div class="btn-gm-mini btn-gm-info" onclick="toggleDetalhesToken('${id}')" title="Ver Detalhes">i</div>
+                    <div class="btn-gm-mini btn-gm-info" onclick="toggleDetalhesToken('${id}')" title="Detalhes">i</div>
                     <div class="btn-gm-mini btn-gm-trash" onclick="deletarInimigoIndividual('${id}')" title="Remover">🗑️</div>
                 </div>
             </div>
         `;
     } else {
-        // Jogador só vê o botão info
         gmHTML = `
             <div class="token-gm-controls" style="display:flex; background:transparent; border:none; margin-top:0;">
-                <div class="btn-gm-mini btn-gm-info" onclick="toggleDetalhesToken('${id}')" style="background:rgba(0,0,0,0.5)">i</div>
+                <div class="btn-gm-mini btn-gm-info" onclick="toggleDetalhesToken('${id}')" style="background:rgba(0,0,0,0.7)">i</div>
             </div>
         `;
     }
@@ -181,7 +169,7 @@ function criarTokenInimigo(id, data, isGM) {
                 <div class="fill-pv" style="width: ${pvPct}%"></div>
             </div>
             ${data.pf_max > 0 ? `
-            <div class="barra-mini" style="margin-top:2px;" title="Estresse: ${data.pf_atual}/${data.pf_max}">
+            <div class="barra-mini" style="margin-top:1px;" title="Estresse: ${data.pf_atual}/${data.pf_max}">
                 <div class="fill-pf" style="width: ${pfPct}%"></div>
             </div>` : ''}
         </div>
@@ -198,20 +186,19 @@ function criarTokenInimigo(id, data, isGM) {
         ${gmHTML}
 
         <div id="detalhes-${id}" class="token-detalhes-float">
-            <h4 style="margin:0 0 5px 0; color:var(--gold); text-align:center;">${data.nome}</h4>
+            <h4 style="margin:0 0 8px 0; color:var(--gold); text-align:center;">${data.nome}</h4>
             <p><strong>Ataque:</strong> ${data.ataque} | <strong>Dano:</strong> ${data.dano}</p>
             <p><strong>Limiares:</strong> ${data.limiares}</p>
             <p><strong>PV:</strong> ${data.pv_atual}/${data.pv_max} | <strong>PF:</strong> ${data.pf_atual}/${data.pf_max}</p>
-            <hr style="border-color:#333">
-            <div style="white-space: pre-wrap;">${data.detalhes}</div>
-            <button onclick="toggleDetalhesToken('${id}')" style="width:100%; margin-top:10px; background:#333; color:#fff; border:1px solid #555; cursor:pointer;">Fechar</button>
+            <hr style="border-color:#333; margin:8px 0;">
+            <div style="white-space: pre-wrap; line-height:1.4;">${data.detalhes}</div>
+            <button onclick="toggleDetalhesToken('${id}')" style="width:100%; margin-top:10px; background:#333; color:#fff; border:1px solid #555; padding:5px; cursor:pointer;">Fechar</button>
         </div>
     `;
 
     return el;
 }
 
-// Upload de imagem
 window.processarUploadImagem = function() {
     const fileInput = document.getElementById('upload-file-input');
     const urlInput = document.getElementById('new-enemy-img');
@@ -219,10 +206,7 @@ window.processarUploadImagem = function() {
 
     if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
-        if (file.size > 800000) { // Limite de 800KB para não travar
-            alert("Imagem muito grande! Use arquivos menores que 800KB.");
-            return;
-        }
+        if (file.size > 800000) { alert("Imagem muito grande! Use arquivos menores que 800KB."); return; }
         const reader = new FileReader();
         reader.onload = function(e) {
             urlInput.value = e.target.result;
