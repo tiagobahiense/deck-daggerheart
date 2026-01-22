@@ -12,6 +12,8 @@
         #inactive-users-list { margin-top: 30px; border-top: 1px solid #555; padding-top: 20px; }
         .reactivate-btn { background: #2e8b57 !important; border-color: #2e8b57 !important; }
         .reactivate-btn:hover { background: #3cb371 !important; }
+        
+        /* Modal de Troca de Senha (Admin) */
         #modal-trocar-senha { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 5000; justify-content: center; align-items: center; }
         #modal-trocar-senha.ativo { display: flex; }
         .modal-senha-content { background: rgba(20, 20, 20, 0.95); border: 2px solid var(--gold); border-radius: 10px; padding: 30px; max-width: 400px; box-shadow: 0 0 40px rgba(0, 0, 0, 0.9); position: relative; }
@@ -45,6 +47,7 @@
         </div>
 
         <div style="display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
+            
             <div class="admin-box" style="width: 300px; padding: 20px;">
                 <h3>Criar Novo Jogador</h3>
                 <div class="input-group"><input type="email" id="new-user-email" placeholder="Email do Jogador" class="input-login"></div>
@@ -55,6 +58,7 @@
             <div style="flex-grow: 1; min-width: 300px;">
                 <h3 style="text-align: center; color: var(--gold);">Contas Ativas</h3>
                 <div id="users-list" class="admin-grid"><p>Carregando...</p></div>
+                
                 <h3 style="text-align: center; color: #ff9999; margin-top: 30px;">Contas Inativas</h3>
                 <div id="inactive-users-list" class="admin-grid"><p>Carregando...</p></div>
             </div>
@@ -82,6 +86,7 @@
         const db = getDatabase(app);
         let isCreatingUser = false;
 
+        // App secundário para criar usuários sem deslogar o admin
         const secondaryApp = initializeApp(firebaseConfig, "secondary-auth-creator");
         const secondaryAuth = getAuth(secondaryApp);
         setPersistence(secondaryAuth, inMemoryPersistence).catch(() => setPersistence(secondaryAuth, browserSessionPersistence));
@@ -116,6 +121,19 @@
             signOut(auth).then(() => window.location.href = 'index.html');
         }
 
+        // --- FUNÇÃO RECUPERADA: RESET DE SENHA POR E-MAIL ---
+        window.enviarResetSenha = function(email) {
+            if(confirm(`Enviar e-mail de redefinição de senha para ${email}?`)) {
+                sendPasswordResetEmail(auth, email)
+                    .then(() => {
+                        alert("✅ E-mail enviado com sucesso! O jogador receberá um link para criar uma nova senha.");
+                    })
+                    .catch((error) => {
+                        alert("❌ Erro ao enviar e-mail: " + error.message);
+                    });
+            }
+        };
+
         window.criarUsuario = function() {
             const email = document.getElementById('new-user-email').value;
             const pass = document.getElementById('new-user-pass').value;
@@ -135,6 +153,7 @@
                 const list = document.getElementById('users-list');
                 list.innerHTML = "";
                 if(!snapshot.exists()) { list.innerHTML = "<p>Vazio</p>"; return; }
+                
                 snapshot.forEach(childSnap => {
                     const uid = childSnap.key;
                     const data = childSnap.val();
@@ -143,13 +162,22 @@
                     const chars = data.characters ? Object.keys(data.characters) : [];
                     let charHtml = "";
                     chars.forEach(charName => {
-                        const safeName = charName.replace(/'/g, "\\'"); // Escapa aspas simples
+                        const safeName = charName.replace(/'/g, "\\'"); 
                         charHtml += `<li>${charName} <button class="btn-banir" onclick="removerPerfil('${uid}', '${safeName}')" style="margin-left:5px; padding:2px 5px; font-size:0.7rem;">💀 Deletar</button></li>`;
                     });
 
                     const div = document.createElement('div');
                     div.className = 'player-card-admin';
-                    div.innerHTML = `<div class="player-email">${data.email}</div><ul style="padding-left:15px; margin:5px 0;">${charHtml || '<li>Sem personagens</li>'}</ul><button class="btn-banir" onclick="removerConta('${uid}', '${data.email}')">💀 Desativar Conta</button>`;
+                    
+                    // AQUI ESTÁ O BOTÃO RESTAURADO:
+                    div.innerHTML = `
+                        <div class="player-email">
+                            ${data.email}
+                            <button class="btn-banir" style="background: #4682B4; margin-left: 10px;" onclick="enviarResetSenha('${data.email}')" title="Enviar E-mail de Troca de Senha">📧 Senha</button>
+                        </div>
+                        <ul style="padding-left:15px; margin:5px 0;">${charHtml || '<li>Sem personagens</li>'}</ul>
+                        <button class="btn-banir" onclick="removerConta('${uid}', '${data.email}')">💀 Desativar Conta</button>
+                    `;
                     list.appendChild(div);
                 });
             });
@@ -174,19 +202,12 @@
         
         window.removerPerfil = function(uid, charName) {
             if(confirm(`Deletar o personagem "${charName}"?\n\nIsso apaga a ficha, os itens e libera o espaço na conta.`)) {
-                // 1. Remove do nó geral de jogadores (onde ficam as fichas)
                 remove(ref(db, `mesa_rpg/jogadores/${charName}`))
                     .then(() => {
-                        // 2. Remove da lista de personagens da conta do usuário
                         return remove(ref(db, `mesa_rpg/accounts/${uid}/characters/${charName}`));
                     })
-                    .then(() => {
-                        alert("Personagem deletado com sucesso!");
-                    })
-                    .catch((err) => {
-                        alert("Erro ao deletar: " + err.message);
-                        console.error(err);
-                    });
+                    .then(() => alert("Personagem deletado com sucesso!"))
+                    .catch((err) => alert("Erro ao deletar: " + err.message));
             }
         };
         
