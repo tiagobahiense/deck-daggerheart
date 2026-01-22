@@ -12,6 +12,40 @@
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        /* Botão Refresh do Jogador */
+        .btn-refresh-player {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #555;
+            color: #aaa;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            cursor: pointer;
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .btn-refresh-player:hover {
+            border-color: var(--gold);
+            color: var(--gold);
+            transform: rotate(180deg);
+            background: rgba(0, 0, 0, 0.9);
+        }
+        .spin-anim {
+            animation: spin 1s linear infinite;
+            color: var(--gold);
+            border-color: var(--gold);
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+    </style>
 </head>
 <body>
 
@@ -143,6 +177,9 @@
     <div id="hover-preview-slot" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 400px; height: 600px; background-size: contain; background-repeat: no-repeat; background-position: center; border-radius: 12px; box-shadow: 0 20px 60px rgba(212, 175, 55, 0.8); border: 3px solid var(--gold); pointer-events: none; z-index: 99999;"></div>
 
     <div id="app-container" style="display: none; opacity: 0;">
+        
+        <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar Mesa">🔄</button>
+
         <div id="aura-profissao"></div>
         <div id="particulas-profissao"></div>
 
@@ -304,8 +341,8 @@
 
     <script type="module" src="script.js?v=10.2"></script>
     <script type="module">
-        // EXPOSIÇÃO GLOBAL CRÍTICA
-        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // EXPOSIÇÃO GLOBAL CRÍTICA PARA DADOS.JS, FICHA.JS e INIMIGOS.JS
+        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
         window.db = getDatabase(); 
         window.ref = ref;
@@ -318,26 +355,45 @@
         window.remove = remove;
         window.onValue = onValue;
         window.update = update;
+        window.off = off;
 
-        // FUNÇÃO DE CARREGAMENTO DINÂMICO PARA EVITAR CACHE DE SCRIPTS
+        // FUNÇÃO DE RESSINCRONIZAÇÃO MANUAL
+        window.atualizarSincronia = function() {
+            const btn = document.querySelector('.btn-refresh-player');
+            if(btn) btn.classList.add('spin-anim');
+            
+            // Limpa visualmente para dar feedback
+            const container = document.getElementById('area-inimigos');
+            if(container) container.innerHTML = "";
+            
+            // Reinicia sistemas
+            if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
+            if(window.escutarRolagens) window.escutarRolagens();
+            
+            // Se tiver função de renderizar cartas (script.js), chama também
+            if(window.renderizar) window.renderizar();
+
+            setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
+        };
+
+        // LOADER DE SCRIPTS DINÂMICOS
         function loadScript(src) {
             const script = document.createElement('script');
-            script.src = src + "?v=" + Date.now(); // Cache Buster
+            script.src = src + "?t=" + Date.now();
             document.body.appendChild(script);
         }
 
-        // CARREGA OS MÓDULOS EXTERNOS
         loadScript("profissao.js");
         loadScript("selecao-classe.js");
         loadScript("ficha.js");
         loadScript("dados.js");
         loadScript("inimigos.js");
 
-        // GARANTE A INICIALIZAÇÃO DEPOIS DE CARREGAR TUDO
+        // GARANTE A INICIALIZAÇÃO IMEDIATA
         setTimeout(() => {
             if(window.escutarRolagens) window.escutarRolagens();
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-        }, 1500); // Tempo curto para inicializar rápido
+        }, 2000);
     </script>
 </body>
 </html>

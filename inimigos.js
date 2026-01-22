@@ -1,5 +1,5 @@
 // =========================================================
-// SISTEMA DE INIMIGOS V5.1 (CORREÇÃO DE CRIAÇÃO)
+// SISTEMA DE INIMIGOS V6.0 (REFRESH SEGURO)
 // =========================================================
 
 // --- FUNÇÕES DE CONTROLE (MESTRE) ---
@@ -16,15 +16,12 @@ window.fecharCriadorInimigo = function() {
 
 window.salvarNovoInimigo = function() {
     if (!window.db || !window.push || !window.ref) {
-        alert("Erro: Conexão com o banco de dados não encontrada.");
+        alert("Erro: Sem conexão com o banco.");
         return;
     }
 
-    const btnInvocar = document.querySelector('.btn-invocar'); // Botão de salvar
-    if(btnInvocar) {
-        btnInvocar.innerText = "Invocando...";
-        btnInvocar.disabled = true;
-    }
+    const btnInvocar = document.querySelector('.btn-invocar'); 
+    if(btnInvocar) { btnInvocar.innerText = "Invocando..."; btnInvocar.disabled = true; }
 
     const nome = document.getElementById('new-enemy-name').value || "Inimigo";
     const img = document.getElementById('new-enemy-img').value || '';
@@ -38,34 +35,26 @@ window.salvarNovoInimigo = function() {
     const desc = document.getElementById('new-enemy-desc').value || "";
 
     const novoInimigo = {
-        nome: nome,
-        imagem: img,
+        nome: nome, imagem: img,
         pv_max: pvMax, pv_atual: pvMax,
         pf_max: pfMax, pf_atual: 0,
-        dificuldade: dif,
-        limiares: limiares,
-        ataque: ataque,
-        dano: dano,
-        detalhes: desc,
-        visivel: false,
-        efeitoVisual: null,
-        timestamp: Date.now()
+        dificuldade: dif, limiares: limiares,
+        ataque: ataque, dano: dano, detalhes: desc,
+        visivel: false, efeitoVisual: null
     };
 
     window.push(window.ref(window.db, 'mesa_rpg/inimigos'), novoInimigo)
         .then(() => {
             window.fecharCriadorInimigo();
-            if(btnInvocar) {
-                btnInvocar.innerText = "Invocar";
-                btnInvocar.disabled = false;
-            }
+            if(btnInvocar) { btnInvocar.innerText = "Invocar"; btnInvocar.disabled = false; }
+            // Limpa campos
+            document.getElementById('new-enemy-name').value = '';
+            document.getElementById('new-enemy-img').value = '';
+            document.getElementById('new-enemy-desc').value = '';
         })
         .catch(e => {
-            alert("Erro ao criar: " + e.message);
-            if(btnInvocar) {
-                btnInvocar.innerText = "Invocar";
-                btnInvocar.disabled = false;
-            }
+            alert("Erro: " + e.message);
+            if(btnInvocar) { btnInvocar.innerText = "Invocar"; btnInvocar.disabled = false; }
         });
 };
 
@@ -119,9 +108,12 @@ window.toggleDetalhesToken = function(id) {
 
 // --- RENDERIZAÇÃO ---
 
+// Variável para guardar a referência do listener ativo e poder desligar
+let inimigosRefAtivo = null;
+let callbackInimigos = null;
+
 window.iniciarSistemaInimigos = function() {
     if (!window.db || !window.onValue) {
-        console.log("⏳ Aguardando DB para Inimigos...");
         setTimeout(window.iniciarSistemaInimigos, 500);
         return;
     }
@@ -134,13 +126,19 @@ window.iniciarSistemaInimigos = function() {
     const container = document.getElementById('area-inimigos');
     if (!container) return;
 
-    // Conecta ao Firebase
-    const inimigosRef = window.ref(window.db, 'mesa_rpg/inimigos');
-    
-    // Remove listener anterior se houver (para evitar duplicação em reloads)
-    if (window.off) window.off(inimigosRef);
+    // LIMPEZA: Se já existe um listener rodando, desliga ele antes de criar um novo
+    // Isso é CRUCIAL para o botão de refresh não duplicar coisas
+    if (inimigosRefAtivo && window.off && callbackInimigos) {
+        try {
+            window.off(inimigosRefAtivo, 'value', callbackInimigos); 
+            console.log("♻️ Listener de inimigos reiniciado.");
+        } catch(e) { console.warn("Erro ao limpar listener antigo", e); }
+    }
 
-    window.onValue(inimigosRef, (snap) => {
+    inimigosRefAtivo = window.ref(window.db, 'mesa_rpg/inimigos');
+    
+    // Callback separado para poder ser removido depois
+    callbackInimigos = (snap) => {
         container.innerHTML = "";
         
         if(!snap.exists()) return;
@@ -148,26 +146,20 @@ window.iniciarSistemaInimigos = function() {
         const inimigos = snap.val();
         Object.keys(inimigos).forEach(key => {
             const data = inimigos[key];
-            
-            // Jogador só vê se visivel=true
             if (!isGM && !data.visivel) return; 
-
             container.appendChild(criarTokenInimigo(key, data, isGM));
         });
-    });
-    
-    console.log("✅ Sistema de Inimigos Ativo.");
+    };
+
+    window.onValue(inimigosRefAtivo, callbackInimigos);
 };
 
 function criarTokenInimigo(id, data, isGM) {
     const el = document.createElement('div');
     el.className = 'inimigo-token';
-    
     if(isGM && !data.visivel) el.classList.add('invisivel');
-    
     el.id = `token-${id}`;
     
-    // Animação
     if (data.efeitoVisual && (Date.now() - data.efeitoVisual.time < 800)) {
         el.classList.add(data.efeitoVisual.tipo === 'dano' ? 'anim-hit-red' : 'anim-hit-green');
         setTimeout(() => el.classList.remove('anim-hit-red', 'anim-hit-green'), 800);
@@ -178,10 +170,9 @@ function criarTokenInimigo(id, data, isGM) {
     const pfAtual = data.pf_atual || 0;
     const pfPct = pfMax > 0 ? Math.max(0, (pfAtual / pfMax) * 100) : 0;
     
-    // Fallback de imagem
     const imgSrc = (data.imagem && data.imagem.length > 10) ? data.imagem : 'img/monsters/default.png';
 
-    // === BOTÕES DE PF (Azul) ===
+    // Botões PF
     let pfControlsHTML = '';
     if (pfMax > 0 && isGM) {
         pfControlsHTML = `
@@ -192,7 +183,7 @@ function criarTokenInimigo(id, data, isGM) {
         `;
     }
 
-    // === BARRA DE PF (Azul) ===
+    // Barra PF
     let pfBarraHTML = '';
     if (pfMax > 0) {
         pfBarraHTML = `
@@ -251,10 +242,10 @@ function criarTokenInimigo(id, data, isGM) {
             <button onclick="toggleDetalhesToken('${id}')" style="width:100%; margin-top:10px; background:#333; color:#fff; border:1px solid #555; padding:5px; cursor:pointer;">Fechar</button>
         </div>
     `;
+
     return el;
 }
 
-// Upload Imagem Local
 window.processarUploadImagem = function() {
     const fileInput = document.getElementById('upload-file-input');
     const urlInput = document.getElementById('new-enemy-img');
@@ -262,13 +253,7 @@ window.processarUploadImagem = function() {
 
     if (fileInput.files && fileInput.files[0]) {
         const file = fileInput.files[0];
-        
-        // Aumentei o limite para 1MB (1000000 bytes)
-        if (file.size > 1000000) { 
-            alert("⚠️ Imagem muito grande (>1MB)! \nO banco de dados pode recusar. \nTente uma imagem menor."); 
-            return; 
-        }
-        
+        if (file.size > 1000000) { alert("Imagem muito grande! Limite 1MB."); return; }
         const reader = new FileReader();
         reader.onload = function(e) {
             urlInput.value = e.target.result;
