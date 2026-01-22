@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mesa de Jogo - Daggerheart (GM)</title>
     <link rel="stylesheet" href="style.css?v=8.0">
-    <link rel="stylesheet" href="ficha.css?v=5.0">
+    <link rel="stylesheet" href="ficha.css?v=6.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
-    <link rel="stylesheet" href="medo.css?v=1.1"> <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="medo.css?v=1.1">
+    <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; margin: 0; overflow: hidden; }
         
@@ -312,9 +313,18 @@
                 Object.keys(cacheJogadores).forEach(n => nomesDePersonagens.add(String(n).toUpperCase()));
                 render();
             });
+            
+            // ======================================================
+            // CORREÇÃO CRÍTICA: ANIMAÇÃO DE CARTA
+            // ======================================================
             onChildChanged(jogadoresRef, (snap) => {
-                const n = snap.key; const d = snap.val();
-                if(d.cartaUsada) animarCartaEspecifica(n, d.cartaUsada);
+                const n = snap.key; 
+                const d = snap.val();
+                
+                // Só anima se a carta foi usada nos últimos 2 segundos
+                if(d.cartaUsada && (Date.now() - d.cartaUsada.timestamp < 2000)) {
+                    animarCartaEspecifica(n, d.cartaUsada);
+                }
             });
         }
 
