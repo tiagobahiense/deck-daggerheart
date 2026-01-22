@@ -774,15 +774,15 @@ body:has(.carta:hover) #hover-preview {
 
 /* --- ESTILO NOVO MODAL DE LEITURA DE PDF --- */
 .modal-leitor-content {
-    width: 95%;
-    max-width: 1200px;
-    height: 95vh;
+    width: 98%; /* Aumentado de 95% para 98% */
+    max-width: 1800px; /* Aumentado limite para telas grandes */
+    height: 98vh; /* Aumentado de 95vh para 98vh */
     background: var(--modal-bg);
     border: 2px solid var(--gold);
     border-radius: 10px;
     display: flex;
     flex-direction: column;
-    padding: 10px;
+    padding: 5px; /* Reduzido padding para dar mais espaço à imagem */
     box-shadow: 0 0 50px var(--gold);
     position: relative;
     overflow: hidden;
@@ -790,13 +790,14 @@ body:has(.carta:hover) #hover-preview {
 
 .leitor-header {
     text-align: center;
-    padding-bottom: 10px;
+    padding-bottom: 5px; /* Reduzido */
     border-bottom: 1px solid #333;
-    margin-bottom: 10px;
+    margin-bottom: 5px; /* Reduzido */
+    flex-shrink: 0;
 }
 
 #img-leitor-pdf {
-    max-height: 80vh;
+    max-height: 88vh; /* Aumentado drasticamente para usar a altura da tela */
     max-width: 100%;
     object-fit: contain;
     border: 1px solid #333;
@@ -809,16 +810,17 @@ body:has(.carta:hover) #hover-preview {
 #grid-cartas {
     flex: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-    gap: 15px;
+    /* Aumentado minmax de 140px para 180px */
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 20px; /* Um pouco mais de espaço entre elas */
     padding: 20px;
     overflow-y: auto;
     background: rgba(0, 0, 0, 0.3);
 }
 
 .carta-modal {
-    width: 140px;
-    height: 210px;
+    width: 180px;  /* Aumentado de 140px */
+    height: 270px; /* Aumentado de 210px (mantendo proporção) */
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
