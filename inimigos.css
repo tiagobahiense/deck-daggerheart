@@ -1,0 +1,215 @@
+/* =========================================================
+   SISTEMA DE INIMIGOS - DAGGERHEART
+   ========================================================= */
+
+/* Área Central onde os inimigos aparecem */
+#area-inimigos {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 60%;
+    pointer-events: none; /* Permite clicar através do vazio */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    z-index: 500; /* Abaixo dos dados (1000+), acima da mesa */
+}
+
+/* CARD DO INIMIGO */
+.inimigo-card {
+    pointer-events: auto; /* Permite interagir com o card */
+    width: 220px;
+    background: rgba(20, 20, 20, 0.95);
+    border: 2px solid #555;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.8);
+    transition: all 0.3s;
+    overflow: hidden;
+}
+
+.inimigo-card:hover {
+    border-color: var(--gold);
+    z-index: 600;
+    transform: scale(1.05);
+}
+
+/* Header com Imagem e Barras */
+.inimigo-header {
+    position: relative;
+    width: 100%;
+    height: 150px;
+    background-color: #000;
+}
+
+.inimigo-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Ajusta imagem sem cortar */
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.5));
+}
+
+/* Barras sobre a cabeça */
+.barras-container {
+    position: absolute;
+    top: -10px; /* Flutuando acima */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    background: rgba(0,0,0,0.8);
+    padding: 2px;
+    border-radius: 4px;
+    border: 1px solid #333;
+}
+
+.barra-wrapper {
+    width: 100%;
+    height: 8px;
+    background: #333;
+    border-radius: 2px;
+    position: relative;
+}
+
+.barra-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.3s ease-in-out;
+}
+
+.barra-pv { background: #d32f2f; box-shadow: 0 0 5px #d32f2f; }
+.barra-pf { background: #1976d2; box-shadow: 0 0 5px #1976d2; }
+
+/* Status Numérico Pequeno */
+.status-numerico {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: rgba(0,0,0,0.8);
+    color: #fff;
+    font-size: 0.7rem;
+    padding: 2px 5px;
+    border-top-left-radius: 5px;
+    font-family: monospace;
+}
+
+/* Corpo do Card */
+.inimigo-body {
+    padding: 10px;
+    color: #fff;
+}
+
+.inimigo-nome {
+    font-family: 'MedievalSharp', cursive;
+    color: var(--gold);
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 5px;
+    border-bottom: 1px solid #444;
+}
+
+.inimigo-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 5px;
+    font-size: 0.75rem;
+    color: #ccc;
+    margin-bottom: 5px;
+}
+
+.stat-item strong { color: #fff; }
+
+/* Detalhes (Escondidos por padrão, aparecem no hover ou clique) */
+.inimigo-detalhes {
+    font-size: 0.7rem;
+    color: #aaa;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s;
+}
+
+.inimigo-card:hover .inimigo-detalhes {
+    max-height: 200px; /* Expande */
+    overflow-y: auto;
+    padding-top: 5px;
+    border-top: 1px dashed #444;
+}
+
+/* Controles do Mestre (Só aparecem para o GM) */
+.gm-overlay-controls {
+    display: none; /* JS vai ativar se for mestre */
+    background: #222;
+    padding: 5px;
+    border-top: 1px solid #444;
+    gap: 5px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.btn-inimigo {
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: bold;
+    padding: 3px 8px;
+    font-size: 0.8rem;
+    color: #fff;
+    flex: 1;
+}
+
+.btn-dano { background: #8b0000; border: 1px solid #ff4444; }
+.btn-cura { background: #2e8b57; border: 1px solid #3cb371; }
+.btn-del { background: #000; border: 1px solid #666; max-width: 30px; }
+
+/* Animações de Feedback */
+@keyframes flash-red {
+    0% { box-shadow: 0 0 0 rgba(255,0,0,0); border-color: #555; }
+    50% { box-shadow: 0 0 30px red; border-color: red; background: rgba(50,0,0,0.9); }
+    100% { box-shadow: 0 0 0 rgba(255,0,0,0); border-color: #555; }
+}
+
+@keyframes flash-green {
+    0% { box-shadow: 0 0 0 rgba(0,255,0,0); border-color: #555; }
+    50% { box-shadow: 0 0 30px lime; border-color: lime; background: rgba(0,50,0,0.9); }
+    100% { box-shadow: 0 0 0 rgba(0,255,0,0); border-color: #555; }
+}
+
+.anim-dano { animation: flash-red 0.5s ease-in-out; }
+.anim-cura { animation: flash-green 0.5s ease-in-out; }
+
+/* MODAL DE CRIAÇÃO */
+#modal-criar-inimigo {
+    display: none;
+    position: fixed;
+    z-index: 8000;
+    left: 0; top: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9);
+    align-items: center; justify-content: center;
+}
+
+.modal-criar-content {
+    background: #1a1a1a;
+    border: 2px solid var(--gold);
+    width: 500px;
+    max-width: 95%;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 50px var(--gold);
+    display: flex; flex-direction: column; gap: 10px;
+    max-height: 90vh; overflow-y: auto;
+}
+
+.form-row { display: flex; gap: 10px; }
+.form-group { flex: 1; display: flex; flex-direction: column; }
+.form-group label { color: var(--gold); font-size: 0.8rem; margin-bottom: 3px; }
+.form-group input, .form-group textarea {
+    background: #333; border: 1px solid #555; color: #fff; padding: 8px; border-radius: 4px;
+}

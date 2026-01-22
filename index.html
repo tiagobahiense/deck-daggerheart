@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="selecao-classe.css?v=3.0">
     <link rel="stylesheet" href="ficha.css?v=4.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
+    <link rel="stylesheet" href="inimigos.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
 </head>
 <body>
@@ -152,6 +153,8 @@
         <audio id="bg-music" loop><source src="audio/jornada.mp3" type="audio/mpeg"></audio>
         <audio id="use-card-sound"><source src="audio/use-card.mp3" type="audio/mpeg"></audio>
         <div id="system-message"></div>
+
+        <div id="area-inimigos"></div>
 
         <div id="area-jogo">
             <section id="mesa-area">
@@ -301,8 +304,8 @@
 
     <script type="module" src="script.js?v=10.2"></script>
     <script type="module">
-        // EXPOSIÇÃO GLOBAL CRÍTICA PARA DADOS.JS e FICHA.JS
-        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        // EXPOSIÇÃO GLOBAL CRÍTICA PARA DADOS.JS, FICHA.JS e INIMIGOS.JS
+        import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         
         window.db = getDatabase(); 
         window.ref = ref;
@@ -314,15 +317,19 @@
         window.get = get;
         window.remove = remove;
         window.onValue = onValue;
+        window.update = update;
 
-        // Inicia escuta de rolagens
+        // Inicia escuta de rolagens e inimigos
         setTimeout(() => {
             if(window.escutarRolagens) window.escutarRolagens();
+            if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
         }, 3000);
     </script>
+    
     <script src="profissao.js?v=1.0"></script>
     <script src="selecao-classe.js?v=3.0"></script>
     <script src="ficha.js?v=4.0"></script>
     <script src="dados.js?v=2.0"></script>
+    <script src="inimigos.js?v=1.0"></script>
 </body>
 </html>

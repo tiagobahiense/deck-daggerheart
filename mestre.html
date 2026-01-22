@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="style.css?v=8.0">
     <link rel="stylesheet" href="ficha.css?v=4.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
+    <link rel="stylesheet" href="inimigos.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; }
@@ -68,6 +69,10 @@
             <button class="btn-rest curto" onclick="realizarDescanso('curto')">Descanso Curto</button>
             <button class="btn-rest longo" onclick="realizarDescanso('longo')">Descanso Longo</button>
         </div>
+        <div>
+             <button class="btn-rest" style="background: #444; border: 1px solid var(--gold);" onclick="abrirCriadorInimigo()">👾 Criar Inimigo</button>
+             <button class="btn-rest" style="background: #330000; border: 1px solid red; font-size: 0.7rem;" onclick="removerTodosInimigos()">🗑️ Limpar Mesa</button>
+        </div>
         <button class="btn-nav-mestre" onclick="window.location.href='admin.html'">Painel Admin</button>
     </div>
 
@@ -90,6 +95,64 @@
                 <button class="btn-topico" onclick="exibirTopico('distancia')">📏 Distância & Movimento</button>
                 <button class="btn-topico" onclick="exibirTopico('descanso')">💤 Descanso</button>
                 <button class="btn-topico" onclick="exibirTopico('mestre')">💀 O Mestre (GM)</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="area-inimigos"></div>
+
+    <div id="modal-criar-inimigo">
+        <div class="modal-criar-content">
+            <h2 style="color:var(--gold); text-align:center; margin-top:0;">Novo Inimigo</h2>
+            
+            <div class="form-row">
+                <div class="form-group" style="flex:2">
+                    <label>Nome</label>
+                    <input type="text" id="new-enemy-name" placeholder="Ex: Açoite de Sarça">
+                </div>
+                <div class="form-group" style="flex:1">
+                    <label>Dificuldade</label>
+                    <input type="number" id="new-enemy-dif" value="12">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>URL da Imagem (Sem fundo é melhor)</label>
+                <input type="text" id="new-enemy-img" placeholder="https://...">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>PV Max</label>
+                    <input type="number" id="new-enemy-pv" value="4">
+                </div>
+                <div class="form-group">
+                    <label>PF Max (Estresse)</label>
+                    <input type="number" id="new-enemy-pf" value="2">
+                </div>
+                <div class="form-group">
+                    <label>Ataque</label>
+                    <input type="text" id="new-enemy-atk" value="+2">
+                </div>
+                <div class="form-group">
+                    <label>Dano</label>
+                    <input type="text" id="new-enemy-dmg" value="1d8+2">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Limiares de Dano (Ex: 5 / 10)</label>
+                <input type="text" id="new-enemy-limiares" placeholder="Menor / Maior">
+            </div>
+
+            <div class="form-group">
+                <label>Habilidades / Detalhes</label>
+                <textarea id="new-enemy-desc" rows="4" placeholder="Cole as habilidades aqui..."></textarea>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:10px;">
+                <button class="btn-rolar-final" style="background:#4CAF50;" onclick="salvarNovoInimigo()">Invocar</button>
+                <button class="btn-rolar-final" style="background:#f44336;" onclick="fecharCriadorInimigo()">Cancelar</button>
             </div>
         </div>
     </div>
@@ -154,7 +217,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set, remove, get, onChildChanged, push, query, limitToLast, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, remove, get, onChildChanged, push, query, limitToLast, onChildAdded, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -172,20 +235,39 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove; window.onValue = onValue; window.push = push; window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
+        // --- EXPOR FIREBASE ---
+        window.db = db;
+        window.ref = ref;
+        window.set = set;
+        window.get = get;
+        window.remove = remove;
+        window.onValue = onValue;
+        window.push = push;
+        window.query = query;
+        window.limitToLast = limitToLast;
+        window.onChildAdded = onChildAdded;
+        window.update = update;
+        
         window.nomeJogador = "Mestre"; 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
-        window.fazerLogout = function() { signOut(auth).then(() => window.location.href = "index.html"); }
+        window.fazerLogout = function() {
+            signOut(auth).then(() => window.location.href = "index.html");
+        }
 
+        // Função para abrir a ficha do jogador pelo Mestre
         window.abrirFichaDoJogador = function(nomePersonagem) {
             window.nomeJogador = nomePersonagem;
             const slotRef = ref(db, `mesa_rpg/jogadores/${nomePersonagem}/slots/Fundamental`);
             get(slotRef).then(snapshot => {
                 if(snapshot.exists() && snapshot.val().profissao) {
                     localStorage.setItem('profissaoSelecionada', snapshot.val().profissao);
-                    if(typeof window.abrirFichaPersonagem === 'function') window.abrirFichaPersonagem();
-                } else { alert(`O personagem ${nomePersonagem} ainda não selecionou uma classe.`); }
+                    if(typeof window.abrirFichaPersonagem === 'function') {
+                        window.abrirFichaPersonagem();
+                    }
+                } else {
+                    alert(`O personagem ${nomePersonagem} ainda não selecionou uma classe.`);
+                }
             });
         };
 
@@ -227,7 +309,10 @@
             if (!user || user.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { window.location.href = "index.html"; return; }
             iniciarPainel();
             configurarListenersDeCartasUsadas();
-            setTimeout(() => { if(window.escutarRolagens) window.escutarRolagens(); }, 2000);
+            setTimeout(() => {
+                if(window.escutarRolagens) window.escutarRolagens();
+                if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
+            }, 2000);
         });
 
         function iniciarPainel() {
@@ -487,5 +572,6 @@
     
     <script src="ficha.js?v=4.0"></script>
     <script src="dados.js?v=2.0"></script>
+    <script src="inimigos.js?v=1.0"></script>
 </body>
 </html>
