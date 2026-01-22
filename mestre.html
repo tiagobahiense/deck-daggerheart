@@ -12,6 +12,7 @@
             display: flex;
             height: 100vh;
             flex-direction: column;
+            background-color: #050505; /* Fundo levemente mais escuro */
         }
 
         #container-principal {
@@ -34,104 +35,165 @@
 
         #painel {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 8px;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); /* Um pouco mais largo */
+            gap: 15px;
             height: 85vh;
             overflow-y: auto;
             overflow-x: hidden;
-            padding: 12px 12px 50px 12px;
+            padding: 20px;
             align-content: start;
             align-items: start;
         }
 
+        /* --- ESTILO DO CARD DO JOGADOR (NOVO LAYOUT) --- */
         .card-jogador {
-            background: rgba(0, 0, 0, 0.6);
+            background: rgba(10, 10, 10, 0.85);
             border: 1px solid var(--gold);
-            border-radius: 6px;
-            padding: 5px;
+            border-radius: 8px;
+            padding: 10px;
             position: relative;
             z-index: 1;
             display: flex;
             flex-direction: column;
-            gap: 3px;
+            gap: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            transition: transform 0.2s, border-color 0.2s;
         }
 
         .card-jogador:hover {
             z-index: 50;
+            border-color: #ffe066;
+            transform: translateY(-2px);
         }
 
-        /* Botão de Ficha no Card do Jogador */
-        .btn-abrir-ficha-mestre {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: transparent;
-            border: none;
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: var(--gold);
-            z-index: 10;
-            transition: transform 0.2s;
-        }
-        .btn-abrir-ficha-mestre:hover {
-            transform: scale(1.2);
-            text-shadow: 0 0 5px var(--gold);
+        /* Cabeçalho do Card: Nome e Botão Ficha */
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+            margin-bottom: 5px;
+            gap: 10px;
         }
 
-        .card-jogador .nome {
+        .nome-container {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .nome {
             font-weight: bold;
             color: var(--gold);
             margin: 0;
-            font-size: 0.75rem;
+            font-size: 0.9rem;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            padding-right: 25px; /* Espaço para o botão da ficha */
         }
 
-        .card-jogador .label {
-            font-size: 0.6rem;
-            color: #999;
-            margin: 0;
+        .tag-classe {
+            font-size: 0.65rem;
+            color: #ccc;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1px 6px;
+            border-radius: 4px;
+            width: fit-content;
+            margin-top: 2px;
+        }
+
+        /* NOVO BOTÃO DE FICHA */
+        .btn-abrir-ficha-mestre {
+            background: var(--gold);
+            color: #000;
+            border: none;
+            border-radius: 20px; /* Pílula */
+            padding: 4px 12px;
+            font-family: 'MedievalSharp', cursive;
+            font-size: 0.8rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+            transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0; /* Impede o botão de esmagar */
+        }
+
+        .btn-abrir-ficha-mestre:hover {
+            background: #fff;
+            transform: scale(1.05);
+            box-shadow: 0 0 10px var(--gold);
+        }
+
+        .label {
+            font-size: 0.7rem;
+            color: #888;
+            margin: 2px 0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            border-bottom: 1px dashed #333;
         }
 
         .card-jogador .grid-mini {
             display: flex;
             flex-wrap: wrap;
-            gap: 2px;
+            gap: 4px;
+            min-height: 40px; /* Garante altura mesmo vazio */
         }
 
+        /* --- PREVIEW FLUTUANTE APRIMORADO --- */
         #preview-carta-mestre {
             display: none;
             position: fixed;
-            top: 50%;
+            /* Centralizado mas um pouco para cima para não tapar tudo */
+            top: 50%; 
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 280px;
-            height: 420px;
+            width: 320px; /* Maior */
+            height: 480px; /* Maior */
             background-size: contain;
             background-repeat: no-repeat;
             background-position: center;
             border: 3px solid var(--gold);
-            border-radius: 8px;
+            border-radius: 12px;
             z-index: 2000;
-            background-color: #000;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.95);
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.3);
             pointer-events: none;
         }
 
+        /* Estilizando os tokens/icones DENTRO do preview grande */
+        #preview-carta-mestre .token-count {
+            width: 40px; height: 40px; 
+            font-size: 1.4rem; 
+            border: 2px solid #000;
+            box-shadow: 0 2px 5px #000;
+            top: -15px;
+        }
+
+        #preview-carta-mestre .icone-descanso-mini img {
+            filter: drop-shadow(0 0 5px #000);
+            width: 100px; height: 100px; /* Ícone grande */
+        }
+        
+        #preview-carta-mestre .icone-descanso-mini {
+            width: 100%; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* --- CONTROLES DO MESTRE --- */
         #controles-mestre {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 15px;
-            background: rgba(0, 0, 0, 0.5);
-            border-bottom: 1px solid var(--gold);
+            padding: 10px 20px;
+            background: rgba(0, 0, 0, 0.7);
+            border-bottom: 2px solid var(--gold);
             gap: 10px;
             position: relative;
             z-index: 100;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
         #controles-mestre > div {
@@ -148,52 +210,55 @@
             text-decoration: none;
             font-size: 0.9rem;
             cursor: pointer;
+            font-family: 'MedievalSharp', cursive;
         }
 
         .btn-nav-mestre:hover {
             background: #555;
+            border-color: var(--gold);
         }
 
         /* SIDEBAR ESCUDO */
         #sidebar-escudo {
-            width: 220px;
-            background: rgba(0, 0, 0, 0.8);
+            width: 240px;
+            background: rgba(15, 15, 15, 0.95);
             border-left: 2px solid var(--gold);
             padding: 15px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
             gap: 10px;
+            box-shadow: -5px 0 20px rgba(0,0,0,0.5);
         }
 
         #sidebar-escudo h3 {
             color: var(--gold);
-            font-size: 0.9rem;
-            margin: 0;
+            font-size: 1rem;
+            margin: 0 0 10px 0;
             text-align: center;
-        }
-
-        .escudo-topicos {
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
         }
 
         .btn-topico {
             background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--gold);
-            color: #fff;
-            padding: 8px 10px;
-            border-radius: 4px;
+            border: 1px solid #444;
+            color: #ddd;
+            padding: 10px;
+            border-radius: 6px;
             cursor: pointer;
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             text-align: left;
             transition: 0.2s;
+            font-family: inherit;
         }
 
         .btn-topico:hover {
-            background: rgba(255, 215, 0, 0.1);
-            border-color: #ffff99;
+            background: rgba(212, 175, 55, 0.15);
+            border-color: var(--gold);
+            color: #fff;
+            transform: translateX(3px);
         }
 
         /* MODAL ESCUDO */
@@ -215,89 +280,39 @@
         }
 
         .modal-escudo-content {
-            background: rgba(20, 20, 20, 0.95);
+            background: #1a1a1a;
             border: 2px solid var(--gold);
             border-radius: 10px;
             padding: 30px;
             max-width: 800px;
             max-height: 80vh;
             overflow-y: auto;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.9);
             position: relative;
         }
 
-        .modal-escudo-content h2 {
-            color: var(--gold);
-            margin-top: 0;
-        }
-
-        .modal-escudo-content h3 {
-            color: #ffff99;
-            margin-top: 15px;
-        }
-
-        .modal-escudo-content p, .modal-escudo-content li {
-            color: #ddd;
-            line-height: 1.6;
-            font-size: 0.9rem;
-        }
-
-        .modal-escudo-content ul {
-            margin: 8px 0;
-            padding-left: 20px;
-        }
-
-        .modal-escudo-content li {
-            margin: 4px 0;
-        }
-
-        .modal-escudo-content code {
-            background: rgba(255, 215, 0, 0.1);
-            padding: 2px 5px;
-            border-radius: 3px;
-            color: #ffff99;
-        }
+        .modal-escudo-content h2 { color: var(--gold); margin-top: 0; }
+        .modal-escudo-content h3 { color: #ffff99; margin-top: 15px; }
+        .modal-escudo-content p, .modal-escudo-content li { color: #ddd; line-height: 1.6; font-size: 0.95rem; }
+        .modal-escudo-content ul { margin: 8px 0; padding-left: 20px; }
+        .modal-escudo-content li { margin: 4px 0; }
+        .modal-escudo-content code { background: rgba(255, 215, 0, 0.1); padding: 2px 5px; border-radius: 3px; color: #ffff99; font-family: monospace; }
 
         #btn-fechar-escudo {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: var(--gold);
-            color: #000;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: 0.2s;
+            position: absolute; top: 15px; right: 15px;
+            background: var(--gold); color: #000; border: none; width: 30px; height: 30px;
+            border-radius: 50%; cursor: pointer; font-size: 1.2rem; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; transition: 0.2s;
         }
-
-        #btn-fechar-escudo:hover {
-            background: #ffff99;
-        }
+        #btn-fechar-escudo:hover { background: #fff; }
 
         #carta-usada-animada {
-            position: fixed;
-            width: 200px;
-            height: 300px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            border-radius: 10px;
-            pointer-events: none;
-            display: none;
-            z-index: 9999;
+            position: fixed; width: 200px; height: 300px;
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+            border-radius: 10px; pointer-events: none; display: none; z-index: 9999;
             box-shadow: 0 0 30px rgba(0, 255, 0, 0.8);
         }
-
-        #carta-usada-animada.ativa {
-            animation: carta-usar 2.5s ease-in-out forwards;
-        }
+        #carta-usada-animada.ativa { animation: carta-usar 2.5s ease-in-out forwards; }
 
         @keyframes carta-usar {
             0% { opacity: 1; transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0px rgba(0, 255, 0, 0)); }
@@ -408,7 +423,6 @@
         const auth = getAuth(app);
 
         // --- EXPOR FIREBASE PARA O FICHA.JS ---
-        // O ficha.js precisa dessas funções no escopo global para funcionar
         window.db = db;
         window.ref = ref;
         window.set = set;
@@ -425,81 +439,66 @@
 
         // Função para abrir a ficha do jogador pelo Mestre
         window.abrirFichaDoJogador = function(nomePersonagem) {
-            console.log("Mestre abrindo ficha de:", nomePersonagem);
-            
-            // 1. Define globalmente quem é o "jogador" atual para o ficha.js
             window.nomeJogador = nomePersonagem;
-
-            // 2. Busca a classe do personagem para saber qual imagem carregar
             const slotRef = ref(db, `mesa_rpg/jogadores/${nomePersonagem}/slots/Fundamental`);
             get(slotRef).then(snapshot => {
                 if(snapshot.exists() && snapshot.val().profissao) {
-                    const profissao = snapshot.val().profissao;
-                    
-                    // Salva no localStorage para o ficha.js ler
-                    localStorage.setItem('profissaoSelecionada', profissao);
-                    
-                    // Chama a função do ficha.js para abrir o modal
+                    localStorage.setItem('profissaoSelecionada', snapshot.val().profissao);
                     if(typeof window.abrirFichaPersonagem === 'function') {
                         window.abrirFichaPersonagem();
-                    } else {
-                        alert("Erro: Script da ficha não carregado.");
                     }
                 } else {
                     alert(`O personagem ${nomePersonagem} ainda não selecionou uma classe.`);
                 }
-            }).catch(e => {
-                console.error("Erro ao buscar classe:", e);
-                alert("Erro ao abrir ficha.");
             });
         };
 
         window.realizarDescanso = function(tipo) {
-            console.log(`🌙 Restaurando descanso ${tipo} para todos os jogadores...`);
+            console.log(`🌙 Restaurando descanso ${tipo}...`);
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
             get(jogadoresRef).then(snapshot => {
                 if(snapshot.exists()) {
                     const dados = snapshot.val();
                     Object.keys(dados).forEach(nome => {
                         const player = dados[nome];
-                        if(player.mao) {
-                            let mudou = false;
-                            player.mao.forEach(carta => {
-                                if(tipo === 'curto' && carta.estado === 'curto') { carta.estado = 'ativo'; mudou = true; }
-                                if(tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) { carta.estado = 'ativo'; mudou = true; }
+                        const updates = {};
+                        let changed = false;
+
+                        // Função auxiliar para resetar cartas
+                        const resetCartas = (lista, path) => {
+                            if(!lista) return;
+                            let listChanged = false;
+                            lista.forEach(carta => {
+                                if(!carta) return;
+                                if(tipo === 'curto' && carta.estado === 'curto') { carta.estado = 'ativo'; listChanged = true; }
+                                if(tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) { carta.estado = 'ativo'; listChanged = true; }
                             });
-                            if(mudou) set(ref(db, `mesa_rpg/jogadores/${nome}/mao`), player.mao);
-                        }
-                        if (player.slots) {
-                            let mudouSlots = false;
+                            if(listChanged) set(ref(db, `mesa_rpg/jogadores/${nome}/${path}`), lista);
+                        };
+
+                        resetCartas(player.mao, 'mao');
+                        resetCartas(player.reserva, 'reserva');
+
+                        // Reset Slots (é um objeto)
+                        if(player.slots) {
+                            let slotsChanged = false;
                             Object.keys(player.slots).forEach(k => {
-                                const carta = player.slots[k];
-                                if (!carta) return;
-                                if (tipo === 'curto' && carta.estado === 'curto') { carta.estado = 'ativo'; mudouSlots = true; }
-                                if (tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) { carta.estado = 'ativo'; mudouSlots = true; }
+                                const c = player.slots[k];
+                                if(c && ((tipo==='curto' && c.estado==='curto') || (tipo==='longo' && (c.estado==='curto'||c.estado==='longo')))) {
+                                    c.estado = 'ativo'; slotsChanged = true;
+                                }
                             });
-                            if (mudouSlots) set(ref(db, `mesa_rpg/jogadores/${nome}/slots`), player.slots);
-                        }
-                        if (player.reserva && Array.isArray(player.reserva)) {
-                            let mudouRes = false;
-                            player.reserva.forEach(carta => {
-                                if (!carta) return;
-                                if (tipo === 'curto' && carta.estado === 'curto') { carta.estado = 'ativo'; mudouRes = true; }
-                                if (tipo === 'longo' && (carta.estado === 'curto' || carta.estado === 'longo')) { carta.estado = 'ativo'; mudouRes = true; }
-                            });
-                            if (mudouRes) set(ref(db, `mesa_rpg/jogadores/${nome}/reserva`), player.reserva);
+                            if(slotsChanged) set(ref(db, `mesa_rpg/jogadores/${nome}/slots`), player.slots);
                         }
                     });
-                    console.log('✨ Descanso restaurado para todos!');
                 }
-            }).catch(error => console.error('❌ Erro ao restaurar descanso:', error));
+            });
         }
 
         onAuthStateChanged(auth, (user) => {
-            if (!user) { window.location.href = "index.html"; return; }
-            const currentEmail = user.email.toLowerCase().trim();
-            const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
-            if (currentEmail !== masterEmail) { window.location.href = "index.html"; return; }
+            if (!user || user.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) {
+                window.location.href = "index.html"; return;
+            }
             iniciarPainel();
             configurarListenersDeCartasUsadas();
         });
@@ -511,13 +510,9 @@
             let cacheJogadores = {};
 
             function render() {
-                console.log('🔄 Render mestre (accounts + jogadores)...');
                 const painel = document.getElementById('painel');
                 const nomes = Array.from(nomesDePersonagens);
-                if (nomes.length === 0) {
-                    painel.innerHTML = "<p class='status-vazio'>Nenhum personagem cadastrado.</p>";
-                    return;
-                }
+                if (nomes.length === 0) { painel.innerHTML = "<p>Nenhum personagem.</p>"; return; }
 
                 painel.innerHTML = "";
                 nomes.sort().forEach(nome => {
@@ -525,29 +520,45 @@
                     const card = document.createElement('div');
                     card.className = 'card-jogador';
 
+                    // === 1. Monta HTML da Mão ===
                     let htmlMao = "";
                     if(p.mao && p.mao.length > 0) {
-                        p.mao.forEach((c, idx) => {
+                        p.mao.forEach((c) => {
                             let classes = "mini-carta";
                             let tooltip = c.nome;
-                            let descansoIcon = "";
-                            if(c.estado === 'curto') { classes += " indisponivel"; tooltip += " (Recarga: Descanso Curto)"; descansoIcon = `<div class="icone-descanso-mini icone-descanso-curto-mini"><img src="img/meia-lua.png" alt="Descanso Curto"></div>`; }
-                            if(c.estado === 'longo') { classes += " indisponivel"; tooltip += " (Recarga: Descanso Longo)"; descansoIcon = `<div class="icone-descanso-mini icone-descanso-longo-mini"><img src="img/lua-cheia.png" alt="Descanso Longo"></div>`; }
-                            let tokensHTML = c.tokens > 0 ? `<div class="token-count">${c.tokens}</div>` : "";
-                            htmlMao += `<div class="${classes}" style="background-image: url('${c.caminho}')" title="${tooltip}">${descansoIcon}${tokensHTML}</div>`;
+                            let extraHTML = ""; // Tokens e Ícones
+                            
+                            if(c.estado === 'curto') { 
+                                classes += " indisponivel"; tooltip += " (Recarga: Curto)"; 
+                                extraHTML += `<div class="icone-descanso-mini"><img src="img/meia-lua.png"></div>`; 
+                            }
+                            if(c.estado === 'longo') { 
+                                classes += " indisponivel"; tooltip += " (Recarga: Longo)"; 
+                                extraHTML += `<div class="icone-descanso-mini"><img src="img/lua-cheia.png"></div>`; 
+                            }
+                            if(c.tokens > 0) {
+                                extraHTML += `<div class="token-count">${c.tokens}</div>`;
+                            }
+                            
+                            // Importante: Colocar o extraHTML dentro da div
+                            htmlMao += `<div class="${classes}" style="background-image: url('${c.caminho}')" title="${tooltip}">${extraHTML}</div>`;
                         });
                     } else { htmlMao = "<span class='status-vazio'>Mão vazia</span>"; }
 
+                    // === 2. Monta HTML dos Slots ===
                     let htmlSlots = "";
+                    let classeNome = "";
                     if(p.slots) {
                         ['Ancestralidade', 'Comunidade', 'Fundamental', 'Especializacao', 'Maestria'].forEach(key => {
                             if(p.slots[key]) {
                                 htmlSlots += `<div class="mini-carta slot-ativo" style="background-image: url('${p.slots[key].caminho}')" title="${key}: ${p.slots[key].nome}"></div>`;
+                                if(key === 'Fundamental' && p.slots[key].profissao) classeNome = p.slots[key].profissao;
                             }
                         });
                     }
                     if(htmlSlots === "") htmlSlots = "<span class='status-vazio'>Nenhum ativo</span>";
 
+                    // === 3. Monta HTML da Reserva ===
                     let htmlReserva = "";
                     if(p.reserva && p.reserva.length > 0) {
                         htmlReserva = `<div class="label">Reserva (${p.reserva.length})</div>`;
@@ -558,25 +569,25 @@
                         htmlReserva += `<div class="grid-mini">${cartasReservaHTML}</div>`;
                     }
 
-                    // Botão da Ficha do Jogador
-                    // AQUI ESTÁ A MÁGICA: O botão chama abrirFichaDoJogador passando o nome
-                    // Tratamento de aspas no nome para o onclick
+                    // Botão da Ficha (Corrigido para aceitar aspas no nome)
                     const safeName = nome.replace(/'/g, "\\'");
-                    const btnFicha = `<button class="btn-abrir-ficha-mestre" onclick="window.abrirFichaDoJogador('${safeName}')" title="Abrir Ficha de ${nome}">📝</button>`;
-
-                    let classeTag = '';
-                    if(p.slots && p.slots.Fundamental && p.slots.Fundamental.profissao) {
-                        const profissao = p.slots.Fundamental.profissao;
-                        classeTag = `<span style="background: rgba(212, 175, 55, 0.3); color: #d4af37; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; border: 1px solid rgba(212, 175, 55, 0.6); font-weight: bold;">${profissao}</span>`;
-                    }
                     
+                    // === CONSTRUÇÃO DO CARD ===
                     card.innerHTML = `
-                        ${btnFicha}
-                        <div class="nome">${nome}${classeTag}</div>
+                        <div class="card-header">
+                            <div class="nome-container">
+                                <div class="nome">${nome}</div>
+                                ${classeNome ? `<div class="tag-classe">${classeNome}</div>` : ''}
+                            </div>
+                            <button class="btn-abrir-ficha-mestre" onclick="window.abrirFichaDoJogador('${safeName}')" title="Abrir Ficha">📄 Ficha</button>
+                        </div>
+                        
                         <div class="label">Mão (${p.mao ? p.mao.length : 0})</div>
                         <div class="grid-mini" data-jogador="${nome}">${htmlMao}</div>
+                        
                         <div class="label">Mesa (Ativos)</div>
                         <div class="grid-mini">${htmlSlots}</div>
+                        
                         ${htmlReserva}
                     `;
                     painel.appendChild(card);
@@ -607,21 +618,15 @@
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
             get(jogadoresRef).then(snapshot => {
                 if(snapshot.exists()) {
-                    const dados = snapshot.val();
-                    Object.keys(dados).forEach(nomeJogador => configurarListenerIndividualDoJogador(nomeJogador));
+                    Object.keys(snapshot.val()).forEach(nome => configurarListenerIndividualDoJogador(nome));
                 }
             });
-            onChildChanged(jogadoresRef, (snapshot) => {
-                configurarListenerIndividualDoJogador(snapshot.key);
-            });
+            onChildChanged(jogadoresRef, (snapshot) => configurarListenerIndividualDoJogador(snapshot.key));
         }
 
         function configurarListenerIndividualDoJogador(nomeJogador) {
-            const cartaUsadaRef = ref(db, `mesa_rpg/jogadores/${nomeJogador}/cartaUsada`);
-            onValue(cartaUsadaRef, (snapshot) => {
-                if(snapshot.exists()) {
-                    animarCartaEspecifica(nomeJogador, snapshot.val());
-                }
+            onValue(ref(db, `mesa_rpg/jogadores/${nomeJogador}/cartaUsada`), (snapshot) => {
+                if(snapshot.exists()) animarCartaEspecifica(nomeJogador, snapshot.val());
             });
         }
 
@@ -631,24 +636,18 @@
             const cartas = gridMao.querySelectorAll('.mini-carta');
             let cartaEncontrada = null;
             for(let carta of cartas) {
-                const bgImage = carta.style.backgroundImage;
-                if(bgImage) {
-                    const caminhoExtraido = bgImage.replace(/url\(['"]?([^'")]+)['"]?\)/g, '$1');
-                    if(caminhoExtraido === cartaUsada.caminho || caminhoExtraido.includes(cartaUsada.caminho.split('/').pop())) {
-                        cartaEncontrada = carta;
-                        break;
-                    }
+                const bg = carta.style.backgroundImage;
+                if(bg && (bg.includes(cartaUsada.caminho) || bg.includes(cartaUsada.caminho.split('/').pop()))) {
+                    cartaEncontrada = carta; break;
                 }
             }
             if(cartaEncontrada) {
-                cartaEncontrada.style.animation = 'none';
-                void cartaEncontrada.offsetWidth;
                 cartaEncontrada.style.animation = 'mini-carta-usar 0.8s ease-out';
-                setTimeout(() => { cartaEncontrada.style.animation = 'none'; }, 800);
+                setTimeout(() => cartaEncontrada.style.animation = 'none', 800);
             }
         }
 
-        // Funções do Escudo (Mantidas resumidas para não estourar limite)
+        // Funções Escudo
         const topicos = {
             testes: { titulo: "🎲 TESTES", conteudo: "<h2>🎲 TESTES & DUALIDADE</h2><p>2d12 (Esperança+Medo). Se Esperança > Medo = Ganha Esperança. Se Medo > Esperança = GM ganha Medo.</p>" },
             recursos: { titulo: "💎 RECURSOS", conteudo: "<h2>💎 RECURSOS</h2><p>Esperança: +1d6, Tag Team. Fadiga: Custo de habilidade, Dano.</p>" },
@@ -661,27 +660,28 @@
             mestre: { titulo: "💀 GM", conteudo: "<h2>💀 O MESTRE</h2><p>Faça movimentos quando eles falham ou rolam com Medo.</p>" }
         };
 
-        window.exibirTopico = function(id) {
-            if(topicos[id]) {
-                document.getElementById('escudo-conteudo').innerHTML = topicos[id].conteudo;
-                document.getElementById('modal-escudo').classList.add('ativo');
-            }
-        }
+        window.exibirTopico = function(id) { if(topicos[id]) { document.getElementById('escudo-conteudo').innerHTML = topicos[id].conteudo; document.getElementById('modal-escudo').classList.add('ativo'); } }
         window.fecharEscudo = function() { document.getElementById('modal-escudo').classList.remove('ativo'); }
         document.getElementById('modal-escudo').addEventListener('click', function(e) { if(e.target===this) fecharEscudo(); });
 
+        // --- HOVER PREVIEW COM CONTEUDO (TOKENS/ICONES) ---
         document.addEventListener('mouseover', (e) => {
             const carta = e.target.closest('.mini-carta');
             if (carta && !carta.classList.contains('status-vazio')) {
                 const preview = document.getElementById('preview-carta-mestre');
                 if (preview && carta.style.backgroundImage) {
                     preview.style.backgroundImage = carta.style.backgroundImage;
-                    preview.style.display = 'flex';
+                    // CLONA O CONTEÚDO (Tokens e Ícones) para o preview
+                    preview.innerHTML = carta.innerHTML;
+                    preview.style.display = 'flex'; // Exibe o preview
                 }
             }
         });
+
         document.addEventListener('mouseout', (e) => {
-            if (e.target.closest('.mini-carta')) document.getElementById('preview-carta-mestre').style.display = 'none';
+            if (e.target.closest('.mini-carta')) {
+                document.getElementById('preview-carta-mestre').style.display = 'none';
+            }
         });
     </script>
 
