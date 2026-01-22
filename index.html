@@ -14,8 +14,9 @@
     <link rel="stylesheet" href="medo.css?v=1.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
+        /* Botão Refresh do Jogador */
         .btn-refresh-player {
-            position: absolute; top: 20px; right: 20px;
+            position: absolute; top: 15px; right: 15px;
             background: rgba(0, 0, 0, 0.7); border: 2px solid #555; color: #aaa;
             width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 9999;
             display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
@@ -117,12 +118,32 @@
     <script type="module" src="script.js?v=10.2"></script>
     <script type="module">
         import { getDatabase, ref, push, query, limitToLast, onChildAdded, set, get, remove, onValue, update, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        
-        window.db = getDatabase(); window.ref = ref; window.push = push; window.query = query;
-        window.limitToLast = limitToLast; window.onChildAdded = onChildAdded; window.set = set;
-        window.get = get; window.remove = remove; window.onValue = onValue; window.update = update; window.off = off; window.onDisconnect = onDisconnect;
+        import { getAuth, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-        // --- RESTAURAÇÃO DA LÓGICA DO JOGADOR ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyATWkyYE6b3wyz3LdFXAmxKxNQOexa_vUY",
+            authDomain: "deck-daggerheart.firebaseapp.com",
+            databaseURL: "https://deck-daggerheart-default-rtdb.firebaseio.com",
+            projectId: "deck-daggerheart",
+            storageBucket: "deck-daggerheart.firebasestorage.app",
+            messagingSenderId: "825358776791",
+            appId: "1:825358776791:web:ce0ab844f58c60573c7392",
+            measurementId: "G-20TB05E9N2"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+        
+        // Garante que a autenticação persista apenas na sessão
+        setPersistence(auth, browserSessionPersistence).catch(console.error);
+
+        // Exportações globais (CRUCIAIS PARA OS OUTROS SCRIPTS)
+        window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
+        window.onValue = onValue; window.push = push; window.update = update; window.off = off; window.onDisconnect = onDisconnect;
+        window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
+        
+        // === RESTAURAÇÃO COMPLETA DA LÓGICA DO JOGADOR ===
         window.nomeJogador = "";
         let maoDoJogador = [];
         let reservaDoJogador = [];
@@ -146,7 +167,7 @@
             } catch(e) { console.error("Erro loading cards", e); }
         }
 
-        // Funções de Interface
+        // Funções de Interface (GRIMÓRIO)
         window.abrirGrimorio = async function(tipo, slotDestino = null) {
             const modal = document.getElementById('grimorio-modal');
             const grid = document.getElementById('grid-cartas');
@@ -228,10 +249,7 @@
             Object.keys(slotsFixos).forEach(id => {
                 const div = document.getElementById(`slot-${id}`);
                 if(div) {
-                    // Limpa mas mantém estrutura base se possível, ou recria
-                    // Aqui simplifico: recria imagem se tiver carta
                     const carta = slotsFixos[id];
-                    // Remove imagem velha
                     const oldImg = div.querySelector('img'); if(oldImg) oldImg.remove();
                     const btn = div.querySelector('.btn-limpar'); if(btn) btn.style.display = carta ? 'flex' : 'none';
                     
@@ -239,7 +257,6 @@
                         const img = document.createElement('img');
                         img.src = carta.caminho;
                         div.appendChild(img);
-                        // Hover Slot
                         img.onmouseenter = () => { const p = document.getElementById('hover-preview-slot'); p.style.display='block'; p.style.backgroundImage=`url('${img.src}')`; };
                         img.onmouseleave = () => document.getElementById('hover-preview-slot').style.display='none';
                     }
@@ -392,6 +409,7 @@
         // INTERCEPTA A SELEÇÃO
         const originalSelecionar = window.selecionarPersonagem;
         window.selecionarPersonagem = async function(charName) {
+            // Garante que a variável global seja definida antes de tudo
             window.nomeJogador = charName.toUpperCase();
             
             // Carrega dados do Firebase para popular variáveis locais
@@ -414,11 +432,11 @@
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
             if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
             
-            // HEARTBEAT
+            // HEARTBEAT: Revalida a presença a cada 30 segundos para não cair
             if (window.presencaInterval) clearInterval(window.presencaInterval);
             window.presencaInterval = setInterval(() => {
                 if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
-            }, 30000);
+            }, 30000); // A cada 1 minuto renova a presença
         };
 
         // REFRESH MANUAL
@@ -439,6 +457,7 @@
             setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
         };
 
+        // LOADER DE SCRIPTS
         function loadScript(src) {
             const script = document.createElement('script');
             script.src = src + "?t=" + Date.now();
@@ -456,6 +475,9 @@
             if(window.escutarRolagens) window.escutarRolagens();
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
             if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
+            
+            // Se já tiver personagem carregado, registra presença agora
+            if(window.nomeJogador) window.registrarPresenca(window.nomeJogador);
         }, 2000);
     </script>
 </body>
