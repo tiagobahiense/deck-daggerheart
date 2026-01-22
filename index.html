@@ -72,7 +72,87 @@
 
     <div id="classe-selection-modal" class="modal-selecao"><div class="classe-carousel-wrapper"><div class="selecao-header"><h2>Escolha sua Classe</h2><p>Clique na imagem para ler</p></div><div class="carousel-main"><button class="nav-btn prev" onclick="window.mudarClasse(-1)">❮</button><div class="card-display" onclick="window.verDetalhesClasse()"><div class="card-glow"></div><img id="img-classe-perfil" class="img-perfil-animada"><div class="card-label"><span id="nome-classe-selecao">CLASSE</span></div></div><button class="nav-btn next" onclick="window.mudarClasse(1)">❯</button></div><div class="selecao-footer"><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasse()">✓ Confirmar <span id="btn-nome-classe">Classe</span></button></div></div></div>
     <div id="modal-detalhes-classe" class="modal" style="z-index: 7000;"><div class="modal-detalhes-content"><button class="close-detalhes" onclick="window.fecharDetalhesClasse()">X</button><div class="pdf-wrapper"><button class="nav-pdf-btn prev" onclick="window.mudarPaginaPDF(-1)">❮</button><div class="pdf-container"><img id="img-classe-pdf"></div><button class="nav-pdf-btn next" onclick="window.mudarPaginaPDF(1)">❯</button></div><div class="detalhes-footer"><div class="page-counter" id="pdf-page-counter">1/2</div><button class="btn-confirmar-final" onclick="window.confirmarSelecaoClasseDeDentro()">Escolher</button></div></div></div>
-    <div id="sheet-modal" class="modal"><div class="sheet-content"><div class="sheet-toolbar"><button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button><button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button><button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button></div><button class="btn-close-sheet" onclick="fecharFicha()">X</button><div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div><div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div></div></div>
+    <div id="sheet-modal" class="modal">
+        <div class="sheet-content">
+            
+            <div class="sheet-toolbar">
+                <button class="tool-btn active" onclick="selecionarFerramenta('texto')" title="Texto">T</button>
+                <button class="tool-btn" onclick="selecionarFerramenta('marcador')" title="Marcador">●</button>
+                <button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;" title="Limpar Página">🗑️</button>
+                
+                <div class="color-separator" style="height: 1px; width: 30px; background: #555; margin: 5px 0;"></div>
+                <button class="tool-btn" onclick="toggleTutorial()" style="color: var(--gold);" title="Guia de Preenchimento">📖</button>
+            </div>
+
+            <button class="btn-close-sheet" onclick="fecharFicha()">X</button>
+            
+            <div class="sheet-container" id="sheet-container">
+                <img id="sheet-bg">
+                <div id="sheet-inputs-layer"></div>
+                
+                <div id="tutorial-overlay" onclick="fecharTutorial(event)">
+                    <div class="tutorial-box">
+                        <button class="close-tutorial-btn" onclick="fecharTutorial(event)">×</button>
+                        <div class="tutorial-scroll">
+                            <h2 style="color: var(--gold); text-align: center; border-bottom: 1px solid var(--gold); padding-bottom: 10px;">Guia de Preenchimento</h2>
+                            
+                            <h3>1. Escolha de Classe e Nível</h3>
+                            <ul>
+                                <li><strong>Classe:</strong> Anote no topo da ficha.</li>
+                                <li><strong>Subclasse:</strong> Escolha a carta <strong>Fundamental</strong>.</li>
+                                <li><strong>Nível:</strong> Anote <strong>1</strong>.</li>
+                            </ul>
+
+                            <h3>2. Herança</h3>
+                            <ul>
+                                <li><strong>Ancestralidade:</strong> Concede <strong>duas</strong> habilidades (veja a carta).</li>
+                                <li><strong>Comunidade:</strong> Concede <strong>uma</strong> habilidade (veja a carta).</li>
+                            </ul>
+
+                            <h3>3. Atributos</h3>
+                            <p>Distribua os modificadores nas seis caixas:</p>
+                            <p style="text-align: center; font-weight: bold; color: var(--gold); background: rgba(0,0,0,0.3); padding: 5px;">+2, +1, +1, 0, 0, –1</p>
+
+                            <h3>4. Combate e Vida</h3>
+                            <ul>
+                                <li><strong>Evasão:</strong> Valor fixo da Classe (ex: Bardo 10, Guerreiro 9).</li>
+                                <li><strong>Pontos de Vida (PV):</strong> Valor fixo da Classe.</li>
+                                <li><strong>Fadiga (PF):</strong> Começa com <strong>6</strong> espaços.</li>
+                                <li><strong>Esperança:</strong> Começa com <strong>2</strong> marcados.</li>
+                            </ul>
+
+                            <h3>5. Equipamento</h3>
+                            <p><strong>Armadura:</strong> Anote o valor base (ex: Couro = 3).</p>
+                            <p><strong>Limiares de Dano:</strong> Armadura + Nível.</p>
+                            <ul>
+                                <li><em>Exemplo (Nível 1):</em> Base 2/4 → Anote <strong>3</strong> (Menor) e <strong>5</strong> (Maior).</li>
+                            </ul>
+                            <p><strong>Armas:</strong> Escolha Primária e Secundária. Marque o 1º círculo de Proficiência.</p>
+
+                            <h3>6. Experiências</h3>
+                            <p>Crie duas frases curtas (ex: <em>“Guarda-costas Leal”</em>). Atribua <strong>+2</strong> para ambas.</p>
+
+                            <h3>7. Cartas de Domínio</h3>
+                            <p>Escolha <strong>duas cartas de nível 1</strong> baseadas nos domínios da sua classe.</p>
+
+                            <h3>8. Detalhes Finais</h3>
+                            <ul>
+                                <li><strong>Inventário:</strong> Kit básico, poção inicial e 1 Punhado de Ouro.</li>
+                                <li><strong>Descrição:</strong> Nome, Pronomes e Aparência.</li>
+                                <li><strong>Vínculos:</strong> Conecte sua história com os outros jogadores.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            
+            <div class="sheet-footer">
+                <button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button>
+                <span id="sheet-page-indicator">1</span>
+                <button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button>
+            </div>
+        </div>
+    </div>
     
     <div id="hover-preview" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:525px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
     <div id="hover-preview-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:525px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>

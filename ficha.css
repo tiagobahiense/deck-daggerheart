@@ -172,4 +172,82 @@
     .sheet-toolbar { top: -60px; left: 0; width: 100%; height: 50px; flex-direction: row; justify-content: center; }
     .btn-close-sheet { top: -60px; right: 0; }
     .sheet-content { margin-top: 60px; }
+
+    /* =========================================================
+   ESTILOS DO TUTORIAL (GUIA)
+   ========================================================= */
+
+#tutorial-overlay {
+    display: none; /* Oculto por padrão */
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); /* Fundo semi-transparente */
+    z-index: 5000; /* Acima dos inputs da ficha */
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(2px);
+}
+
+.tutorial-box {
+    width: 90%;
+    max-width: 500px;
+    height: 80%;
+    background: #1a1a1a;
+    border: 2px solid var(--gold);
+    border-radius: 8px;
+    box-shadow: 0 0 30px rgba(0,0,0,0.9);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    color: #ddd;
+    font-family: sans-serif; /* Fonte mais legível para leitura longa */
+}
+
+.tutorial-scroll {
+    padding: 20px;
+    overflow-y: auto;
+    flex: 1;
+    line-height: 1.5;
+}
+
+.tutorial-scroll h3 {
+    color: #fff9c4;
+    border-bottom: 1px solid #444;
+    margin-top: 20px;
+    padding-bottom: 5px;
+    font-family: 'MedievalSharp', cursive;
+}
+
+.tutorial-scroll ul {
+    padding-left: 20px;
+    color: #bbb;
+}
+
+.tutorial-scroll li {
+    margin-bottom: 5px;
+}
+
+.close-tutorial-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 10;
+}
+.close-tutorial-btn:hover {
+    color: var(--gold);
+}
+
+/* Scrollbar personalizada para o tutorial */
+.tutorial-scroll::-webkit-scrollbar { width: 8px; }
+.tutorial-scroll::-webkit-scrollbar-track { background: #222; }
+.tutorial-scroll::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+.tutorial-scroll::-webkit-scrollbar-thumb:hover { background: var(--gold); }
 }

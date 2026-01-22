@@ -480,3 +480,29 @@ window.limparPaginaAtual = function() {
         if (el.pagina === paginaFichaAtual) deletarElementoNoFirebase(el.id);
     });
 };
+
+// =========================================================
+// LÓGICA DO TUTORIAL
+// =========================================================
+
+window.toggleTutorial = function() {
+    const overlay = document.getElementById('tutorial-overlay');
+    if (!overlay) return;
+
+    if (overlay.style.display === 'flex') {
+        overlay.style.display = 'none';
+    } else {
+        overlay.style.display = 'flex';
+    }
+};
+
+window.fecharTutorial = function(e) {
+    // Fecha se clicar no overlay (fundo escuro) ou no botão de fechar
+    // e.target === this garante que não feche se clicar DENTRO da caixa de texto
+    const overlay = document.getElementById('tutorial-overlay');
+    
+    // Se o evento vier do botão X (que pode ser um filho do botão dependendo do HTML) ou do overlay direto
+    if (e.target.id === 'tutorial-overlay' || e.target.classList.contains('close-tutorial-btn')) {
+        overlay.style.display = 'none';
+    }
+};
