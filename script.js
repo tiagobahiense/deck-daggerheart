@@ -630,30 +630,43 @@ function atualizarImagemLeitor() {
 // --- LÓGICA DO ZOOM (RODINHA DO MOUSE) ---
 // Adicione isso logo após as funções acima
 
-const containerPdfElement = document.querySelector('.pdf-container');
+// --- LÓGICA DO ZOOM (RODINHA DO MOUSE E CLIQUE) ---
+// Seleciona especificamente o container do LEITOR (e não o da seleção de classe)
+const containerPdfElement = document.querySelector('#modal-leitor-pdf .pdf-container');
 
 if(containerPdfElement) {
+    // 1. Zoom com a Roda do Mouse
     containerPdfElement.addEventListener('wheel', function(e) {
-        // Só ativa se o modal estiver visível
         if(document.getElementById('modal-leitor-pdf').style.display === 'none') return;
-
-        e.preventDefault(); // Impede a página de rolar, foca no zoom
-
-        // Roda pra cima (negativo) = Zoom In (+), Baixo = Zoom Out (-)
+        
+        e.preventDefault();
         const direction = e.deltaY > 0 ? -0.2 : 0.2;
         zoomLevelPDF += direction;
-
-        // Limites: Mínimo 1x (tela cheia), Máximo 3x
+        
+        // Limites
         if (zoomLevelPDF < 1) zoomLevelPDF = 1;
         if (zoomLevelPDF > 3) zoomLevelPDF = 3;
-
+        
         aplicarZoomPDF();
     }, { passive: false });
+
+    // 2. Zoom com Clique (Alternar 1x / 2.5x)
+    containerPdfElement.addEventListener('click', function(e) {
+        // Se clicar nos botões de navegação, ignora
+        if(e.target.tagName === 'BUTTON') return;
+
+        if (zoomLevelPDF <= 1) {
+            zoomLevelPDF = 2.5; // Zoom in
+        } else {
+            zoomLevelPDF = 1.0; // Reset
+        }
+        aplicarZoomPDF();
+    });
 }
 
 function aplicarZoomPDF() {
     const img = document.getElementById('img-leitor-pdf');
-    const container = document.querySelector('.pdf-container');
+    const container = document.querySelector('#modal-leitor-pdf .pdf-container'); // Seletor corrigido aqui também
 
     if (!img || !container) return;
 
@@ -661,15 +674,15 @@ function aplicarZoomPDF() {
         // RESET: Encaixa na tela
         img.style.width = 'auto';
         img.style.maxWidth = '100%';
-        img.style.maxHeight = '88vh'; // Trava a altura
+        img.style.maxHeight = '88vh';
         container.style.cursor = 'zoom-in';
-        container.style.alignItems = 'center'; // Centraliza verticalmente
+        container.style.alignItems = 'center';
     } else {
-        // ZOOM ATIVO: Libera tamanho
+        // ZOOM ATIVO
         img.style.maxHeight = 'none';
         img.style.maxWidth = 'none';
         img.style.width = `${zoomLevelPDF * 100}%`;
-        container.style.cursor = 'grab';
-        container.style.alignItems = 'flex-start'; // Permite scrolar até o topo/fundo
+        container.style.cursor = 'zoom-out'; // Muda cursor para indicar que clique reduz
+        container.style.alignItems = 'flex-start';
     }
 }
