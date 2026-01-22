@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mesa de Jogo - Daggerheart (GM)</title>
     <link rel="stylesheet" href="style.css?v=8.0">
-    <link rel="stylesheet" href="ficha.css?v=6.0">
+    <link rel="stylesheet" href="ficha.css?v=5.0">
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
     <link rel="stylesheet" href="medo.css?v=1.1">
@@ -17,72 +17,89 @@
 
         #container-principal { display: flex; flex: 1; overflow: hidden; gap: 0; }
         
-        /* JOGADORES */
+        /* 1. JOGADORES (ESQUERDA) */
         #area-jogadores { width: 350px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 2px solid var(--gold); background: #0a0a0a; }
         #painel { padding: 10px; overflow-y: auto; height: 100%; display: flex; flex-direction: column; gap: 10px; }
         
         .card-jogador { width: 100%; background: rgba(20,20,20,0.9); border: 1px solid #444; border-radius:8px; padding:8px; box-sizing: border-box; }
         .card-header { display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #333; padding-bottom:5px; margin-bottom:5px; }
+        
+        /* Nome e Status */
         .nome-wrapper { display: flex; align-items: center; gap: 8px; }
         .nome { color: var(--gold); font-weight: bold; font-size: 0.9rem; }
         .tag-classe { font-size: 0.65rem; color: #aaa; background: #222; padding: 1px 4px; border-radius: 4px; }
         
-        /* Status Dot */
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; box-shadow: 0 0 5px rgba(0,0,0,0.8); transition: background-color 0.3s; }
+        /* Bolinha de Status */
+        .status-dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 5px rgba(0,0,0,0.8);
+            transition: background-color 0.3s;
+        }
         .status-online { background-color: #00ff00; box-shadow: 0 0 8px #00ff00; }
         .status-offline { background-color: #ff0000; opacity: 0.4; }
 
         .btn-abrir-ficha-mestre { background: var(--gold); color: #000; border: none; border-radius: 15px; padding: 2px 8px; font-weight: bold; cursor: pointer; font-size: 0.75rem; margin-left:5px; }
         .btn-expandir-mesa { background: #333; color: #ccc; border: 1px solid #555; width: 100%; padding: 4px; cursor: pointer; font-size: 0.75rem; margin-top:5px; border-radius: 4px; }
+        .btn-expandir-mesa:hover { background: #444; color: #fff; }
         .mesa-expandida { display: none; margin-top: 5px; border-top: 1px dashed #444; padding-top: 5px; }
         .mesa-expandida.ativo { display: block; }
         .grid-mini { display: flex; flex-wrap: wrap; gap: 4px; min-height: 40px; }
 
-        /* TABULEIRO */
+        /* 2. ÁREA DE BATALHA (CENTRO) */
         #area-batalha-gm { flex-grow: 1; background: url('img/background_epico.png') no-repeat center center; background-size: cover; position: relative; overflow: hidden; display: flex; flex-direction: column; }
         #titulo-batalha { background: rgba(0,0,0,0.8); color: var(--gold); text-align: center; padding: 5px; font-family: 'MedievalSharp', cursive; border-bottom: 1px solid var(--gold); }
         #area-inimigos { flex-grow: 1; overflow-y: auto; padding: 20px; display: flex; flex-wrap: wrap; align-content: flex-start; justify-content: center; gap: 15px; }
 
-        /* SIDEBAR (Escudo) */
+        /* 3. ESCUDO E DADOS (DIREITA) */
         #sidebar-escudo { width: 280px; flex-shrink: 0; background: #0f0f0f; border-left: 2px solid var(--gold); padding: 10px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .escudo-topicos { display: flex; flex-direction: column; gap: 5px; }
         .btn-topico { background: #222; border: 1px solid #444; color: #ddd; padding: 8px; text-align: left; cursor: pointer; border-radius: 5px; transition: 0.2s; }
         .btn-topico:hover { border-color: var(--gold); background: #333; }
 
-        /* Top Bar */
+        /* Controles Gerais */
         #controles-mestre { display: flex; justify-content: space-between; align-items: center; padding: 8px 15px; background: #111; border-bottom: 2px solid var(--gold); z-index: 100; }
         .btn-rest { font-size: 0.8rem; padding: 5px 10px; cursor: pointer; color: white; border-radius: 4px; border:none; }
         .curto { background: #f57c00; } .longo { background: #d32f2f; }
         .btn-nav-mestre { background: #333; color: #fff; padding: 5px 10px; border: 1px solid #555; cursor: pointer; border-radius: 4px; }
+        
+        /* Botão Refresh */
         .btn-refresh { background: none; border: 1px solid #555; color: #aaa; cursor: pointer; width: 30px; height: 30px; border-radius: 50%; font-size: 1.2rem; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
         .btn-refresh:hover { color: var(--gold); border-color: var(--gold); transform: rotate(180deg); }
         .spin-anim { animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        /* Preview Grande */
-        #preview-carta-mestre { display: none; position: fixed; top: 50%; left: 50%; width: 320px; height: 480px; z-index: 9999; transform: translate(-50%, -50%); border: 3px solid var(--gold); background: #000; pointer-events: none; background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 0 60px rgba(255,215,0,0.4); border-radius: 10px; }
-        #preview-carta-mestre .token-count { position: absolute; top: -10px; right: -10px; background: #000; border: 2px solid #fff; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; }
-
-        /* Modal Escudo */
-        #modal-escudo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; }
-        #modal-escudo.ativo { display: flex; }
-        .modal-escudo-content { background: #1a1a1a; padding: 30px; border: 2px solid var(--gold); max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; color: #ddd; border-radius: 10px; }
-        .modal-escudo-content h2 { color:var(--gold); margin-top:0; }
-        #btn-fechar-escudo { position: absolute; top: 10px; right: 10px; background: var(--gold); border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; }
-
-        /* Criar Inimigo Modal Styles */
+        /* Modal Criar */
         #modal-criar-inimigo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9000; align-items: center; justify-content: center; }
         .modal-criar-content { background: #1a1a1a; width: 450px; padding: 20px; border: 2px solid var(--gold); border-radius: 10px; display: flex; flex-direction: column; gap: 10px; max-height:90vh; overflow-y:auto; }
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .form-full { grid-column: 1 / -1; }
         input, textarea { width: 100%; box-sizing: border-box; background: #222; border: 1px solid #444; color: white; padding: 5px; }
+        
+        /* Preview Card */
+        #preview-carta-mestre { display: none; position: fixed; top: 50%; left: 50%; width: 320px; height: 480px; z-index: 9999; transform: translate(-50%, -50%); border: 3px solid var(--gold); background: #000; pointer-events: none; background-size: contain; background-repeat: no-repeat; background-position: center; box-shadow: 0 0 60px rgba(255,215,0,0.4); border-radius: 10px; }
+        #preview-carta-mestre .token-count { position: absolute; top: -10px; right: -10px; background: #000; border: 2px solid #fff; color: #fff; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; }
+        
+        /* Modal Escudo */
+        #modal-escudo { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 5000; align-items: center; justify-content: center; }
+        #modal-escudo.ativo { display: flex; }
+        .modal-escudo-content { background: #1a1a1a; padding: 30px; border: 2px solid var(--gold); max-width: 600px; max-height: 80vh; overflow-y: auto; position: relative; color: #ddd; border-radius: 10px; font-size: 0.95rem; line-height: 1.5; }
+        .modal-escudo-content h2 { color:var(--gold); margin-top:0; border-bottom: 1px solid #444; padding-bottom: 10px; }
+        .modal-escudo-content h3 { color:#ffff99; margin-top:20px; margin-bottom: 5px; border-bottom: 1px solid #333; display: inline-block;}
+        .modal-escudo-content ul { padding-left: 20px; margin-top: 5px; }
+        .modal-escudo-content li { margin-bottom: 5px; color: #ccc; }
+        .modal-escudo-content strong { color: #fff; }
+        .modal-escudo-content p { margin: 5px 0; }
+        
+        #btn-fechar-escudo { position: absolute; top: 10px; right: 10px; background: var(--gold); border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-weight: bold; z-index: 10; }
 
-        /* Miniaturas */
+        /* Slots e Cartas Visuais */
         .mini-carta { width: 50px; height: 70px; background-size: cover; background-position: center; border: 1px solid #555; border-radius: 4px; position: relative; cursor: help; }
         .mini-carta.indisponivel { filter: grayscale(100%); opacity: 0.5; }
         .icone-descanso-mini { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 20px; height: 20px; }
         .icone-descanso-mini img { width: 100%; height: 100%; }
         .token-count { position: absolute; bottom: -5px; right: -5px; background: var(--gold); color: black; border-radius: 50%; width: 18px; height: 18px; font-size: 0.7rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
+        
         .slot-ativo { width: 40px; height: 40px; background-size: cover; background-position: center; border-radius: 50%; border: 1px solid var(--gold); cursor: help; }
         .carta-reserva-visual { width: 40px; height: 56px; background-size: cover; border: 1px dashed #666; opacity: 0.7; }
     </style>
@@ -90,7 +107,9 @@
 <body>
     
     <div id="loading-screen">Carregando Mesa...</div>
+
     <div id="medo-overlay-msg"></div>
+
     <div id="preview-carta-mestre"></div>
 
     <audio id="sound-medo-add"><source src="audio/sound-recolhe-medo.mp3" type="audio/mpeg"></audio>
@@ -113,9 +132,12 @@
     </div>
 
     <div id="container-principal">
+        
         <div id="area-jogadores">
             <h3 style="color:#aaa; text-align:center; margin:5px 0; border-bottom:1px solid #333;">JOGADORES</h3>
-            <div id="painel"><p style="text-align:center; color:#666;">Carregando...</p></div>
+            <div id="painel">
+                <p style="text-align:center; color:#666;">Carregando...</p>
+            </div>
         </div>
 
         <div id="area-batalha-gm">
@@ -124,8 +146,17 @@
         </div>
 
         <div id="sidebar-escudo">
+            
             <div id="medo-container">
+                <div class="medo-header">
+                    <span class="medo-titulo">MEDO</span>
+                    <div class="medo-botoes">
+                        <button class="btn-medo btn-add" onclick="adicionarMedo()">Adicionar</button>
+                        <button class="btn-medo btn-use" onclick="usarMedo()">Usar</button>
+                    </div>
                 </div>
+                <div id="medo-tokens-grid"></div>
+            </div>
 
             <h3 style="color:var(--gold); text-align:center; border-bottom:1px solid #333; padding-bottom:5px; margin-top:20px;">ESCUDO GM</h3>
             <div class="escudo-topicos">
@@ -146,7 +177,9 @@
     
     <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()"><div class="dados-content"><div class="dados-header">Rolagem</div><div class="dualidade-box"><span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button></div><hr style="border-top:1px solid #444; width:100%;"><div class="grid-dados"><div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div></div><button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button></div></div>
     <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button></div>
+    
     <div id="modal-escudo"><div class="modal-escudo-content"><button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button><div id="escudo-conteudo"></div></div></div>
+    
     <div id="sheet-modal" class="modal"><div class="sheet-content"><div class="sheet-toolbar"><button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button><button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button><button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button></div><button class="btn-close-sheet" onclick="fecharFicha()">X</button><div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div><div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div></div></div>
 
     <script type="module">
@@ -213,7 +246,6 @@
             setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
         };
 
-        // --- SISTEMA DE PRESENÇA ---
         let presencaCache = {};
         function iniciarMonitoramentoPresenca() {
             onValue(ref(db, 'mesa_rpg/presenca'), (snap) => {
@@ -313,31 +345,155 @@
                 Object.keys(cacheJogadores).forEach(n => nomesDePersonagens.add(String(n).toUpperCase()));
                 render();
             });
-            
-            // ======================================================
-            // CORREÇÃO CRÍTICA: ANIMAÇÃO DE CARTA
-            // ======================================================
             onChildChanged(jogadoresRef, (snap) => {
-                const n = snap.key; 
-                const d = snap.val();
+                const n = snap.key; const d = snap.val();
                 
-                // Só anima se a carta foi usada nos últimos 2 segundos
+                // CORREÇÃO: Só anima se a carta foi usada nos últimos 2 segundos
                 if(d.cartaUsada && (Date.now() - d.cartaUsada.timestamp < 2000)) {
                     animarCartaEspecifica(n, d.cartaUsada);
                 }
             });
         }
 
+        // --- CONTEÚDO DO ESCUDO (RICAMENTE FORMATADO) ---
         const topicos = {
-            testes: { titulo: "🎲 TESTES & DUALIDADE", conteudo: "<h2>🎲 TESTES & DUALIDADE</h2><p>2d12 (Esperança+Medo). Se Esperança > Medo = Ganha Esperança. Se Medo > Esperança = GM ganha Medo.</p>" },
-            recursos: { titulo: "💎 RECURSOS", conteudo: "<h2>💎 RECURSOS</h2><p>Esperança: +1d6, Tag Team. Fadiga: Custo de habilidade, Dano.</p>" },
-            combate: { titulo: "⚔️ COMBATE", conteudo: "<h2>⚔️ COMBATE</h2><p>Role contra Evasão. Dano vs Limiares. Distâncias: C-a-C, Muito Próximo, Próximo, Distante.</p>" },
-            dano: { titulo: "🩸 DANO", conteudo: "<h2>🩸 DANO</h2><p>Menor (1PV), Maior (2PV), Grave (3PV). Armor reduz.</p>" },
-            armadura: { titulo: "🛡️ ARMADURA", conteudo: "<h2>🛡️ ARMADURA</h2><p>Queime slots de armadura para reduzir dano recebido.</p>" },
-            morte: { titulo: "☠️ MORTE", conteudo: "<h2>☠️ MORTE</h2><p>Opções ao cair: Arriscar, Evitar (Cicatriz), Sacrifício.</p>" },
-            distancia: { titulo: "📏 DISTÂNCIA", conteudo: "<h2>📏 DISTÂNCIA</h2><p>Melee, Very Close, Close, Far, Very Far.</p>" },
-            descanso: { titulo: "💤 DESCANSO", conteudo: "<h2>💤 DESCANSO</h2><p>Curto: Repara Armor, cura um pouco. Longo: Full reset.</p>" },
-            mestre: { titulo: "💀 GM", conteudo: "<h2>💀 O MESTRE</h2><p>Faça movimentos quando eles falham ou rolam com Medo.</p>" }
+            testes: {
+                titulo: "🎲 TESTES & DUALIDADE",
+                conteudo: `
+                    <h2>🎲 TESTES & DUALIDADE</h2>
+                    <h3>Rolagem Padrão</h3>
+                    <p><code>2d12 (Esperança + Medo) + Atributo + Bônus</code></p>
+                    <p><strong>Crítico:</strong> Dados iguais (ex: 6 e 6) = Sucesso Automático e ganha Esperança.</p>
+                    
+                    <h3>Resultados</h3>
+                    <ul>
+                        <li><strong>Sucesso com Esperança:</strong> Total ≥ Dificuldade, e dado de Esperança > Medo.<br><span style="color:#d4af37">Ganha +1 Esperança.</span></li>
+                        <li><strong>Sucesso com Medo:</strong> Total ≥ Dificuldade, e dado de Medo > Esperança.<br><span style="color:#bd6ceb">GM ganha +1 Medo ou faz um movimento.</span></li>
+                        <li><strong>Falha:</strong> Total < Dificuldade.<br><span style="color:#ff6666">GM faz um movimento.</span></li>
+                    </ul>
+                `
+            },
+            recursos: {
+                titulo: "💎 RECURSOS",
+                conteudo: `
+                    <h2>💎 RECURSOS</h2>
+                    <h3>Esperança</h3>
+                    <p><strong>Ganho:</strong> Ao rolar Sucesso com Esperança.</p>
+                    <p><strong>Gastos:</strong></p>
+                    <ul>
+                        <li><strong>Experiência (+1 Esp):</strong> Adicione +1d6 a qualquer rolagem (antes ou depois).</li>
+                        <li><strong>Ajudar (+1 Esp):</strong> Adicione +1d6 (ou +1d8 se tiver vínculo) para um aliado.</li>
+                        <li><strong>Tag Team (+2 Esp):</strong> Realize um ataque combinado.</li>
+                    </ul>
+                    
+                    <h3>Fadiga (PF)</h3>
+                    <p><strong>Uso:</strong> Pagar custo de habilidades ou absorver consequências menores.</p>
+                    <p><strong>Sem PF?</strong> Se não tiver espaço, marque <strong>PV</strong> (Dano) em vez disso.</p>
+                `
+            },
+            combate: {
+                titulo: "⚔️ COMBATE",
+                conteudo: `
+                    <h2>⚔️ COMBATE</h2>
+                    <h3>Ataque</h3>
+                    <ul>
+                        <li><strong>Teste:</strong> Atributo da arma vs <strong>Evasão</strong> do alvo.</li>
+                        <li><strong>Vantagem:</strong> Role +1d6 e some ao total.</li>
+                        <li><strong>Desvantagem:</strong> Role -1d6 e subtraia do total.</li>
+                    </ul>
+                    <h3>Dano</h3>
+                    <p>Se acertar, role os dados de dano da arma/magia.</p>
+                    <p>O alvo compara o dano com seus <strong>Limiares</strong>.</p>
+                `
+            },
+            dano: {
+                titulo: "🩸 DANO",
+                conteudo: `
+                    <h2>🩸 DANO & SAÚDE</h2>
+                    <h3>Níveis de Dano</h3>
+                    <ul>
+                        <li><strong>Menor (1-PV):</strong> Dano abaixo do limiar Maior.</li>
+                        <li><strong>Maior (2-PV):</strong> Dano entre Maior e Grave.</li>
+                        <li><strong>Grave (3-PV):</strong> Dano acima do limiar Grave.</li>
+                    </ul>
+                    <h3>Resistências</h3>
+                    <ul>
+                        <li><strong>Resistência:</strong> Reduz o dano à metade (arredondado para cima).</li>
+                        <li><strong>Imunidade:</strong> Reduz o dano a zero.</li>
+                    </ul>
+                `
+            },
+            armadura: {
+                titulo: "🛡️ ARMADURA",
+                conteudo: `
+                    <h2>🛡️ ARMADURA (PA)</h2>
+                    <p>Gaste <strong>1 Slot de Armadura</strong> para reduzir a severidade do dano em <strong>1 nível</strong>.</p>
+                    <ul>
+                        <li>Grave (3) ➝ Maior (2)</li>
+                        <li>Maior (2) ➝ Menor (1)</li>
+                        <li>Menor (1) ➝ Nenhum (0)</li>
+                    </ul>
+                    <p><strong>Limite:</strong> Apenas 1 uso de armadura por ataque recebido.</p>
+                `
+            },
+            morte: {
+                titulo: "☠️ MORTE",
+                conteudo: `
+                    <h2>☠️ MORTE</h2>
+                    <p>Quando marcar o <strong>último ponto de vida</strong>, o jogador deve escolher:</p>
+                    <ul>
+                        <li><strong>Arriscar Tudo:</strong> Role um teste de Medo. Se falhar, morre. Se passar, age imediatamente.</li>
+                        <li><strong>Evitar a Morte:</strong> O personagem apaga, fica fora da cena e ganha uma <strong>Cicatriz</strong> permanente.</li>
+                        <li><strong>Sacrifício Glorioso:</strong> O personagem morre, mas realiza uma última ação com Sucesso Crítico automático.</li>
+                    </ul>
+                `
+            },
+            distancia: {
+                titulo: "📏 DISTÂNCIA",
+                conteudo: `
+                    <h2>📏 DISTÂNCIA & ALCANCE</h2>
+                    <ul>
+                        <li><strong>Corpo a Corpo:</strong> Adjacente (ao alcance da mão).</li>
+                        <li><strong>Muito Próximo:</strong> Até 3 metros / quadrados.</li>
+                        <li><strong>Próximo:</strong> Até 10 metros (arremesso de faca).</li>
+                        <li><strong>Distante:</strong> Até 30 metros (tiro de arco).</li>
+                        <li><strong>Muito Distante:</strong> Além de 30 metros (visual).</li>
+                    </ul>
+                `
+            },
+            descanso: {
+                titulo: "💤 DESCANSO",
+                conteudo: `
+                    <h2>💤 DESCANSO</h2>
+                    <h3>Descanso Curto</h3>
+                    <ul>
+                        <li>Pode trocar cartas de Loadout.</li>
+                        <li>Realize <strong>2 ações</strong> dentre:
+                            <ul>
+                                <li>Curar: Role 1d4 + Patamar (recupera PV).</li>
+                                <li>Reparar: Role 1d4 + Patamar (recupera PA).</li>
+                                <li>Desestressar: Role 1d4 + Patamar (limpa PF).</li>
+                                <li>Investigar/Preparar: Ganhe 1 Esperança.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <h3>Descanso Longo</h3>
+                    <p>Recupera <strong>TUDO</strong> (PV, PA, PF). Reseta Esperança para 2.</p>
+                `
+            },
+            mestre: {
+                titulo: "💀 GM",
+                conteudo: `
+                    <h2>💀 O MESTRE</h2>
+                    <p>Você não rola dados (exceto dano ou sorte). Os jogadores rolam tudo.</p>
+                    <h3>Faça um Movimento quando:</h3>
+                    <ul>
+                        <li>Um jogador falhar na rolagem.</li>
+                        <li>Um jogador rolar com Medo (você pode pegar 1 Medo OU fazer um movimento).</li>
+                        <li>Os jogadores olharem para você esperando algo acontecer.</li>
+                    </ul>
+                `
+            }
         };
 
         window.exibirTopico = function(id) { if(topicos[id]) { document.getElementById('escudo-conteudo').innerHTML = topicos[id].conteudo; document.getElementById('modal-escudo').classList.add('ativo'); } }
