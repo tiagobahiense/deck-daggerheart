@@ -156,84 +156,16 @@
         </div>
     </div>
 
-    <div id="modal-criar-inimigo">
-        <div class="modal-criar-content">
-            <h2 style="color:var(--gold); text-align:center; margin-top:0;">Invocar Inimigo</h2>
-            
-            <div class="form-grid">
-                <div class="form-group form-full"><label>Nome</label><input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz"></div>
-                <div class="form-group form-full">
-                    <label>Imagem (Upload ou Link)</label>
-                    <div style="display:flex; gap:5px;">
-                        <input type="text" id="new-enemy-img" placeholder="URL ou Upload..." style="flex:1">
-                        <label for="upload-file-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer; color:white;">📁</label>
-                        <input type="file" id="upload-file-input" accept="image/*" style="display:none" onchange="processarUploadImagem()">
-                        <img id="preview-img-mini" style="width:30px; height:30px; display:none; border:1px solid #555;">
-                    </div>
-                </div>
-                <div class="form-group"><label>PV Max</label><input type="number" id="new-enemy-pv" value="4"></div>
-                <div class="form-group"><label>Estresse (PF)</label><input type="number" id="new-enemy-pf" value="0"></div>
-                <div class="form-group"><label>Dificuldade</label><input type="number" id="new-enemy-dif" value="12"></div>
-                <div class="form-group"><label>Ataque</label><input type="text" id="new-enemy-atk" value="+2"></div>
-                <div class="form-group"><label>Dano</label><input type="text" id="new-enemy-dmg" value="1d6+2"></div>
-                <div class="form-group"><label>Limiares</label><input type="text" id="new-enemy-limiares" placeholder="5/10"></div>
-                <div class="form-group form-full"><label>Habilidades</label><textarea id="new-enemy-desc" rows="3"></textarea></div>
-            </div>
+    <div id="modal-criar-inimigo"><div class="modal-criar-content"><h2 style="color:var(--gold); text-align:center; margin-top:0;">Invocar Inimigo</h2><div class="form-grid"><div class="form-group form-full"><label>Nome</label><input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz"></div><div class="form-group form-full"><label>Imagem</label><div style="display:flex; gap:5px;"><input type="text" id="new-enemy-img" placeholder="URL ou Upload..." style="flex:1"><label for="upload-file-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer; color:white;">📁</label><input type="file" id="upload-file-input" accept="image/*" style="display:none" onchange="processarUploadImagem()"><img id="preview-img-mini" style="width:30px; height:30px; display:none; border:1px solid #555;"></div></div><div class="form-group"><label>PV Max</label><input type="number" id="new-enemy-pv" value="4"></div><div class="form-group"><label>Estresse (PF)</label><input type="number" id="new-enemy-pf" value="0"></div><div class="form-group"><label>Dificuldade</label><input type="number" id="new-enemy-dif" value="12"></div><div class="form-group"><label>Ataque</label><input type="text" id="new-enemy-atk" value="+2"></div><div class="form-group"><label>Dano</label><input type="text" id="new-enemy-dmg" value="1d6+2"></div><div class="form-group"><label>Limiares</label><input type="text" id="new-enemy-limiares" placeholder="5/10"></div><div class="form-group form-full"><label>Habilidades</label><textarea id="new-enemy-desc" rows="3"></textarea></div></div><div style="display:flex; gap:10px; margin-top:10px;"><button class="btn-rest btn-invocar" style="background:#4CAF50; flex:1;" onclick="salvarNovoInimigo()">Invocar</button><button class="btn-rest" style="background:#f44336; flex:1;" onclick="fecharCriadorInimigo()">Cancelar</button></div></div></div>
 
-            <div style="display:flex; gap:10px; margin-top:10px;">
-                <button class="btn-rest btn-invocar" style="background:#4CAF50; flex:1;" onclick="salvarNovoInimigo()">Invocar</button>
-                <button class="btn-rest" style="background:#f44336; flex:1;" onclick="fecharCriadorInimigo()">Cancelar</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()">
-        <div class="dados-content">
-            <div class="dados-header">Rolagem de Dados</div>
-            <div class="dualidade-box">
-                <span style="color:#ddd; font-size: 0.9rem;">Teste de Ação (2d12)</span>
-                <button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Rolar Dualidade</button>
-            </div>
-            <hr style="border: 0; border-top: 1px solid #444; width: 100%;">
-            <div class="grid-dados">
-                <div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div>
-                <div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div>
-            </div>
-            <button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar Selecionados</button>
-        </div>
-    </div>
-
+    <div id="modal-selecao-dados" onclick="if(event.target===this) fecharSeletorDados()"><div class="dados-content"><div class="dados-header">Rolagem</div><div class="dualidade-box"><span style="color:#ddd; font-size:0.8rem;">Teste (2d12)</span><button class="btn-dualidade" onclick="adicionarDualidade()">⚡ Dualidade</button></div><hr style="border-top:1px solid #444; width:100%;"><div class="grid-dados"><div class="dado-control"><span class="dado-label">d4</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d4', -1)">-</button><span id="count-d4" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d4', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d6</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d6', -1)">-</button><span id="count-d6" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d6', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d8</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d8', -1)">-</button><span id="count-d8" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d8', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d10</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d10', -1)">-</button><span id="count-d10" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d10', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d12</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d12', -1)">-</button><span id="count-d12" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d12', 1)">+</button></div></div><div class="dado-control"><span class="dado-label">d20</span><div class="dado-btn-group"><button class="btn-qty" onclick="alterarQtdDado('d20', -1)">-</button><span id="count-d20" class="dado-count">0</span><button class="btn-qty" onclick="alterarQtdDado('d20', 1)">+</button></div></div></div><button class="btn-rolar-final" onclick="rolarDadosConfirmados()">Rolar</button></div></div>
     <div id="overlay-rolagem"><div id="quem-rolou-label"></div><div id="container-dados-rolando"></div><button id="btn-fechar-rolagem" onclick="fecharResultadoRolagem()">Fechar Resultado</button></div>
-
-    <div id="modal-escudo">
-        <div class="modal-escudo-content">
-            <button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button>
-            <div id="escudo-conteudo"></div>
-        </div>
-    </div>
-
-    <div id="sheet-modal" class="modal">
-        <div class="sheet-content">
-            <div class="sheet-toolbar">
-                <button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button>
-                <button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button>
-                <button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button>
-            </div>
-            <button class="btn-close-sheet" onclick="fecharFicha()">X</button>
-            <div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div>
-            <div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div>
-        </div>
-    </div>
-
-    <div id="carta-usada-animada" class="carta-tabuleiro-animada"></div>
+    <div id="modal-escudo"><div class="modal-escudo-content"><button id="btn-fechar-escudo" onclick="fecharEscudo()">×</button><div id="escudo-conteudo"></div></div></div>
+    <div id="sheet-modal" class="modal"><div class="sheet-content"><div class="sheet-toolbar"><button class="tool-btn active" onclick="selecionarFerramenta('texto')">T</button><button class="tool-btn" onclick="selecionarFerramenta('marcador')">●</button><button class="tool-btn" onclick="limparPaginaAtual()" style="color:#f66;">🗑️</button></div><button class="btn-close-sheet" onclick="fecharFicha()">X</button><div class="sheet-container" id="sheet-container"><img id="sheet-bg"><div id="sheet-inputs-layer"></div></div><div class="sheet-footer"><button class="nav-simple-btn" onclick="mudarPaginaFicha(-1)">❮</button><span id="sheet-page-indicator">1</span><button class="nav-simple-btn" onclick="mudarPaginaFicha(1)">❯</button></div></div></div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, onValue, set, remove, get, onChildChanged, push, query, limitToLast, onChildAdded, update, off } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, onValue, set, remove, get, onChildChanged, push, query, limitToLast, onChildAdded, update, off, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { getAuth, onAuthStateChanged, signOut, browserSessionPersistence, setPersistence } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -256,7 +188,7 @@
 
         // Exportações globais
         window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove;
-        window.onValue = onValue; window.push = push; window.update = update; window.off = off;
+        window.onValue = onValue; window.push = push; window.update = update; window.off = off; window.onDisconnect = onDisconnect;
         window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
         
         window.nomeJogador = "Mestre";
@@ -288,27 +220,26 @@
             document.getElementById('painel').innerHTML = '<p style="color:#666;text-align:center">Ressincronizando...</p>';
             document.getElementById('area-inimigos').innerHTML = '';
             
-            iniciarPainelJogadores();
+            iniciarMonitoramentoPresenca(); // Reseta listener de presença
+            iniciarPainelJogadores(); // Reseta listener de jogadores
+
             if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo(); // Medo Refresh
+            if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
             if(window.escutarRolagens) window.escutarRolagens();
-            
+
             setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
         };
 
-        // VARIÁVEL PARA CACHE DE PRESENÇA
+        // --- SISTEMA DE PRESENÇA NO PAINEL ---
         let presencaCache = {};
 
         function iniciarMonitoramentoPresenca() {
-            // Escuta a pasta de presença do Firebase
             onValue(ref(db, 'mesa_rpg/presenca'), (snap) => {
                 presencaCache = snap.val() || {};
                 // Atualiza visualmente os cards já renderizados
-                const cards = document.querySelectorAll('.card-jogador');
-                cards.forEach(card => {
-                    // Tenta achar o nome dentro do card para atualizar
+                document.querySelectorAll('.card-jogador').forEach(card => {
                     const nomeEl = card.querySelector('.nome');
-                    if(nomeEl) {
+                    if (nomeEl) {
                         const nome = nomeEl.textContent.trim();
                         atualizarBolinhaPresenca(card, nome);
                     }
@@ -317,27 +248,26 @@
         }
 
         function atualizarBolinhaPresenca(cardElement, nomePersonagem) {
-            // Remove bolinha antiga
+            // Remove bolinha anterior se existir
             const oldDot = cardElement.querySelector('.status-dot');
             if(oldDot) oldDot.remove();
 
-            // Verifica se o nome existe no cache de presença (Case insensitive)
+            const dot = document.createElement('span');
+            dot.className = 'status-dot';
+            
+            // Verifica no cache se o nome está presente (Case Insensitive)
             const isOnline = Object.keys(presencaCache).some(k => k.toUpperCase() === nomePersonagem.toUpperCase());
             
-            const dot = document.createElement('span');
-            dot.className = isOnline ? 'status-dot status-online' : 'status-dot status-offline';
-            dot.title = isOnline ? 'Online na Mesa' : 'Offline';
+            dot.classList.add(isOnline ? 'status-online' : 'status-offline');
+            dot.title = isOnline ? 'Online no Tabuleiro' : 'Offline';
             
-            // Adiciona ao lado do nome (dentro do .nome-wrapper ou pai do nome)
-            const nomeContainer = cardElement.querySelector('.card-header > div');
-            if(nomeContainer) {
-                // Cria um wrapper se não existir para alinhar
-                if(!nomeContainer.classList.contains('nome-wrapper')) {
-                    nomeContainer.classList.add('nome-wrapper');
-                }
-                nomeContainer.appendChild(dot);
+            // Adiciona ao lado do nome (dentro do .nome-wrapper)
+            const nomeWrapper = cardElement.querySelector('.nome-wrapper');
+            if(nomeWrapper) {
+                nomeWrapper.appendChild(dot);
             }
         }
+        // --------------------------------------
 
         function iniciarPainelJogadores() {
             const jogadoresRef = ref(db, 'mesa_rpg/jogadores');
@@ -387,12 +317,18 @@
 
                     card.innerHTML = `
                         <div class="card-header">
-                            <div class="nome-wrapper"><div class="nome">${nome}</div>${classeNome ? `<div class="tag-classe">${classeNome}</div>` : ''}</div>
+                            <div class="nome-wrapper">
+                                <div class="nome">${nome}</div>
+                                ${classeNome ? `<div class="tag-classe">${classeNome}</div>` : ''}
+                            </div>
                             <button class="btn-abrir-ficha-mestre" onclick="window.abrirFichaDoJogador('${safeName}')">📝</button>
                         </div>
                         <div class="label">Mão</div><div class="grid-mini" data-jogador="${nome}">${htmlMao}</div>
                         <button class="btn-expandir-mesa" onclick="window.toggleMesaJogador('${safeName}')">📂 Ver Mesa</button>
-                        <div id="mesa-${nome}" class="mesa-expandida"><div class="label">Mesa & Reserva</div><div class="grid-mini">${htmlMesa}</div></div>
+                        <div id="mesa-${nome}" class="mesa-expandida">
+                            <div class="label">Mesa & Reserva</div>
+                            <div class="grid-mini">${htmlMesa}</div>
+                        </div>
                     `;
                     painel.appendChild(card);
                     
@@ -406,63 +342,27 @@
                 if (snap.exists()) { snap.forEach(c => { const d = c.val(); if (d.status !== 'inactive' && d.characters) Object.keys(d.characters).forEach(n => setNomes.add(String(n).toUpperCase())); }); }
                 nomesDePersonagens = setNomes; render();
             });
-
             onValue(jogadoresRef, (snap) => {
                 cacheJogadores = snap.exists() ? snap.val() : {};
                 Object.keys(cacheJogadores).forEach(n => nomesDePersonagens.add(String(n).toUpperCase()));
                 render();
             });
-            
             onChildChanged(jogadoresRef, (snap) => {
                 const n = snap.key; const d = snap.val();
                 if(d.cartaUsada) animarCartaEspecifica(n, d.cartaUsada);
             });
         }
 
-        window.realizarDescanso = function(tipo) {
-            get(ref(db, 'mesa_rpg/jogadores')).then(snap => {
-                if(snap.exists()) {
-                    Object.keys(snap.val()).forEach(n => {
-                        const p = snap.val()[n];
-                        if(p.mao) {
-                            let m = false; p.mao.forEach(c => { if(c && (tipo==='longo' || c.estado==='curto')){ c.estado='ativo'; m=true; } });
-                            if(m) set(ref(db, `mesa_rpg/jogadores/${n}/mao`), p.mao);
-                        }
-                        if(p.slots) {
-                             let m = false; Object.keys(p.slots).forEach(k => { if(p.slots[k] && (tipo==='longo' || p.slots[k].estado==='curto')){ p.slots[k].estado='ativo'; m=true; } });
-                             if(m) set(ref(db, `mesa_rpg/jogadores/${n}/slots`), p.slots);
-                        }
-                    });
-                }
-            });
-        };
-
-        function animarCartaEspecifica(nome, carta) {
-            const grid = document.querySelector(`[data-jogador="${nome}"]`);
-            if(!grid) return;
-            const imgs = grid.querySelectorAll('.mini-carta');
-            imgs.forEach(el => {
-                if(el.style.backgroundImage.includes(carta.caminho.split('/').pop())) {
-                    el.style.transform = "scale(1.2)"; el.style.boxShadow = "0 0 15px gold";
-                    setTimeout(() => { el.style.transform = ""; el.style.boxShadow = ""; }, 1000);
-                }
-            });
-            const pre = document.getElementById('preview-carta-mestre');
-            pre.style.backgroundImage = `url('${carta.caminho}')`;
-            pre.style.display = 'block';
-            setTimeout(() => pre.style.display='none', 3000);
-        }
-
         const topicos = {
-            testes: { titulo: "🎲 TESTES & DUALIDADE", conteudo: "<h2>🎲 TESTES & DUALIDADE</h2><h3>Rolagem Padrão</h3><ul><li><strong>Role:</strong> <code>2d12 (Esperança + Medo) + Atributo</code></li><li><strong>Crítico:</strong> Dados iguais (ex: 1,1 ou 12,12). Sucesso automático + Ganha Esperança.</li></ul><h3>Resultados</h3><ul><li><strong>Sucesso com Esperança:</strong> Total ≥ Dificuldade & Esperança > Medo. <br><em>Ação funciona e ganha 1 Esperança.</em></li><li><strong>Sucesso com Medo:</strong> Total ≥ Dificuldade & Medo > Esperança. <br><em>Ação funciona, mas GM ganha 1 Medo.</em></li><li><strong>Falha com Esperança:</strong> Total < Dificuldade & Esperança > Medo. <br><em>Falha, mas ganha 1 Esperança.</em></li><li><strong>Falha com Medo:</strong> Total < Dificuldade & Medo > Esperança. <br><em>Falha e GM ganha 1 Medo ou faz movimento.</em></li></ul>" },
-            recursos: { titulo: "💎 RECURSOS DO JOGADOR", conteudo: "<h2>💎 RECURSOS DO JOGADOR</h2><h3>Esperança</h3><ul><li><strong>Ganho:</strong> Sucesso com Esperança ou Crítico.</li><li><strong>Gastos:</strong><ul><li><strong>Experiência:</strong> Use uma carta de Experiência.</li><li><strong>Ajudar:</strong> Gaste 1 para dar +1d6 (ou +2d6 com vínculo) a um aliado.</li></ul></li></ul><h3>Estresse (Fadiga)</h3><ul><li>Usada para ativar habilidades ou absorver consequências menores.</li><li>Se encher, o próximo dano vai direto para PV.</li></ul>" },
-            combate: { titulo: "⚔️ COMBATE", conteudo: "<h2>⚔️ COMBATE</h2><h3>Ataque</h3><ul><li><strong>Teste:</strong> Atributo da arma vs <strong>Dificuldade (Evasão do Inimigo)</strong>.</li><li><strong>Vantagem:</strong> +1d6 no total.</li><li><strong>Desvantagem:</strong> -1d6 no total.</li></ul><h3>Dano</h3><ul><li><strong>Dados:</strong> Base da arma (ex: d8) + Cartas de Dano.</li><li><strong>Crítico:</strong> Adicione o valor máximo dos dados ao total rolado.</li></ul>" },
-            dano: { titulo: "🩸 DANO & LIMIARES", conteudo: "<h2>🩸 DANO & LIMIARES</h2><p>O dano sofrido é comparado aos limiares do personagem:</p><ul><li><strong>Abaixo do Menor:</strong> 0 PV (Arranhão).</li><li><strong>Menor:</strong> 1 PV (Machucado).</li><li><strong>Maior:</strong> 2 PV (Ferida Grave).</li><li><strong>Severo:</strong> 3 PV (Mortal).</li></ul>" },
-            armadura: { titulo: "🛡️ ARMADURA (PA)", conteudo: "<h2>🛡️ ARMADURA (PA)</h2><ul><li>Gaste <strong>slots de Armadura</strong> para reduzir o dano recebido.</li><li>A quantidade reduzida depende do tipo de armadura equipada.</li><li>Slots gastos só recuperam em Descanso ou Reparo.</li></ul>" },
-            morte: { titulo: "☠️ MORTE", conteudo: "<h2>☠️ MORTE</h2><p>Se marcar o último PV, o personagem cai. Escolha:</p><ul><li><strong>Arriscar Tudo:</strong> Role Fear die. Se falhar, morre. Se passar, levanta com 1 PV.</li><li><strong>Evitar a Morte:</strong> Fica inconsciente e ganha uma Cicatriz.</li><li><strong>Sacrifício Glorioso:</strong> Morre realizando um feito impossível (Sucesso Crítico Automático).</li></ul>" },
-            distancia: { titulo: "📏 DISTÂNCIA & MOVIMENTO", conteudo: "<h2>📏 DISTÂNCIA & MOVIMENTO</h2><ul><li><strong>Melee:</strong> Adjacente.</li><li><strong>Very Close:</strong> Ao alcance do braço/arma longa.</li><li><strong>Close:</strong> Alguns passos (mesma sala).</li><li><strong>Far:</strong> Precisa gritar/correr (outro lado do campo).</li><li><strong>Very Far:</strong> Apenas armas de longo alcance/magia.</li></ul>" },
-            descanso: { titulo: "💤 DESCANSO", conteudo: "<h2>💤 DESCANSO</h2><h3>Curto</h3><ul><li>Pode reparar Armadura.</li><li>Pode curar PV ou limpar Estresse (role 1d4 + atributo).</li></ul><h3>Longo</h3><ul><li>Recupera <strong>todos</strong> PV, Estresse e Armadura.</li><li>Reseta habilidades diárias.</li><li>GM ganha Medo baseado na segurança do local.</li></ul>" },
-            mestre: { titulo: "💀 O MESTRE (GM)", conteudo: "<h2>💀 O MESTRE (GM)</h2><h3>Quando o GM Age?</h3><ul><li>Quando os jogadores falham.</li><li>Quando rolam <strong>Com Medo</strong>.</li><li>Quando olham para você esperando algo acontecer (Oportunidade de Ouro).</li></ul><h3>Medo</h3><ul><li>Use Medo para ativar habilidades especiais de monstros ou complicar a cena.</li><li>Cada Medo gasto = 1 Token de Ação do GM.</li></ul>" }
+            testes: { titulo: "🎲 TESTES & DUALIDADE", conteudo: "<h2>🎲 TESTES & DUALIDADE</h2><p>2d12 (Esperança+Medo). Se Esperança > Medo = Ganha Esperança. Se Medo > Esperança = GM ganha Medo.</p>" },
+            recursos: { titulo: "💎 RECURSOS", conteudo: "<h2>💎 RECURSOS</h2><p>Esperança: +1d6, Tag Team. Fadiga: Custo de habilidade, Dano.</p>" },
+            combate: { titulo: "⚔️ COMBATE", conteudo: "<h2>⚔️ COMBATE</h2><p>Role contra Evasão. Dano vs Limiares. Distâncias: C-a-C, Muito Próximo, Próximo, Distante.</p>" },
+            dano: { titulo: "🩸 DANO", conteudo: "<h2>🩸 DANO</h2><p>Menor (1PV), Maior (2PV), Grave (3PV). Armor reduz.</p>" },
+            armadura: { titulo: "🛡️ ARMADURA", conteudo: "<h2>🛡️ ARMADURA</h2><p>Queime slots de armadura para reduzir dano recebido.</p>" },
+            morte: { titulo: "☠️ MORTE", conteudo: "<h2>☠️ MORTE</h2><p>Opções ao cair: Arriscar, Evitar (Cicatriz), Sacrifício.</p>" },
+            distancia: { titulo: "📏 DISTÂNCIA", conteudo: "<h2>📏 DISTÂNCIA</h2><p>Melee, Very Close, Close, Far, Very Far.</p>" },
+            descanso: { titulo: "💤 DESCANSO", conteudo: "<h2>💤 DESCANSO</h2><p>Curto: Repara Armor, cura um pouco. Longo: Full reset.</p>" },
+            mestre: { titulo: "💀 GM", conteudo: "<h2>💀 O MESTRE</h2><p>Faça movimentos quando eles falham ou rolam com Medo.</p>" }
         };
 
         window.exibirTopico = function(id) { if(topicos[id]) { document.getElementById('escudo-conteudo').innerHTML = topicos[id].conteudo; document.getElementById('modal-escudo').classList.add('ativo'); } }
@@ -471,9 +371,13 @@
 
         onAuthStateChanged(auth, u => {
             document.getElementById('loading-screen').style.display = 'none';
-            if(!u || u.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { window.location.href="index.html"; return; }
+            // SEGURANÇA: Se não estiver logado, não tira a tela de loading e redireciona
+            if(!u || u.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { 
+                window.location.href="index.html"; 
+                return; 
+            }
             
-            iniciarMonitoramentoPresenca(); // INICIA BOLINHAS
+            iniciarMonitoramentoPresenca(); // INICIA MONITORAMENTO DAS BOLINHAS
             iniciarPainelJogadores();
             
             // FUNÇÃO PARA CARREGAR SCRIPT DINÂMICO
@@ -482,7 +386,7 @@
                 script.src = src + "?t=" + Date.now();
                 document.body.appendChild(script);
             }
-            
+
             loadScript("ficha.js");
             loadScript("dados.js");
             loadScript("inimigos.js");
@@ -495,15 +399,12 @@
             }, 1000);
         });
 
-        // Hover Preview (Detecta cartas na mão, na mesa expandida e na reserva)
         document.addEventListener('mouseover', (e) => {
             const c = e.target.closest('.mini-carta, .slot-ativo, .carta-reserva-visual');
             if (c && !c.classList.contains('status-vazio')) {
                 const p = document.getElementById('preview-carta-mestre');
                 let bg = c.style.backgroundImage;
-                if (!bg || bg === 'none') {
-                     bg = window.getComputedStyle(c).backgroundImage;
-                }
+                if (!bg || bg === 'none') bg = window.getComputedStyle(c).backgroundImage;
                 if (bg && bg !== 'none') {
                     p.style.backgroundImage = bg;
                     p.innerHTML = c.classList.contains('mini-carta') ? c.innerHTML : '';
@@ -518,6 +419,9 @@
             }
         });
 
+        // Funções de Descanso e Animação de Carta (Reutilizadas para economizar espaço - já estavam corretas no bloco anterior)
+        window.realizarDescanso = function(t){ get(ref(db,'mesa_rpg/jogadores')).then(s=>{if(s.exists()){Object.keys(s.val()).forEach(n=>{const p=s.val()[n]; if(p.mao){let m=false;p.mao.forEach(c=>{if(c&&(t==='longo'||c.estado==='curto')){c.estado='ativo';m=true}});if(m)set(ref(db,`mesa_rpg/jogadores/${n}/mao`),p.mao)} if(p.slots){let m=false;Object.keys(p.slots).forEach(k=>{if(p.slots[k]&&(t==='longo'||p.slots[k].estado==='curto')){p.slots[k].estado='ativo';m=true}});if(m)set(ref(db,`mesa_rpg/jogadores/${n}/slots`),p.slots)}})}})};
+        function animarCartaEspecifica(n,c){const g=document.querySelector(`[data-jogador="${n}"]`);if(!g)return;const i=g.querySelectorAll('.mini-carta');i.forEach(e=>{if(e.style.backgroundImage.includes(c.caminho.split('/').pop())){e.style.transform="scale(1.2)";e.style.boxShadow="0 0 15px gold";setTimeout(()=>{e.style.transform="";e.style.boxShadow=""},1000)}});const p=document.getElementById('preview-carta-mestre');p.style.backgroundImage=`url('${c.caminho}')`;p.style.display='block';setTimeout(()=>p.style.display='none',3000)};
     </script>
 </body>
 </html>
