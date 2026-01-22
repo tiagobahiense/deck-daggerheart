@@ -18,10 +18,9 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// Persistência de sessão
 setPersistence(auth, browserSessionPersistence).catch(console.error);
 
-// Exportações globais para Dados e outros módulos
+// Exportações globais
 window.db = db; window.ref = ref; window.set = set; window.get = get;
 window.remove = remove; window.onValue = onValue; window.onDisconnect = onDisconnect;
 window.push = push; window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
@@ -48,7 +47,7 @@ window.fecharGrimorio = function() { const modal = document.getElementById('grim
 window.fecharReserva = function() { const modal = document.getElementById('reserva-modal'); if (modal) modal.style.display = 'none'; };
 window.fecharDecisao = function() { const modal = document.getElementById('decisao-modal'); if (modal) modal.style.display = 'none'; cartaEmTransitoIndex = null; origemTransito = null; };
 
-// Login Navigation
+// Navegação Login
 window.irParaLoginJogador = function() { document.getElementById('fase-selecao').style.display = 'none'; document.getElementById('fase-login-jogador').style.display = 'block'; };
 window.irParaLoginNarrador = function() { document.getElementById('fase-selecao').style.display = 'none'; document.getElementById('fase-login-narrador').style.display = 'block'; };
 window.voltarParaSelecao = function() { document.getElementById('fase-login-jogador').style.display = 'none'; document.getElementById('fase-login-narrador').style.display = 'none'; document.getElementById('fase-personagem').style.display = 'none'; document.getElementById('fase-selecao').style.display = 'block'; };
@@ -96,7 +95,7 @@ window.fazerLoginJogador = function() {
     }).catch((e) => msg.innerText = e.message.includes("Conta inativa") ? "❌ Conta desativada." : "❌ Login inválido.");
 };
 
-// Carregar Dados
+// Carregar Dados (JSON)
 async function carregarDados() {
     try {
         const [r1, r2] = await Promise.all([fetch('./lista_cartas.json'), fetch('./lista_cartas_v2.json')]);
@@ -106,7 +105,7 @@ async function carregarDados() {
     } catch (e) { console.error("Erro loading cards", e); return []; }
 }
 
-// Abrir Grimório (CORRIGIDO: Carregamento Direto)
+// Abrir Grimório (CORRIGIDO PARA ENCODING E FALLBACK)
 window.abrirGrimorio = async function(tipo, slotDestino = null) {
     const modal = document.getElementById('grimorio-modal');
     const grid = document.getElementById('grid-cartas');
@@ -135,13 +134,25 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
 
     lista.forEach(carta => {
         const div = document.createElement('div');
-        div.className = 'carta-modal'; // Removemos 'lazy-card'
-        // Definimos a imagem diretamente
-        div.style.backgroundImage = `url('${carta.caminho}')`;
-        div.style.backgroundColor = '#1a1a1a';
+        div.className = 'carta-modal';
+        
+        // CORREÇÃO: encodeURI para lidar com espaços e caracteres especiais
+        const urlSegura = encodeURI(carta.caminho); 
+        div.style.backgroundImage = `url('${urlSegura}')`;
+        div.style.backgroundColor = '#1a1a1a'; 
+        div.style.backgroundSize = 'contain';
+        div.style.backgroundRepeat = 'no-repeat';
+        div.style.backgroundPosition = 'center';
+
+        // TEXTO DE FALLBACK (Para não ficar invisível se a imagem falhar)
+        const nomeFallback = document.createElement('div');
+        nomeFallback.innerText = carta.nome;
+        nomeFallback.style.cssText = "position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:0.7rem; color:#aaa; pointer-events:none; text-shadow:0 1px 2px black; z-index:0;";
+        div.appendChild(nomeFallback);
+
         div.onclick = () => selecionarCarta(carta);
         
-        div.onmouseenter = () => { const p = document.getElementById('hover-preview-modal'); if(p) { p.style.display='block'; p.style.backgroundImage=`url('${carta.caminho}')`; }};
+        div.onmouseenter = () => { const p = document.getElementById('hover-preview-modal'); if(p) { p.style.display='block'; p.style.backgroundImage=`url('${urlSegura}')`; }};
         div.onmouseleave = () => { const p = document.getElementById('hover-preview-modal'); if(p) p.style.display='none'; };
         
         grid.appendChild(div);
@@ -149,14 +160,15 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
     modal.style.display = 'flex';
 };
 
-// Renderizar Slots e Mão (CORRIGIDO: Carregamento Direto)
+// Renderizar Slots e Mão (CORRIGIDO: ENCODING + LÓGICA INLINE)
 function renderizar() {
     const divMao = document.getElementById('cartas-mao');
     const divRes = document.getElementById('cartas-reserva');
 
     if (!divMao || !divRes) return;
 
-    // Slots Fixos
+    // --- SLOTS (IDENTIDADE/CLASSE) ---
+    // A lógica está aqui dentro para evitar o erro "renderizarSlots is not defined"
     Object.keys(slotsFixos).forEach(id => {
         const div = document.getElementById(`slot-${id}`);
         if(div) {
@@ -167,11 +179,20 @@ function renderizar() {
             const btn = div.querySelector('.btn-limpar');
             if(carta) {
                 const img = document.createElement('img');
-                img.src = carta.caminho || carta.caminho_perfil || '';
-                // Fallback de erro de imagem
-                img.onerror = function() { this.style.display='none'; div.innerHTML += `<span style='color:red;font-size:0.6rem;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)'>Erro Img</span>`; };
+                // Tenta carregar a imagem da carta, ou o perfil, ou vazio
+                const src = carta.caminho ? encodeURI(carta.caminho) : (carta.caminho_perfil ? encodeURI(carta.caminho_perfil) : '');
+                img.src = src;
                 
-                img.onmouseenter = () => { const p = document.getElementById('hover-preview-slot'); if(p) { p.style.display='block'; p.style.backgroundImage=`url('${img.src}')`; }};
+                // Se a imagem quebrar, mostra o nome
+                img.onerror = function() { 
+                    this.style.display='none'; 
+                    const erro = document.createElement('span');
+                    erro.innerText = carta.nome || "Imagem Inválida";
+                    erro.style.cssText = 'color:red; font-size:0.6rem; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; width:90%';
+                    div.appendChild(erro);
+                };
+                
+                img.onmouseenter = () => { const p = document.getElementById('hover-preview-slot'); if(p && img.src) { p.style.display='block'; p.style.backgroundImage=`url('${img.src}')`; }};
                 img.onmouseleave = () => document.getElementById('hover-preview-slot').style.display='none';
                 div.appendChild(img);
                 btn.style.display = 'flex';
@@ -179,18 +200,22 @@ function renderizar() {
         }
     });
 
-    // MÃO
+    // --- MÃO ---
     divMao.innerHTML = '';
     maoDoJogador.forEach((carta, i) => {
         const el = document.createElement('div');
-        el.className = 'carta'; // Sem lazy-card
-        // Carregamento direto
-        el.style.backgroundImage = `url('${carta.caminho}')`;
-        el.style.backgroundColor = '#1a1a1a';
+        el.className = 'carta'; 
         
-        // Fallback: se a imagem falhar, mostra o nome
+        const urlSegura = encodeURI(carta.caminho);
+        el.style.backgroundImage = `url('${urlSegura}')`;
+        el.style.backgroundColor = '#1a1a1a';
+        el.style.backgroundSize = 'contain';
+        el.style.backgroundRepeat = 'no-repeat';
+        el.style.backgroundPosition = 'center';
+        
+        // Fallback texto
         const nomeFallback = document.createElement('div');
-        nomeFallback.style.cssText = "position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#666; font-size:0.7rem; text-align:center; width:90%; pointer-events:none; z-index:0;";
+        nomeFallback.style.cssText = "position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#aaa; font-size:0.7rem; text-align:center; width:90%; pointer-events:none; z-index:-1;";
         nomeFallback.innerText = carta.nome || "Carta";
         el.appendChild(nomeFallback);
 
@@ -198,6 +223,7 @@ function renderizar() {
         const rotacao = (i - centro) * 4;
         el.style.transform = `rotate(${rotacao}deg)`;
 
+        // Ícones de descanso
         if (carta.estado === 'curto' || carta.estado === 'longo') {
             el.classList.add('indisponivel');
             const iconoDiv = document.createElement('div');
@@ -219,7 +245,7 @@ function renderizar() {
             const preview = document.getElementById('hover-preview');
             if (preview && carta.caminho) {
                 preview.style.display = 'block';
-                preview.style.backgroundImage = `url('${carta.caminho}')`;
+                preview.style.backgroundImage = `url('${urlSegura}')`;
             }
         };
         el.onmouseleave = function() { if (document.getElementById('hover-preview')) document.getElementById('hover-preview').style.display = 'none'; };
@@ -228,7 +254,7 @@ function renderizar() {
         divMao.appendChild(el);
     });
 
-    // RESERVA
+    // --- RESERVA ---
     divRes.innerHTML = '';
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0.3';
     
@@ -243,15 +269,15 @@ function renderizar() {
         for (let i = 0; i < mostrar; i++) {
             const indexReal = total - 1 - i;
             const carta = reservaDoJogador[indexReal];
+            const urlSegura = encodeURI(carta.caminho);
             
             const cartaEl = document.createElement('div');
             cartaEl.className = 'carta-reserva-stacked';
-            // Carregamento direto
-            cartaEl.style.backgroundImage = `url('${carta.caminho}')`;
+            cartaEl.style.backgroundImage = `url('${urlSegura}')`;
             
             cartaEl.style.cssText = `
                 background-color: #1a1a1a;
-                background-image: url('${carta.caminho}');
+                background-image: url('${urlSegura}');
                 position: absolute;
                 width: 100%; height: 100%;
                 top: ${i * 2}px; left: ${i * 2}px;
@@ -262,8 +288,15 @@ function renderizar() {
                 pointer-events: none;
                 background-size: cover;
                 background-position: center;
+                background-repeat: no-repeat;
             `;
             
+            // Texto fallback reserva
+            const texto = document.createElement('div');
+            texto.innerText = carta.nome;
+            texto.style.cssText = 'position:absolute; top:50%; width:100%; font-size:0.5rem; text-align:center; color:#555; z-index:-1;';
+            cartaEl.appendChild(texto);
+
             container.appendChild(cartaEl);
         }
         
@@ -407,7 +440,11 @@ window.abrirDecisao = function(idx) {
     document.getElementById('btn-devolver-deck').style.display='inline-block';
     
     const p = document.getElementById('preview-decisao');
-    p.style.backgroundImage=`url('${c.caminho}')`;
+    p.style.backgroundImage=`url('${encodeURI(c.caminho)}')`;
+    p.style.backgroundSize = 'contain';
+    p.style.backgroundRepeat = 'no-repeat';
+    p.style.backgroundPosition = 'center';
+    
     p.innerHTML = (c.estado==='curto'||c.estado==='longo') ? `<div class="icone-descanso"><img src="${c.estado==='curto'?'img/meia-lua.png':'img/lua-cheia.png'}"></div>` : '';
     document.getElementById('label-token-qtd').innerText = c.tokens||0;
     document.getElementById('decisao-modal').style.display='flex';
@@ -422,8 +459,12 @@ window.abrirDecisaoReserva = function(idx) {
     document.getElementById('btn-devolver-deck').style.display='none';
 
     const p = document.getElementById('preview-decisao');
-    p.style.backgroundImage=`url('${c.caminho}')`;
+    p.style.backgroundImage=`url('${encodeURI(c.caminho)}')`;
+    p.style.backgroundSize = 'contain';
+    p.style.backgroundRepeat = 'no-repeat';
+    p.style.backgroundPosition = 'center';
     p.innerHTML = '';
+    
     document.getElementById('label-token-qtd').innerText = c.tokens||0;
     document.getElementById('decisao-modal').style.display='flex';
 };
@@ -452,7 +493,7 @@ window.usarCarta = function() {
     const c = maoDoJogador[cartaEmTransitoIndex];
     window.fecharDecisao();
     const anim = document.getElementById('carta-tabuleiro-animada');
-    anim.style.backgroundImage=`url('${c.caminho}')`; anim.style.display='block';
+    anim.style.backgroundImage=`url('${encodeURI(c.caminho)}')`; anim.style.display='block';
     
     const rect = document.getElementById('mao-area').getBoundingClientRect();
     anim.style.left = (rect.left+rect.width/4)+'px'; anim.style.top = (rect.top-100)+'px';
@@ -496,7 +537,7 @@ window.mostrarModalTroca = function() {
     const grid = document.getElementById('grid-troca'); grid.innerHTML='';
     maoDoJogador.forEach((c,i) => {
         const div = document.createElement('div'); div.className='carta-modal';
-        div.style.backgroundImage = `url('${c.caminho}')`;
+        div.style.backgroundImage = `url('${encodeURI(c.caminho)}')`;
         div.style.cssText += "background-color:#1a1a1a;cursor:pointer;border:2px solid #333;background-size:contain;background-repeat:no-repeat;background-position:center;";
         div.onclick = () => window.confirmarTroca(i); 
         grid.appendChild(div);
@@ -521,8 +562,11 @@ window.abrirReserva = function() {
     reservaDoJogador.forEach((c, i) => {
         const div = document.createElement('div'); 
         div.className='carta-modal';
-        div.style.backgroundImage = `url('${c.caminho}')`;
+        div.style.backgroundImage = `url('${encodeURI(c.caminho)}')`;
         div.style.backgroundColor='#1a1a1a';
+        div.style.backgroundSize = 'contain';
+        div.style.backgroundRepeat = 'no-repeat';
+        div.style.backgroundPosition = 'center';
         div.onclick = () => { window.fecharReserva(); window.abrirDecisaoReserva(i); };
         grid.appendChild(div);
     });
