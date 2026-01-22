@@ -82,7 +82,15 @@
             <h3>🛡️ ESCUDO DO MESTRE</h3>
             <div class="escudo-topicos">
                 <button class="btn-topico" onclick="exibirTopico('testes')">🎲 Testes & Dualidade</button>
-                </div>
+                <button class="btn-topico" onclick="exibirTopico('recursos')">💎 Recursos do Jogador</button>
+                <button class="btn-topico" onclick="exibirTopico('combate')">⚔️ Combate</button>
+                <button class="btn-topico" onclick="exibirTopico('dano')">🩸 Dano & Limiares</button>
+                <button class="btn-topico" onclick="exibirTopico('armadura')">🛡️ Armadura (PA)</button>
+                <button class="btn-topico" onclick="exibirTopico('morte')">☠️ Morte</button>
+                <button class="btn-topico" onclick="exibirTopico('distancia')">📏 Distância & Movimento</button>
+                <button class="btn-topico" onclick="exibirTopico('descanso')">💤 Descanso</button>
+                <button class="btn-topico" onclick="exibirTopico('mestre')">💀 O Mestre (GM)</button>
+            </div>
         </div>
     </div>
 
@@ -164,43 +172,20 @@
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        // --- EXPOR FIREBASE PARA FICHA.JS E DADOS.JS ---
-        window.db = db;
-        window.ref = ref;
-        window.set = set;
-        window.get = get;
-        window.remove = remove;
-        window.onValue = onValue;
-        window.push = push;
-        window.query = query;
-        window.limitToLast = limitToLast;
-        window.onChildAdded = onChildAdded;
-        
-        // Define o nome do jogador como Mestre para os scripts externos
+        window.db = db; window.ref = ref; window.set = set; window.get = get; window.remove = remove; window.onValue = onValue; window.push = push; window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
         window.nomeJogador = "Mestre"; 
-        // ------------------------------------------------
-
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
-        window.fazerLogout = function() {
-            signOut(auth).then(() => window.location.href = "index.html");
-        }
+        window.fazerLogout = function() { signOut(auth).then(() => window.location.href = "index.html"); }
 
-        // Função para abrir a ficha do jogador pelo Mestre
         window.abrirFichaDoJogador = function(nomePersonagem) {
-            // MUDA O CONTEXTO GLOBAL DO FICHA.JS PARA O PERSONAGEM CLICADO
             window.nomeJogador = nomePersonagem;
-            
             const slotRef = ref(db, `mesa_rpg/jogadores/${nomePersonagem}/slots/Fundamental`);
             get(slotRef).then(snapshot => {
                 if(snapshot.exists() && snapshot.val().profissao) {
                     localStorage.setItem('profissaoSelecionada', snapshot.val().profissao);
-                    if(typeof window.abrirFichaPersonagem === 'function') {
-                        window.abrirFichaPersonagem();
-                    }
-                } else {
-                    alert(`O personagem ${nomePersonagem} ainda não selecionou uma classe.`);
-                }
+                    if(typeof window.abrirFichaPersonagem === 'function') window.abrirFichaPersonagem();
+                } else { alert(`O personagem ${nomePersonagem} ainda não selecionou uma classe.`); }
             });
         };
 
@@ -242,11 +227,7 @@
             if (!user || user.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { window.location.href = "index.html"; return; }
             iniciarPainel();
             configurarListenersDeCartasUsadas();
-            
-            // INICIA ESCUTA DE DADOS
-            setTimeout(() => {
-                if(window.escutarRolagens) window.escutarRolagens();
-            }, 2000);
+            setTimeout(() => { if(window.escutarRolagens) window.escutarRolagens(); }, 2000);
         });
 
         function iniciarPainel() {
@@ -344,7 +325,6 @@
             }
         }
 
-        // --- CONTEÚDO DO ESCUDO DO MESTRE (COMPLETO) ---
         const topicos = {
             testes: {
                 titulo: "🎲 TESTES & DUALIDADE",
@@ -486,6 +466,7 @@
                 `
             }
         };
+
         window.exibirTopico = function(id) { if(topicos[id]) { document.getElementById('escudo-conteudo').innerHTML = topicos[id].conteudo; document.getElementById('modal-escudo').classList.add('ativo'); } }
         window.fecharEscudo = function() { document.getElementById('modal-escudo').classList.remove('ativo'); }
         document.getElementById('modal-escudo').addEventListener('click', function(e) { if(e.target===this) fecharEscudo(); });
