@@ -136,7 +136,6 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
         const div = document.createElement('div');
         div.className = 'carta-modal';
         
-        // CORREÇÃO: encodeURI para lidar com espaços e caracteres especiais
         const urlSegura = encodeURI(carta.caminho); 
         div.style.backgroundImage = `url('${urlSegura}')`;
         div.style.backgroundColor = '#1a1a1a'; 
@@ -144,7 +143,6 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
         div.style.backgroundRepeat = 'no-repeat';
         div.style.backgroundPosition = 'center';
 
-        // TEXTO DE FALLBACK (Para não ficar invisível se a imagem falhar)
         const nomeFallback = document.createElement('div');
         nomeFallback.innerText = carta.nome;
         nomeFallback.style.cssText = "position:absolute; bottom:5px; left:0; width:100%; text-align:center; font-size:0.7rem; color:#aaa; pointer-events:none; text-shadow:0 1px 2px black; z-index:0;";
@@ -160,7 +158,7 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
     modal.style.display = 'flex';
 };
 
-// Renderizar Slots e Mão (CORRIGIDO: ENCODING + LÓGICA INLINE)
+// Renderizar Slots e Mão (COMPLETO E ROBUSTO)
 function renderizar() {
     const divMao = document.getElementById('cartas-mao');
     const divRes = document.getElementById('cartas-reserva');
@@ -168,7 +166,7 @@ function renderizar() {
     if (!divMao || !divRes) return;
 
     // --- SLOTS (IDENTIDADE/CLASSE) ---
-    // A lógica está aqui dentro para evitar o erro "renderizarSlots is not defined"
+    // Lógica inline para evitar erros de referência
     Object.keys(slotsFixos).forEach(id => {
         const div = document.getElementById(`slot-${id}`);
         if(div) {
@@ -179,11 +177,9 @@ function renderizar() {
             const btn = div.querySelector('.btn-limpar');
             if(carta) {
                 const img = document.createElement('img');
-                // Tenta carregar a imagem da carta, ou o perfil, ou vazio
                 const src = carta.caminho ? encodeURI(carta.caminho) : (carta.caminho_perfil ? encodeURI(carta.caminho_perfil) : '');
                 img.src = src;
                 
-                // Se a imagem quebrar, mostra o nome
                 img.onerror = function() { 
                     this.style.display='none'; 
                     const erro = document.createElement('span');
@@ -213,7 +209,6 @@ function renderizar() {
         el.style.backgroundRepeat = 'no-repeat';
         el.style.backgroundPosition = 'center';
         
-        // Fallback texto
         const nomeFallback = document.createElement('div');
         nomeFallback.style.cssText = "position:absolute; top:50%; left:50%; transform:translate(-50%, -50%); color:#aaa; font-size:0.7rem; text-align:center; width:90%; pointer-events:none; z-index:-1;";
         nomeFallback.innerText = carta.nome || "Carta";
@@ -223,7 +218,6 @@ function renderizar() {
         const rotacao = (i - centro) * 4;
         el.style.transform = `rotate(${rotacao}deg)`;
 
-        // Ícones de descanso
         if (carta.estado === 'curto' || carta.estado === 'longo') {
             el.classList.add('indisponivel');
             const iconoDiv = document.createElement('div');
@@ -291,7 +285,6 @@ function renderizar() {
                 background-repeat: no-repeat;
             `;
             
-            // Texto fallback reserva
             const texto = document.createElement('div');
             texto.innerText = carta.nome;
             texto.style.cssText = 'position:absolute; top:50%; width:100%; font-size:0.5rem; text-align:center; color:#555; z-index:-1;';
@@ -339,7 +332,6 @@ window.selecionarPersonagem = async function(charName) {
     nomeJogador = charName.toUpperCase();
     if(typeof window !== 'undefined') window.nomeJogador = nomeJogador;
 
-    // Heartbeat System
     if(window.presencaInterval) clearInterval(window.presencaInterval);
     const registrarPresenca = () => { 
         if(nomeJogador) { 
@@ -363,7 +355,6 @@ window.selecionarPersonagem = async function(charName) {
 
     await carregarDados();
     
-    // Carrega estado
     const pSnap = await get(child(ref(db), `mesa_rpg/jogadores/${nomeJogador}`));
     if(pSnap.exists()) { const d = pSnap.val(); maoDoJogador = d.mao||[]; reservaDoJogador = d.reserva||[]; if(d.slots) slotsFixos = d.slots; }
 
@@ -375,7 +366,6 @@ window.selecionarPersonagem = async function(charName) {
         setTimeout(() => { if(window.inicializarSelecaoClasse) window.inicializarSelecaoClasse(); }, 300);
     }
 
-    // Monitoramento Realtime
     onValue(child(ref(db), `mesa_rpg/jogadores/${nomeJogador}`), (s) => {
         if(s.exists()) { const d = s.val(); maoDoJogador = d.mao||[]; reservaDoJogador = d.reserva||[]; if(d.slots) slotsFixos = d.slots; renderizar(); }
     });
@@ -482,7 +472,7 @@ window.definirEstado = function(st) {
     if(origemTransito==='mao') {
         maoDoJogador[cartaEmTransitoIndex].estado = st;
         window.salvarNaNuvem();
-        window.abrirDecisao(cartaEmTransitoIndex); // Refresh UI
+        window.abrirDecisao(cartaEmTransitoIndex); 
     }
 };
 
