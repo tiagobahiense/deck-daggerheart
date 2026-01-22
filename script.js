@@ -21,11 +21,10 @@ const auth = getAuth(app);
 // Persistência de sessão
 setPersistence(auth, browserSessionPersistence).catch(console.error);
 
-// === CORREÇÃO 1: EXPORTAR FUNÇÕES DO FIREBASE PARA DADOS.JS ===
+// Exportações globais para Dados e outros módulos
 window.db = db; window.ref = ref; window.set = set; window.get = get;
 window.remove = remove; window.onValue = onValue; window.onDisconnect = onDisconnect;
 window.push = push; window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
-// =============================================================
 
 // Configuração global
 const EMAIL_MESTRE = "tgbahiense@gmail.com";
@@ -41,25 +40,6 @@ let origemTransito = null;
 let slotDestinoAtual = null;
 let cartaDaReservaParaResgatar = null;
 const LIMITE_MAO = 5;
-
-// Função de debug
-function debug(mensagem, dados = null) { console.log(`🔍 DEBUG: ${mensagem}`, dados || ''); }
-
-// Observer Lazy Load
-const imageObserver = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            const cardDiv = entry.target;
-            const src = cardDiv.dataset.src;
-            if (src && src.trim()) {
-                const img = new Image();
-                img.onload = () => { cardDiv.style.backgroundImage = `url('${src}')`; cardDiv.classList.remove('lazy-card'); imageObserver.unobserve(cardDiv); };
-                img.onerror = () => { cardDiv.style.backgroundColor = '#2a2a2a'; cardDiv.classList.remove('lazy-card'); imageObserver.unobserve(cardDiv); };
-                img.src = src;
-            }
-        }
-    });
-}, { root: null, rootMargin: '200px', threshold: 0.01 });
 
 window.togglePassword = function(id) { const input = document.getElementById(id); if (input) input.type = input.type === "password" ? "text" : "password"; };
 
@@ -126,7 +106,7 @@ async function carregarDados() {
     } catch (e) { console.error("Erro loading cards", e); return []; }
 }
 
-// Abrir Grimório
+// Abrir Grimório (CORRIGIDO: Carregamento Direto)
 window.abrirGrimorio = async function(tipo, slotDestino = null) {
     const modal = document.getElementById('grimorio-modal');
     const grid = document.getElementById('grid-cartas');
@@ -155,37 +135,57 @@ window.abrirGrimorio = async function(tipo, slotDestino = null) {
 
     lista.forEach(carta => {
         const div = document.createElement('div');
-        div.className = 'carta-modal lazy-card';
-        div.dataset.src = carta.caminho;
+        div.className = 'carta-modal'; // Removemos 'lazy-card'
+        // Definimos a imagem diretamente
+        div.style.backgroundImage = `url('${carta.caminho}')`;
         div.style.backgroundColor = '#1a1a1a';
         div.onclick = () => selecionarCarta(carta);
+        
         div.onmouseenter = () => { const p = document.getElementById('hover-preview-modal'); if(p) { p.style.display='block'; p.style.backgroundImage=`url('${carta.caminho}')`; }};
         div.onmouseleave = () => { const p = document.getElementById('hover-preview-modal'); if(p) p.style.display='none'; };
+        
         grid.appendChild(div);
-        imageObserver.observe(div);
     });
     modal.style.display = 'flex';
 };
 
-// ... (Mantenha as importações iguais) ...
-
-// ... (Mantenha as configurações iniciais iguais até a função renderizar) ...
-
-// Função para renderizar as cartas (ATUALIZADA PARA CORRIGIR RESERVA)
+// Renderizar Slots e Mão (CORRIGIDO: Carregamento Direto)
 function renderizar() {
     const divMao = document.getElementById('cartas-mao');
     const divRes = document.getElementById('cartas-reserva');
 
     if (!divMao || !divRes) return;
 
-    renderizarSlots(); 
+    // Slots Fixos
+    Object.keys(slotsFixos).forEach(id => {
+        const div = document.getElementById(`slot-${id}`);
+        if(div) {
+            div.innerHTML = `<span class="label-slot">${id}</span>` + 
+                            (['Fundamental','Especializacao','Maestria'].includes(id) ? `<span class="nivel-req">${id==='Fundamental'?'Nível 1':'Avanço'}</span>` : '') +
+                            `<button class="btn-limpar" onclick="limparSlot('${id}', event)">×</button>`;
+            const carta = slotsFixos[id];
+            const btn = div.querySelector('.btn-limpar');
+            if(carta) {
+                const img = document.createElement('img');
+                img.src = carta.caminho || carta.caminho_perfil || '';
+                // Fallback de erro de imagem
+                img.onerror = function() { this.style.display='none'; div.innerHTML += `<span style='color:red;font-size:0.6rem;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)'>Erro Img</span>`; };
+                
+                img.onmouseenter = () => { const p = document.getElementById('hover-preview-slot'); if(p) { p.style.display='block'; p.style.backgroundImage=`url('${img.src}')`; }};
+                img.onmouseleave = () => document.getElementById('hover-preview-slot').style.display='none';
+                div.appendChild(img);
+                btn.style.display = 'flex';
+            } else btn.style.display = 'none';
+        }
+    });
 
     // MÃO
     divMao.innerHTML = '';
     maoDoJogador.forEach((carta, i) => {
         const el = document.createElement('div');
-        el.className = 'carta lazy-card';
-        el.dataset.src = carta.caminho;
+        el.className = 'carta'; // Sem lazy-card
+        // Carregamento direto
+        el.style.backgroundImage = `url('${carta.caminho}')`;
         el.style.backgroundColor = '#1a1a1a';
         
         // Fallback: se a imagem falhar, mostra o nome
@@ -226,10 +226,9 @@ function renderizar() {
         
         el.onclick = () => { if (window.abrirDecisao) window.abrirDecisao(i); };
         divMao.appendChild(el);
-        imageObserver.observe(el);
     });
 
-    // RESERVA (CORREÇÃO VISUAL)
+    // RESERVA
     divRes.innerHTML = '';
     divRes.style.opacity = reservaDoJogador.length ? '1' : '0.3';
     
@@ -238,27 +237,25 @@ function renderizar() {
         container.className = 'reserva-container';
         container.style.cssText = 'position: relative; width: 100%; height: 100%; cursor: pointer;';
         
-        // Lógica: Mostra as últimas 3 cartas (topo da pilha)
-        // Se a carta é a última do array (índice length-1), ela tem que ficar no topo visual (z-index maior)
         const total = reservaDoJogador.length;
         const mostrar = Math.min(3, total);
         
         for (let i = 0; i < mostrar; i++) {
-            // Pega do final para o começo (LIFO - Last In First Out visual)
             const indexReal = total - 1 - i;
             const carta = reservaDoJogador[indexReal];
             
             const cartaEl = document.createElement('div');
-            cartaEl.className = 'carta-reserva-stacked lazy-card';
-            cartaEl.dataset.src = carta.caminho;
+            cartaEl.className = 'carta-reserva-stacked';
+            // Carregamento direto
+            cartaEl.style.backgroundImage = `url('${carta.caminho}')`;
             
-            // Estilo para garantir que cubra o cinza
             cartaEl.style.cssText = `
                 background-color: #1a1a1a;
+                background-image: url('${carta.caminho}');
                 position: absolute;
                 width: 100%; height: 100%;
-                top: ${i * 2}px; left: ${i * 2}px; /* Deslocamento leve */
-                z-index: ${mostrar - i}; /* A primeira do loop (ultima carta real) fica com z-index maior */
+                top: ${i * 2}px; left: ${i * 2}px;
+                z-index: ${mostrar - i};
                 border: 1px solid #444;
                 border-radius: 6px;
                 box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
@@ -267,14 +264,7 @@ function renderizar() {
                 background-position: center;
             `;
             
-            // Fallback de texto caso a imagem falhe (para não ficar só cinza)
-            const fallbackText = document.createElement('span');
-            fallbackText.innerText = carta.nome ? carta.nome.split('-')[1] || carta.nome : "Carta";
-            fallbackText.style.cssText = "position:absolute; top:40%; left:5px; right:5px; text-align:center; color:#555; font-size:0.6rem; z-index:-1;";
-            cartaEl.appendChild(fallbackText);
-
             container.appendChild(cartaEl);
-            imageObserver.observe(cartaEl);
         }
         
         const label = document.createElement('div');
@@ -288,7 +278,6 @@ function renderizar() {
     
     if (typeof window.monitorarClasseFundamental === 'function') window.monitorarClasseFundamental();
 }
-
 
 window.renderizar = renderizar;
 
@@ -312,7 +301,7 @@ async function carregarListaPersonagens() {
     } catch(e) { console.error(e); lista.innerHTML = '<p>Erro ao carregar.</p>'; }
 }
 
-// Selecionar Personagem (COM PRESENÇA/HEARTBEAT ADICIONADO)
+// Selecionar Personagem
 window.selecionarPersonagem = async function(charName) {
     nomeJogador = charName.toUpperCase();
     if(typeof window !== 'undefined') window.nomeJogador = nomeJogador;
@@ -358,7 +347,6 @@ window.selecionarPersonagem = async function(charName) {
         if(s.exists()) { const d = s.val(); maoDoJogador = d.mao||[]; reservaDoJogador = d.reserva||[]; if(d.slots) slotsFixos = d.slots; renderizar(); }
     });
     
-    // Inicia Sub-sistemas
     if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
     if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
     if(window.escutarRolagens) window.escutarRolagens();
@@ -366,7 +354,6 @@ window.selecionarPersonagem = async function(charName) {
     renderizar();
 };
 
-// Criar Personagem
 window.criarNovoPersonagem = async function() {
     const nome = document.getElementById('nome-personagem').value.trim().toUpperCase();
     if(!nome) return alert("Digite um nome.");
@@ -508,8 +495,11 @@ window.devolverAoDeck = function() {
 window.mostrarModalTroca = function() {
     const grid = document.getElementById('grid-troca'); grid.innerHTML='';
     maoDoJogador.forEach((c,i) => {
-        const div = document.createElement('div'); div.className='carta-modal lazy-card'; div.dataset.src=c.caminho; div.style.cssText="background-color:#1a1a1a;cursor:pointer;border:2px solid #333";
-        div.onclick = () => window.confirmarTroca(i); grid.appendChild(div); imageObserver.observe(div);
+        const div = document.createElement('div'); div.className='carta-modal';
+        div.style.backgroundImage = `url('${c.caminho}')`;
+        div.style.cssText += "background-color:#1a1a1a;cursor:pointer;border:2px solid #333;background-size:contain;background-repeat:no-repeat;background-position:center;";
+        div.onclick = () => window.confirmarTroca(i); 
+        grid.appendChild(div);
     });
     document.getElementById('troca-modal').style.display='flex';
 };
@@ -529,9 +519,12 @@ window.abrirReserva = function() {
     const grid = document.getElementById('grid-reserva'); grid.innerHTML = '';
     if(!reservaDoJogador.length) grid.innerHTML='<p style="color:#aaa;text-align:center;width:100%">Vazia</p>';
     reservaDoJogador.forEach((c, i) => {
-        const div = document.createElement('div'); div.className='carta-modal lazy-card'; div.dataset.src=c.caminho; div.style.backgroundColor='#1a1a1a';
+        const div = document.createElement('div'); 
+        div.className='carta-modal';
+        div.style.backgroundImage = `url('${c.caminho}')`;
+        div.style.backgroundColor='#1a1a1a';
         div.onclick = () => { window.fecharReserva(); window.abrirDecisaoReserva(i); };
-        grid.appendChild(div); imageObserver.observe(div);
+        grid.appendChild(div);
     });
     document.getElementById('reserva-modal').style.display='flex';
 };
