@@ -7,133 +7,22 @@
     <link rel="stylesheet" href="style.css?v=8.0">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
-        .inactive-account {
-            opacity: 0.6;
-            border: 1px solid #ff6666;
-        }
-        .inactive-account .player-email {
-            color: #ff9999;
-        }
-        #inactive-users-list {
-            margin-top: 30px;
-            border-top: 1px solid #555;
-            padding-top: 20px;
-        }
-        .reactivate-btn {
-            background: #2e8b57 !important;
-            border-color: #2e8b57 !important;
-        }
-        .reactivate-btn:hover {
-            background: #3cb371 !important;
-        }
-
-        /* MODAL TROCAR SENHA */
-        #modal-trocar-senha {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            z-index: 5000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        #modal-trocar-senha.ativo {
-            display: flex;
-        }
-
-        .modal-senha-content {
-            background: rgba(20, 20, 20, 0.95);
-            border: 2px solid var(--gold);
-            border-radius: 10px;
-            padding: 30px;
-            max-width: 400px;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
-            position: relative;
-        }
-
-        .modal-senha-content h2 {
-            color: var(--gold);
-            margin-top: 0;
-            text-align: center;
-        }
-
-        .modal-senha-content .input-group {
-            margin: 15px 0;
-        }
-
-        .modal-senha-content input {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--gold);
-            border-radius: 5px;
-            background: rgba(0, 0, 0, 0.5);
-            color: #fff;
-            box-sizing: border-box;
-        }
-
-        .modal-senha-content input::placeholder {
-            color: #999;
-        }
-
-        .modal-senha-content .btn-group {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .modal-senha-content button {
-            flex: 1;
-            padding: 10px;
-            border: 1px solid var(--gold);
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.2s;
-        }
-
-        .modal-senha-content .btn-confirmar {
-            background: #4CAF50;
-            color: #fff;
-        }
-
-        .modal-senha-content .btn-confirmar:hover {
-            background: #45a049;
-        }
-
-        .modal-senha-content .btn-cancelar {
-            background: #f44336;
-            color: #fff;
-        }
-
-        .modal-senha-content .btn-cancelar:hover {
-            background: #da190b;
-        }
-
-        #btn-fechar-modal-senha {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            background: var(--gold);
-            color: #000;
-            border: none;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            cursor: pointer;
-            font-size: 1.2rem;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        #btn-fechar-modal-senha:hover {
-            background: #ffff99;
-        }
+        .inactive-account { opacity: 0.6; border: 1px solid #ff6666; }
+        .inactive-account .player-email { color: #ff9999; }
+        #inactive-users-list { margin-top: 30px; border-top: 1px solid #555; padding-top: 20px; }
+        .reactivate-btn { background: #2e8b57 !important; border-color: #2e8b57 !important; }
+        .reactivate-btn:hover { background: #3cb371 !important; }
+        #modal-trocar-senha { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 5000; justify-content: center; align-items: center; }
+        #modal-trocar-senha.ativo { display: flex; }
+        .modal-senha-content { background: rgba(20, 20, 20, 0.95); border: 2px solid var(--gold); border-radius: 10px; padding: 30px; max-width: 400px; box-shadow: 0 0 40px rgba(0, 0, 0, 0.9); position: relative; }
+        .modal-senha-content h2 { color: var(--gold); margin-top: 0; text-align: center; }
+        .modal-senha-content .input-group { margin: 15px 0; }
+        .modal-senha-content input { width: 100%; padding: 10px; border: 1px solid var(--gold); border-radius: 5px; background: rgba(0, 0, 0, 0.5); color: #fff; box-sizing: border-box; }
+        .modal-senha-content .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .modal-senha-content button { flex: 1; padding: 10px; border: 1px solid var(--gold); border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .modal-senha-content .btn-confirmar { background: #4CAF50; color: #fff; }
+        .modal-senha-content .btn-cancelar { background: #f44336; color: #fff; }
+        #btn-fechar-modal-senha { position: absolute; top: 10px; right: 15px; background: var(--gold); color: #000; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 1.2rem; font-weight: bold; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -141,9 +30,7 @@
     <div id="access-denied-screen">
         <h1 style="color: red;">ACESSO NEGADO</h1>
         <p>Você está logado, mas não como Narrador.</p>
-        <div class="debug-box" id="debug-text">
-            Verificando credenciais...
-        </div>
+        <div class="debug-box" id="debug-text">Verificando credenciais...</div>
         <button class="btn-voltar" onclick="fazerLogout()" style="margin-top: 20px; border-color: red; color: red;">SAIR E TENTAR NOVAMENTE</button>
     </div>
 
@@ -153,46 +40,30 @@
             <div>
                 <button class="btn-nav" onclick="window.location.href='mestre.html'">Ir para o Tabuleiro</button>
                 <button class="btn-nav" onclick="abrirModalTrocarSenha()" style="background: #4CAF50;">🔐 Trocar Minha Senha</button>
-                <button class="btn-nav" onclick="verificarStatusContas()" style="background: #FF9800; font-size: 0.8rem;">🔍 Debug Contas</button>
                 <button class="btn-nav" onclick="fazerLogout()">Sair</button>
             </div>
         </div>
 
         <div style="display: flex; gap: 40px; align-items: flex-start; justify-content: center; flex-wrap: wrap;">
-
             <div class="admin-box" style="width: 300px; padding: 20px;">
                 <h3>Criar Novo Jogador</h3>
-
-                <div class="input-group">
-                    <input type="email" id="new-user-email" placeholder="Email do Jogador" class="input-login">
-                </div>
-                <div class="input-group">
-                    <input type="password" id="new-user-pass" placeholder="Senha" class="input-login">
-                    <span class="toggle-password" onclick="togglePassword('new-user-pass')">👁️</span>
-                </div>
-
+                <div class="input-group"><input type="email" id="new-user-email" placeholder="Email do Jogador" class="input-login"></div>
+                <div class="input-group"><input type="password" id="new-user-pass" placeholder="Senha" class="input-login"><span class="toggle-password" onclick="togglePassword('new-user-pass')">👁️</span></div>
                 <button class="btn-main" onclick="criarUsuario()">Criar Conta</button>
             </div>
 
             <div style="flex-grow: 1; min-width: 300px;">
                 <h3 style="text-align: center; color: var(--gold);">Contas Ativas</h3>
-                <div id="users-list" class="admin-grid">
-                    <p>Carregando...</p>
-                </div>
-
+                <div id="users-list" class="admin-grid"><p>Carregando...</p></div>
                 <h3 style="text-align: center; color: #ff9999; margin-top: 30px;">Contas Inativas</h3>
-                <div id="inactive-users-list" class="admin-grid">
-                    <p>Carregando...</p>
-                </div>
+                <div id="inactive-users-list" class="admin-grid"><p>Carregando...</p></div>
             </div>
-
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, onValue, set, remove, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        // IMPORTANTE: inMemoryPersistence incluído e checado
         import { getAuth, createUserWithEmailAndPassword, signOut, onAuthStateChanged, browserSessionPersistence, inMemoryPersistence, setPersistence, fetchSignInMethodsForEmail, updatePassword, sendPasswordResetEmail, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
         const firebaseConfig = {
@@ -209,77 +80,32 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-        
-        // --- CORREÇÃO 1: Variável Global ---
-        // Definida aqui fora para que todas as funções enxerguem
         let isCreatingUser = false;
-        // -----------------------------------
 
-        // Auth secundário para criar usuários sem derrubar a sessão do Mestre
         const secondaryApp = initializeApp(firebaseConfig, "secondary-auth-creator");
         const secondaryAuth = getAuth(secondaryApp);
-        
-        // --- CORREÇÃO 2: Persistência do Auth Secundário ---
-        // Garante que o usuário criado via secondaryAuth não salve cookies nem substitua o mestre
-        setPersistence(secondaryAuth, inMemoryPersistence)
-            .then(() => console.log("Persistência secundária: Memória (OK)"))
-            .catch((error) => {
-                console.warn("Aviso: Falha ao definir persistência secundária. Tentando fallback.", error);
-                // Se der erro no inMemory, tenta session para não quebrar, mas ideal é inMemory
-                setPersistence(secondaryAuth, browserSessionPersistence);
-            });
+        setPersistence(secondaryAuth, inMemoryPersistence).catch(() => setPersistence(secondaryAuth, browserSessionPersistence));
 
         const EMAIL_MESTRE = "tgbahiense@gmail.com";
 
-        // Configura persistência do login principal (Mestre)
-        setPersistence(auth, browserSessionPersistence)
-            .then(() => {
-                console.log("Persistência de autenticação configurada com sucesso.");
-                
-                onAuthStateChanged(auth, user => {
-                    // Se estivermos criando usuário, ignora mudanças de estado para não recarregar a tela
-                    if (isCreatingUser) {
-                        console.log("⏳ Mudança de auth ignorada (criação de usuário em progresso)");
-                        return;
-                    }
-                    
-                    const deniedScreen = document.getElementById('access-denied-screen');
-                    const debugText = document.getElementById('debug-text');
-                    const adminContainer = document.getElementById('admin-container');
+        setPersistence(auth, browserSessionPersistence).then(() => {
+            onAuthStateChanged(auth, user => {
+                if (isCreatingUser) return;
+                const deniedScreen = document.getElementById('access-denied-screen');
+                const adminContainer = document.getElementById('admin-container');
 
-                    console.log("onAuthStateChanged chamado. Usuário:", user ? user.email : "Nenhum");
-
-                    if (!user) {
-                        deniedScreen.style.display = 'flex';
-                        debugText.innerHTML = "Nenhum usuário logado. <br>Por favor, faça login.";
-                        adminContainer.style.display = 'none';
-                        return;
-                    }
-
-                    const currentEmail = user.email.toLowerCase().trim();
-                    const masterEmail = EMAIL_MESTRE.toLowerCase().trim();
-
-                    if (currentEmail !== masterEmail) {
-                        deniedScreen.style.display = 'flex';
-                        adminContainer.style.display = 'none';
-                        debugText.innerHTML = `
-                            <p><strong>DIAGNÓSTICO:</strong></p>
-                            <p>Logado como: <span style="color: white">${currentEmail}</span></p>
-                            <p>Mestre esperado: <span style="color: yellow">${masterEmail}</span></p>
-                            <p>UID: ${user.uid}</p>
-                        `;
-                    } else {
-                        deniedScreen.style.display = 'none';
-                        adminContainer.style.display = 'block';
-                        carregarUsuarios();
-                        carregarUsuariosInativos();
-                    }
-                });
-            })
-            .catch((error) => {
-                console.error("Erro ao definir persistência:", error);
-                document.getElementById('debug-text').innerHTML = "Erro ao carregar autenticação. Consulte o console.";
+                if (!user || user.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) {
+                    deniedScreen.style.display = 'flex';
+                    adminContainer.style.display = 'none';
+                    if(!user) document.getElementById('debug-text').innerHTML = "Nenhum usuário logado.";
+                } else {
+                    deniedScreen.style.display = 'none';
+                    adminContainer.style.display = 'block';
+                    carregarUsuarios();
+                    carregarUsuariosInativos();
+                }
             });
+        });
 
         window.togglePassword = function(id) {
             const input = document.getElementById(id);
@@ -287,432 +113,107 @@
         }
 
         window.fazerLogout = function() {
-            signOut(auth).then(() => {
-                window.location.href = 'index.html';
-            });
+            signOut(auth).then(() => window.location.href = 'index.html');
         }
-
-        // Variável para backup de segurança
-        let mestreSessionBackup = null;
 
         window.criarUsuario = function() {
             const email = document.getElementById('new-user-email').value;
             const pass = document.getElementById('new-user-pass').value;
-
             if(!email || !pass) return alert("Preencha tudo");
 
-            const currentUser = auth.currentUser;
-            if (!currentUser || currentUser.email !== EMAIL_MESTRE) {
-                alert("⚠️ Você não está logado como mestre!");
-                return;
-            }
-            mestreSessionBackup = { email: currentUser.email, uid: currentUser.uid };
-
-            get(ref(db, 'mesa_rpg/accounts_inactive')).then(snapshot => {
-                if (snapshot.exists()) {
-                    const inactiveAccounts = snapshot.val();
-                    if (inactiveAccounts[email]) {
-                        alert("Este e-mail já foi usado e está inativo. Reative a conta antes de usá-lo novamente.");
-                        return;
-                    }
-                }
-
-                fetchSignInMethodsForEmail(auth, email)
-                    .then((signInMethods) => {
-                        if (signInMethods.length > 0) {
-                            alert("Este e-mail já está registrado. Use outro e-mail.");
-                            return;
-                        }
-
-                        get(ref(db, 'mesa_rpg/accounts')).then(accountsSnap => {
-                            if (accountsSnap.exists()) {
-                                const accounts = accountsSnap.val();
-                                const emailJaExiste = Object.values(accounts).some(acc => acc.email === email);
-                                if (emailJaExiste) {
-                                    alert("Este e-mail já está registrado. Use outro e-mail.");
-                                    return;
-                                }
-                            }
-
-                            // Marca flag global
-                            isCreatingUser = true;
-                            
-                            createUserWithEmailAndPassword(secondaryAuth, email, pass)
-                            .then((cred) => {
-                                const uid = cred.user.uid;
-                                console.log("✅ Usuário criado no Firebase Auth:", uid);
-                                
-                                return set(ref(db, `mesa_rpg/accounts/${uid}`), {
-                                    email: email,
-                                    characters: {},
-                                    status: 'active'
-                                }).then(() => {
-                                    console.log("✅ Dados salvos no Realtime Database");
-                                    
-                                    // Logout forçado do secundário com delay de segurança
-                                    return new Promise((resolve) => {
-                                        setTimeout(() => {
-                                            signOut(secondaryAuth)
-                                                .then(() => {
-                                                    console.log("✅ Logout do secondaryAuth concluído");
-                                                    resolve();
-                                                })
-                                                .catch((err) => {
-                                                    console.warn("⚠️ Erro ao fazer logout do secondaryAuth:", err);
-                                                    resolve();
-                                                });
-                                        }, 200);
-                                    });
-                                }).then(() => {
-                                    // Aguarda estabilização
-                                    return new Promise((resolve) => setTimeout(resolve, 500));
-                                }).then(() => {
-                                    isCreatingUser = false;
-                                    
-                                    // Verificação final de segurança
-                                    const currentAuthUser = auth.currentUser;
-                                    if (!currentAuthUser || currentAuthUser.email !== EMAIL_MESTRE) {
-                                        console.error("❌ Sessão do mestre foi afetada!");
-                                        alert("⚠️ A sessão foi afetada. A página será recarregada.\n\nPor favor, faça login novamente como mestre.");
-                                        window.location.reload();
-                                        return;
-                                    }
-                                    
-                                    console.log("✅ Sessão do mestre intacta!");
-                                    alert("✅ Usuário criado: " + email);
-                                    document.getElementById('new-user-email').value = "";
-                                    document.getElementById('new-user-pass').value = "";
-                                    carregarUsuarios();
-                                });
-                            })
-                            .catch((error) => {
-                                // Em caso de erro, tenta limpar sessão secundária
-                                signOut(secondaryAuth).catch(() => {});
-                                
-                                setTimeout(() => {
-                                    isCreatingUser = false;
-                                    
-                                    // Verifica integridade da sessão do mestre
-                                    const currentAuthUser = auth.currentUser;
-                                    if (!currentAuthUser || currentAuthUser.email !== EMAIL_MESTRE) {
-                                        console.warn("⚠️ Sessão do mestre foi afetada após erro!");
-                                        alert("⚠️ A sessão foi afetada. A página será recarregada.\n\nPor favor, faça login novamente como mestre.");
-                                        window.location.reload();
-                                        return;
-                                    }
-                                    
-                                    let msg = "Erro ao criar: " + error.message;
-                                    if (error.code === 'auth/email-already-in-use') {
-                                        msg = "Este e-mail já está em uso.";
-                                    } else if (error.code === 'auth/invalid-email') {
-                                        msg = "E-mail inválido.";
-                                    } else if (error.code === 'auth/weak-password') {
-                                        msg = "Senha muito fraca. Use pelo menos 6 caracteres.";
-                                    }
-                                    alert(msg);
-                                }, 500);
-                            });
-                        }).catch((error) => {
-                            isCreatingUser = false; // Garante reset da flag
-                            alert("Erro ao verificar contas: " + error.message);
-                        });
-                    })
-                    .catch((error) => {
-                        isCreatingUser = false; // Garante reset da flag
-                        alert("Erro ao verificar e-mail: " + error.message);
-                    });
-            });
+            isCreatingUser = true;
+            createUserWithEmailAndPassword(secondaryAuth, email, pass).then((cred) => {
+                const uid = cred.user.uid;
+                set(ref(db, `mesa_rpg/accounts/${uid}`), { email: email, characters: {}, status: 'active' }).then(() => {
+                    setTimeout(() => signOut(secondaryAuth).then(() => { isCreatingUser = false; alert("Criado!"); carregarUsuarios(); }), 500);
+                });
+            }).catch((error) => { isCreatingUser = false; alert("Erro: " + error.message); });
         }
 
         function carregarUsuarios() {
             onValue(ref(db, 'mesa_rpg/accounts'), snapshot => {
                 const list = document.getElementById('users-list');
                 list.innerHTML = "";
-
-                if(!snapshot.exists()) { list.innerHTML = "<p>Nenhuma conta encontrada.</p>"; return; }
-
+                if(!snapshot.exists()) { list.innerHTML = "<p>Vazio</p>"; return; }
                 snapshot.forEach(childSnap => {
                     const uid = childSnap.key;
                     const data = childSnap.val();
-                    if (data.status === 'inactive') return; 
-
-                    const chars = data.characters ? Object.keys(data.characters) : [];
-                    const charCount = chars.length;
-                    const charLimit = 3;
-                    const isAtLimit = charCount >= charLimit;
-
-                    const buscarClasse = async (charName) => {
-                        try {
-                            const charSlotRef = ref(db, `mesa_rpg/jogadores/${charName}/slots/Fundamental`);
-                            const charSlotSnap = await get(charSlotRef);
-                            if (charSlotSnap.exists() && charSlotSnap.val().profissao) {
-                                const profissao = charSlotSnap.val().profissao;
-                                return `<span style="background: rgba(212, 175, 55, 0.3); color: #d4af37; padding: 3px 8px; border-radius: 4px; font-size: 0.75rem; margin-left: 8px; border: 1px solid rgba(212, 175, 55, 0.6); font-weight: bold;">${profissao}</span>`;
-                            }
-                        } catch (e) {
-                            console.error(`Erro ao buscar classe de ${charName}:`, e);
-                        }
-                        return '';
-                    };
+                    if (data.status === 'inactive') return;
                     
-                    let countColor = charCount >= 3 ? '#ff6b6b' : charCount >= 2 ? '#ffa94d' : '#4CAF50';
-                    Promise.all(chars.map(async charName => {
-                        const classeTag = await buscarClasse(charName);
-                        return `<li>${charName}${classeTag} <button class="btn-banir" onclick="removerPerfil('${uid}', '${charName}')">💀 Remover Perfil</button></li>`;
-                    })).then(htmls => {
-                        const charHtml = htmls.join('');
-                        const div = document.createElement('div');
-                        div.className = 'player-card-admin';
-                        div.innerHTML = `
-                            <div class="player-email">
-                                ${data.email}
-                                <div style="margin-top: 8px; font-size: 0.85rem; color: ${countColor}; font-weight: bold;">
-                                    📊 Personagens: ${charCount}/${charLimit}
-                                </div>
-                                ${isAtLimit ? `<div style="margin-top: 5px; font-size: 0.75rem; color: #ff6b6b;">⚠️ Limite atingido! Remova um personagem para criar novo.</div>` : ''}
-                            </div>
-                            <ul class="char-list" style="list-style: none; padding: 0;">
-                                ${charHtml || '<li style="font-style:italic">Sem personagens</li>'}
-                            </ul>
-                            <button class="btn-main" onclick="abrirTrocarSenha('${uid}', '${data.email}')" style="margin-right: 5px;">🔐 Trocar Senha</button>
-                            <button class="btn-banir" onclick="removerConta('${uid}', '${data.email}')">💀 Desativar Conta</button>
-                        `;
-                        list.appendChild(div);
+                    const chars = data.characters ? Object.keys(data.characters) : [];
+                    let charHtml = "";
+                    chars.forEach(charName => {
+                        const safeName = charName.replace(/'/g, "\\'"); // Escapa aspas simples
+                        charHtml += `<li>${charName} <button class="btn-banir" onclick="removerPerfil('${uid}', '${safeName}')" style="margin-left:5px; padding:2px 5px; font-size:0.7rem;">💀 Deletar</button></li>`;
                     });
+
+                    const div = document.createElement('div');
+                    div.className = 'player-card-admin';
+                    div.innerHTML = `<div class="player-email">${data.email}</div><ul style="padding-left:15px; margin:5px 0;">${charHtml || '<li>Sem personagens</li>'}</ul><button class="btn-banir" onclick="removerConta('${uid}', '${data.email}')">💀 Desativar Conta</button>`;
+                    list.appendChild(div);
                 });
             });
         }
-
+        
         function carregarUsuariosInativos() {
-            onValue(ref(db, 'mesa_rpg/accounts'), snapshot => {
+             onValue(ref(db, 'mesa_rpg/accounts'), snapshot => {
                 const list = document.getElementById('inactive-users-list');
                 list.innerHTML = "";
-
-                if(!snapshot.exists()) { list.innerHTML = "<p>Nenhuma conta inativa encontrada.</p>"; return; }
-
-                let hasInactive = false;
+                if(!snapshot.exists()) return;
                 snapshot.forEach(childSnap => {
                     const uid = childSnap.key;
                     const data = childSnap.val();
                     if (data.status !== 'inactive') return;
-
-                    hasInactive = true;
-                    const chars = data.characters ? Object.keys(data.characters) : [];
-
-                    let charHtml = "";
-                    chars.forEach(charName => {
-                        charHtml += `<li>${charName}</li>`;
-                    });
-
                     const div = document.createElement('div');
                     div.className = 'player-card-admin inactive-account';
-                    div.innerHTML = `
-                        <div class="player-email">
-                            ${data.email}
-                            <button class="btn-banir reactivate-btn" onclick="reativarConta('${uid}', '${data.email}')">✅ Reativar Conta</button>
-                        </div>
-                        <ul class="char-list" style="list-style: none; padding: 0;">
-                            ${charHtml || '<li style="font-style:italic">Sem personagens</li>'}
-                        </ul>
-                    `;
+                    div.innerHTML = `<div class="player-email">${data.email} <button class="btn-banir reactivate-btn" onclick="reativarConta('${uid}', '${data.email}')">✅ Reativar</button></div>`;
                     list.appendChild(div);
                 });
-
-                if (!hasInactive) list.innerHTML = "<p>Nenhuma conta inativa encontrada.</p>";
             });
         }
-
+        
         window.removerPerfil = function(uid, charName) {
-            if (confirm(`Tem certeza que deseja remover o perfil "${charName}"?`)) {
+            if(confirm(`Deletar o personagem "${charName}"?\n\nIsso apaga a ficha, os itens e libera o espaço na conta.`)) {
+                // 1. Remove do nó geral de jogadores (onde ficam as fichas)
                 remove(ref(db, `mesa_rpg/jogadores/${charName}`))
                     .then(() => {
-                        const userRef = ref(db, `mesa_rpg/accounts/${uid}/characters/${charName}`);
-                        return remove(userRef);
+                        // 2. Remove da lista de personagens da conta do usuário
+                        return remove(ref(db, `mesa_rpg/accounts/${uid}/characters/${charName}`));
                     })
                     .then(() => {
-                        alert(`Perfil "${charName}" removido com sucesso!`);
-                        carregarUsuarios();
+                        alert("Personagem deletado com sucesso!");
                     })
-                    .catch((error) => {
-                        alert(`Erro ao remover perfil: ${error.message}`);
-                        console.error("Erro detalhado:", error);
+                    .catch((err) => {
+                        alert("Erro ao deletar: " + err.message);
+                        console.error(err);
                     });
             }
         };
-
+        
         window.removerConta = function(uid, email) {
-            if (confirm(`Tem certeza que deseja desativar a conta "${email}" e DELETAR PERMANENTEMENTE TODOS os seus personagens?`)) {
-                get(ref(db, `mesa_rpg/accounts/${uid}/characters`))
-                    .then(snapshot => {
-                        if (snapshot.exists()) {
-                            const chars = snapshot.val();
-                            const promises = [];
-                            Object.keys(chars).forEach(charName => {
-                                promises.push(remove(ref(db, `mesa_rpg/jogadores/${charName}`)));
-                            });
-                            return Promise.all(promises);
-                        }
-                        return Promise.resolve();
-                    })
-                    .then(() => {
-                        return remove(ref(db, `mesa_rpg/accounts/${uid}/characters`));
-                    })
-                    .then(() => {
-                        return update(ref(db, `mesa_rpg/accounts/${uid}`), { status: 'inactive' });
-                    })
-                    .then(() => {
-                        alert(`Conta "${email}" foi desativada e TODOS os seus personagens foram permanentemente deletados!`);
-                        carregarUsuarios();
-                        carregarUsuariosInativos();
-                    })
-                    .catch((error) => {
-                        alert(`Erro ao desativar conta: ${error.message}`);
-                        console.error("Erro detalhado:", error);
-                    });
-            }
-        };
-
+            if (confirm(`Desativar ${email}?`)) update(ref(db, `mesa_rpg/accounts/${uid}`), { status: 'inactive' });
+        }
+        
         window.reativarConta = function(uid, email) {
-            if (confirm(`Tem certeza que deseja reativar a conta "${email}"? A conta volta zerada, sem personagem.`)) {
-                update(ref(db, `mesa_rpg/accounts/${uid}`), { status: 'active' })
-                    .then(() => {
-                        return remove(ref(db, `mesa_rpg/accounts/${uid}/characters`));
-                    })
-                    .then(() => {
-                        return remove(ref(db, `mesa_rpg/accounts_inactive/${email}`));
-                    })
-                    .then(() => {
-                        alert(`Conta "${email}" foi reativada com sucesso! (Sem personagem)`);
-                        carregarUsuarios();
-                        carregarUsuariosInativos();
-                    })
-                    .catch((error) => {
-                        alert(`Erro ao reativar conta: ${error.message}`);
-                        console.error("Erro detalhado:", error);
-                    });
-            }
-        };
-
-        window.abrirTrocarSenha = function(uid, email) {
-            if (confirm(`Deseja enviar um link de redefinição de senha para ${email}?\n\nUm email será enviado com as instruções para trocar a senha.`)) {
-                sendPasswordResetEmail(auth, email)
-                    .then(() => {
-                        alert(`✅ Email de redefinição de senha foi enviado para ${email}!\n\nO usuário pode clicar no link do email para criar uma nova senha.`);
-                    })
-                    .catch((error) => {
-                        alert(`❌ Erro ao enviar email: ${error.message}`);
-                        console.error("Erro detalhado:", error);
-                    });
-            }
-        };
-
-        window.abrirModalTrocarSenha = function() {
-            document.getElementById('modal-trocar-senha').classList.add('ativo');
-        };
-
-        window.fecharModalTrocarSenha = function() {
-            document.getElementById('modal-trocar-senha').classList.remove('ativo');
-            document.getElementById('senha-atual').value = '';
-            document.getElementById('senha-nova').value = '';
-            document.getElementById('senha-nova-confirmacao').value = '';
-        };
-
+            if (confirm(`Reativar ${email}?`)) update(ref(db, `mesa_rpg/accounts/${uid}`), { status: 'active' });
+        }
+        
+        window.abrirModalTrocarSenha = function() { document.getElementById('modal-trocar-senha').classList.add('ativo'); }
+        window.fecharModalTrocarSenha = function() { document.getElementById('modal-trocar-senha').classList.remove('ativo'); }
+        
         window.confirmarTrocarSenha = async function() {
-            const senhaAtual = document.getElementById('senha-atual').value;
-            const senhaNova = document.getElementById('senha-nova').value;
-            const senhaConfirmacao = document.getElementById('senha-nova-confirmacao').value;
-
-            if (!senhaAtual || !senhaNova || !senhaConfirmacao) {
-                alert('❌ Preencha todos os campos!');
-                return;
-            }
-
-            if (senhaNova !== senhaConfirmacao) {
-                alert('❌ As novas senhas não conferem!');
-                return;
-            }
-
-            if (senhaNova.length < 6) {
-                alert('❌ A nova senha deve ter no mínimo 6 caracteres!');
-                return;
-            }
-
-            try {
-                const user = auth.currentUser;
-                if (!user) {
-                    alert('❌ Você não está autenticado!');
-                    return;
-                }
-
-                const email = user.email;
-                const credential = await signInWithEmailAndPassword(auth, email, senhaAtual);
-                
-                await updatePassword(user, senhaNova);
-                
-                alert('✅ Senha alterada com sucesso!');
-                fecharModalTrocarSenha();
-            } catch (error) {
-                if (error.code === 'auth/wrong-password') {
-                    alert('❌ Senha atual incorreta!');
-                } else if (error.code === 'auth/user-mismatch') {
-                    alert('❌ Erro de autenticação. Tente fazer logout e login novamente.');
-                } else {
-                    alert(`❌ Erro: ${error.message}`);
-                }
-                console.error("Erro detalhado:", error);
-            }
-        };
-
-        document.getElementById('modal-trocar-senha').addEventListener('click', function(e) {
-            if(e.target === this) {
-                fecharModalTrocarSenha();
-            }
-        });
-
-        window.verificarStatusContas = function() {
-            get(ref(db, 'mesa_rpg/accounts')).then(snapshot => {
-                console.log("=== DEBUG - VERIFICAÇÃO DE CONTAS ===");
-                if(!snapshot.exists()) {
-                    console.log("❌ Nenhuma conta encontrada no banco de dados!");
-                    return;
-                }
-
-                const contas = snapshot.val();
-                Object.keys(contas).forEach(uid => {
-                    const conta = contas[uid];
-                    console.log(`\n📧 Email: ${conta.email}`);
-                    console.log(`   Status: ${conta.status || 'não definido'}`);
-                    console.log(`   Personagens: ${conta.characters ? Object.keys(conta.characters).join(', ') || 'nenhum' : 'nenhum'}`);
-                    console.log(`   UID: ${uid}`);
-                });
-
-                alert("✅ Verificação de contas exibida no console (F12). Verifique o status de cada conta.");
-            }).catch(err => {
-                console.error("Erro ao verificar contas:", err);
-                alert("❌ Erro ao verificar contas: " + err.message);
-            });
-        };
+             const nova = document.getElementById('senha-nova').value;
+             if(nova.length < 6) return alert("Mínimo 6 caracteres");
+             try { await updatePassword(auth.currentUser, nova); alert("Senha alterada!"); fecharModalTrocarSenha(); } catch(e) { alert("Erro: " + e.message); }
+        }
     </script>
 
     <div id="modal-trocar-senha">
         <div class="modal-senha-content">
             <button id="btn-fechar-modal-senha" onclick="fecharModalTrocarSenha()">×</button>
-            <h2>🔐 Trocar Minha Senha</h2>
-            
-            <div class="input-group">
-                <input type="password" id="senha-atual" placeholder="Senha Atual" class="input-login">
-            </div>
-            <div class="input-group">
-                <input type="password" id="senha-nova" placeholder="Nova Senha" class="input-login">
-            </div>
-            <div class="input-group">
-                <input type="password" id="senha-nova-confirmacao" placeholder="Confirmar Nova Senha" class="input-login">
-            </div>
-
-            <div class="btn-group">
-                <button class="btn-confirmar" onclick="confirmarTrocarSenha()">✅ Confirmar</button>
-                <button class="btn-cancelar" onclick="fecharModalTrocarSenha()">❌ Cancelar</button>
-            </div>
+            <h2>🔐 Nova Senha</h2>
+            <div class="input-group"><input type="password" id="senha-nova" placeholder="Nova Senha" class="input-login"></div>
+            <div class="btn-group"><button class="btn-confirmar" onclick="confirmarTrocarSenha()">Confirmar</button></div>
         </div>
     </div>
 </body>
