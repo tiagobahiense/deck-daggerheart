@@ -627,38 +627,22 @@ function atualizarImagemLeitor() {
     contador.innerText = `${paginaAtualPDF}/${totalPaginasPDF}`;
 }
 
-// --- LÓGICA DO ZOOM (RODINHA DO MOUSE) ---
-// Adicione isso logo após as funções acima
-
-// --- LÓGICA DO ZOOM (RODINHA DO MOUSE E CLIQUE) ---
-// Seleciona especificamente o container do LEITOR (e não o da seleção de classe)
+// --- LÓGICA DO ZOOM (CLIQUE APENAS) ---
+// Seleciona especificamente o container do LEITOR
 const containerPdfElement = document.querySelector('#modal-leitor-pdf .pdf-container');
 
 if(containerPdfElement) {
-    // 1. Zoom com a Roda do Mouse
-    containerPdfElement.addEventListener('wheel', function(e) {
-        if(document.getElementById('modal-leitor-pdf').style.display === 'none') return;
-        
-        e.preventDefault();
-        const direction = e.deltaY > 0 ? -0.2 : 0.2;
-        zoomLevelPDF += direction;
-        
-        // Limites
-        if (zoomLevelPDF < 1) zoomLevelPDF = 1;
-        if (zoomLevelPDF > 3) zoomLevelPDF = 3;
-        
-        aplicarZoomPDF();
-    }, { passive: false });
+    // REMOVIDO O EVENTO 'WHEEL' PARA O SCROLL NATURAL DA BARRA LATERAL FUNCIONAR
 
-    // 2. Zoom com Clique (Alternar 1x / 2.5x)
+    // Zoom com Clique (Alternar 1x / 2.5x)
     containerPdfElement.addEventListener('click', function(e) {
         // Se clicar nos botões de navegação, ignora
         if(e.target.tagName === 'BUTTON') return;
 
         if (zoomLevelPDF <= 1) {
-            zoomLevelPDF = 2.5; // Zoom in
+            zoomLevelPDF = 2.5; // Zoom in (Aumenta)
         } else {
-            zoomLevelPDF = 1.0; // Reset
+            zoomLevelPDF = 1.0; // Zoom out (Reseta)
         }
         aplicarZoomPDF();
     });
@@ -666,7 +650,7 @@ if(containerPdfElement) {
 
 function aplicarZoomPDF() {
     const img = document.getElementById('img-leitor-pdf');
-    const container = document.querySelector('#modal-leitor-pdf .pdf-container'); // Seletor corrigido aqui também
+    const container = document.querySelector('#modal-leitor-pdf .pdf-container');
 
     if (!img || !container) return;
 
@@ -675,14 +659,14 @@ function aplicarZoomPDF() {
         img.style.width = 'auto';
         img.style.maxWidth = '100%';
         img.style.maxHeight = '88vh';
-        container.style.cursor = 'zoom-in';
+        container.style.cursor = 'zoom-in'; // Lupa com +
         container.style.alignItems = 'center';
     } else {
         // ZOOM ATIVO
         img.style.maxHeight = 'none';
         img.style.maxWidth = 'none';
         img.style.width = `${zoomLevelPDF * 100}%`;
-        container.style.cursor = 'zoom-out'; // Muda cursor para indicar que clique reduz
+        container.style.cursor = 'zoom-out'; // Lupa com -
         container.style.alignItems = 'flex-start';
     }
 }
