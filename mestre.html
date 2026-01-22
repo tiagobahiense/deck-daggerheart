@@ -344,9 +344,147 @@
             }
         }
 
+        // --- CONTEÚDO DO ESCUDO DO MESTRE (COMPLETO) ---
         const topicos = {
-            testes: { titulo: "🎲 TESTES", conteudo: "<h2>🎲 TESTES & DUALIDADE</h2><p>2d12 (Esperança+Medo). Se Esperança > Medo = Ganha Esperança. Se Medo > Esperança = GM ganha Medo.</p>" },
-            // ... (Tópicos do escudo reduzidos para caber) ...
+            testes: {
+                titulo: "🎲 TESTES & DUALIDADE",
+                conteudo: `
+                    <h2>🎲 TESTES & DUALIDADE</h2>
+                    <h3>Rolagem Padrão</h3>
+                    <ul>
+                        <li><strong>Role:</strong> <code>2d12 (Esperança + Medo) + Atributo</code></li>
+                        <li><strong>Crítico:</strong> Dados iguais (ex: 1,1 ou 12,12). Sucesso automático + Ganha Esperança.</li>
+                    </ul>
+                    <h3>Resultados</h3>
+                    <ul>
+                        <li><strong>Sucesso com Esperança:</strong> Total ≥ Dificuldade & Esperança > Medo. <br><em>Ação funciona e ganha 1 Esperança.</em></li>
+                        <li><strong>Sucesso com Medo:</strong> Total ≥ Dificuldade & Medo > Esperança. <br><em>Ação funciona, mas GM ganha 1 Medo.</em></li>
+                        <li><strong>Falha com Esperança:</strong> Total < Dificuldade & Esperança > Medo. <br><em>Falha, mas ganha 1 Esperança.</em></li>
+                        <li><strong>Falha com Medo:</strong> Total < Dificuldade & Medo > Esperança. <br><em>Falha e GM ganha 1 Medo ou faz movimento.</em></li>
+                    </ul>
+                `
+            },
+            recursos: {
+                titulo: "💎 RECURSOS DO JOGADOR",
+                conteudo: `
+                    <h2>💎 RECURSOS DO JOGADOR</h2>
+                    <h3>Esperança</h3>
+                    <ul>
+                        <li><strong>Ganho:</strong> Sucesso com Esperança ou Crítico.</li>
+                        <li><strong>Gastos:</strong>
+                            <ul>
+                                <li><strong>Experiência:</strong> Use uma carta de Experiência.</li>
+                                <li><strong>Ajudar:</strong> Gaste 1 para dar +1d6 (ou +2d6 com vínculo) a um aliado.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <h3>Estresse (Fadiga)</h3>
+                    <ul>
+                        <li>Usada para ativar habilidades ou absorver consequências menores.</li>
+                        <li>Se encher, o próximo dano vai direto para PV.</li>
+                    </ul>
+                `
+            },
+            combate: {
+                titulo: "⚔️ COMBATE",
+                conteudo: `
+                    <h2>⚔️ COMBATE</h2>
+                    <h3>Ataque</h3>
+                    <ul>
+                        <li><strong>Teste:</strong> Atributo da arma vs <strong>Dificuldade (Evasão do Inimigo)</strong>.</li>
+                        <li><strong>Vantagem:</strong> +1d6 no total.</li>
+                        <li><strong>Desvantagem:</strong> -1d6 no total.</li>
+                    </ul>
+                    <h3>Dano</h3>
+                    <ul>
+                        <li><strong>Dados:</strong> Base da arma (ex: d8) + Cartas de Dano.</li>
+                        <li><strong>Crítico:</strong> Adicione o valor máximo dos dados ao total rolado.</li>
+                    </ul>
+                `
+            },
+            dano: {
+                titulo: "🩸 DANO & LIMIARES",
+                conteudo: `
+                    <h2>🩸 DANO & LIMIARES</h2>
+                    <p>O dano sofrido é comparado aos limiares do personagem:</p>
+                    <ul>
+                        <li><strong>Abaixo do Menor:</strong> 0 PV (Arranhão).</li>
+                        <li><strong>Menor:</strong> 1 PV (Machucado).</li>
+                        <li><strong>Maior:</strong> 2 PV (Ferida Grave).</li>
+                        <li><strong>Severo:</strong> 3 PV (Mortal).</li>
+                    </ul>
+                `
+            },
+            armadura: {
+                titulo: "🛡️ ARMADURA (PA)",
+                conteudo: `
+                    <h2>🛡️ ARMADURA (PA)</h2>
+                    <ul>
+                        <li>Gaste <strong>slots de Armadura</strong> para reduzir o dano recebido.</li>
+                        <li>A quantidade reduzida depende do tipo de armadura equipada.</li>
+                        <li>Slots gastos só recuperam em Descanso ou Reparo.</li>
+                    </ul>
+                `
+            },
+            morte: {
+                titulo: "☠️ MORTE",
+                conteudo: `
+                    <h2>☠️ MORTE</h2>
+                    <p>Se marcar o último PV, o personagem cai. Escolha:</p>
+                    <ul>
+                        <li><strong>Arriscar Tudo:</strong> Role Fear die. Se falhar, morre. Se passar, levanta com 1 PV.</li>
+                        <li><strong>Evitar a Morte:</strong> Fica inconsciente e ganha uma Cicatriz.</li>
+                        <li><strong>Sacrifício Glorioso:</strong> Morre realizando um feito impossível (Sucesso Crítico Automático).</li>
+                    </ul>
+                `
+            },
+            distancia: {
+                titulo: "📏 DISTÂNCIA & MOVIMENTO",
+                conteudo: `
+                    <h2>📏 DISTÂNCIA & MOVIMENTO</h2>
+                    <ul>
+                        <li><strong>Melee:</strong> Adjacente.</li>
+                        <li><strong>Very Close:</strong> Ao alcance do braço/arma longa.</li>
+                        <li><strong>Close:</strong> Alguns passos (mesma sala).</li>
+                        <li><strong>Far:</strong> Precisa gritar/correr (outro lado do campo).</li>
+                        <li><strong>Very Far:</strong> Apenas armas de longo alcance/magia.</li>
+                    </ul>
+                `
+            },
+            descanso: {
+                titulo: "💤 DESCANSO",
+                conteudo: `
+                    <h2>💤 DESCANSO</h2>
+                    <h3>Curto</h3>
+                    <ul>
+                        <li>Pode reparar Armadura.</li>
+                        <li>Pode curar PV ou limpar Estresse (role 1d4 + atributo).</li>
+                    </ul>
+                    <h3>Longo</h3>
+                    <ul>
+                        <li>Recupera <strong>todos</strong> PV, Estresse e Armadura.</li>
+                        <li>Reseta habilidades diárias.</li>
+                        <li>GM ganha Medo baseado na segurança do local.</li>
+                    </ul>
+                `
+            },
+            mestre: {
+                titulo: "💀 O MESTRE (GM)",
+                conteudo: `
+                    <h2>💀 O MESTRE (GM)</h2>
+                    <h3>Quando o GM Age?</h3>
+                    <ul>
+                        <li>Quando os jogadores falham.</li>
+                        <li>Quando rolam <strong>Com Medo</strong>.</li>
+                        <li>Quando olham para você esperando algo acontecer (Oportunidade de Ouro).</li>
+                    </ul>
+                    <h3>Medo</h3>
+                    <ul>
+                        <li>Use Medo para ativar habilidades especiais de monstros ou complicar a cena.</li>
+                        <li>Cada Medo gasto = 1 Token de Ação do GM.</li>
+                    </ul>
+                `
+            }
         };
         window.exibirTopico = function(id) { if(topicos[id]) { document.getElementById('escudo-conteudo').innerHTML = topicos[id].conteudo; document.getElementById('modal-escudo').classList.add('ativo'); } }
         window.fecharEscudo = function() { document.getElementById('modal-escudo').classList.remove('ativo'); }
