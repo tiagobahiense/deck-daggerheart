@@ -1,5 +1,6 @@
 /* =========================================================
-   ESTILOS DA FICHA - PRANCHETA V3.0 (RESIZE MANUAL)
+   ESTILOS DA FICHA - PRANCHETA V4.0 
+   (Drag Overlay, Double-Click Edit, Color Picker)
    ========================================================= */
 
    #sheet-modal {
@@ -12,66 +13,42 @@
 }
 
 .sheet-content {
-    width: 95vh;
-    aspect-ratio: 1 / 1.414;
-    max-width: 900px;
-    height: 90vh;
-    background: #222;
-    border: 3px solid var(--gold);
+    width: 95vh; aspect-ratio: 1 / 1.414; max-width: 900px; height: 90vh;
+    background: #222; border: 3px solid var(--gold);
     display: flex; flex-direction: column; position: relative;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8);
-    overflow: visible !important; 
+    box-shadow: 0 0 50px rgba(0,0,0,0.8); overflow: visible !important; 
 }
 
 .sheet-container {
-    position: relative;
-    width: 100%;
-    flex-grow: 1;
-    overflow: hidden; 
-    background: #fff;
-    cursor: crosshair;
-    border-radius: 4px 4px 0 0;
-    user-select: none;
+    position: relative; width: 100%; flex-grow: 1; overflow: hidden; 
+    background: #fff; cursor: crosshair; border-radius: 4px 4px 0 0; user-select: none;
 }
 
-#sheet-bg {
-    width: 100%; height: 100%; object-fit: fill; pointer-events: none;
-}
-
-#sheet-inputs-layer {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none;
-}
+#sheet-bg { width: 100%; height: 100%; object-fit: fill; pointer-events: none; }
+#sheet-inputs-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
 
 /* --- BARRA DE FERRAMENTAS --- */
 .sheet-toolbar {
-    position: absolute; top: 20px; left: -60px;
-    width: 50px; background: #222;
-    border: 2px solid var(--gold); border-radius: 8px;
-    padding: 10px 0; display: flex; flex-direction: column; gap: 15px;
-    z-index: 10000; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-    align-items: center;
+    position: absolute; top: 20px; left: -60px; width: 50px; background: #222;
+    border: 2px solid var(--gold); border-radius: 8px; padding: 10px 0;
+    display: flex; flex-direction: column; gap: 15px; z-index: 10000;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5); align-items: center;
 }
-
 .tool-btn {
-    background: #444; color: #fff; border: 1px solid #666;
-    width: 40px; height: 40px; border-radius: 5px;
-    cursor: pointer; font-size: 1.2rem;
-    display: flex; align-items: center; justify-content: center;
-    transition: all 0.2s;
+    background: #444; color: #fff; border: 1px solid #666; width: 40px; height: 40px;
+    border-radius: 5px; cursor: pointer; font-size: 1.2rem; display: flex;
+    align-items: center; justify-content: center; transition: all 0.2s;
 }
 .tool-btn:hover { background: #666; border-color: #fff; }
 .tool-btn.active {
     background: var(--gold); color: #000; border-color: #fff;
     box-shadow: 0 0 10px var(--gold); transform: scale(1.1);
 }
-
 .btn-close-sheet {
-    position: absolute; top: -15px; right: -55px;
-    width: 45px; height: 45px; background: #8b0000; color: #fff;
-    border: 2px solid #fff; border-radius: 50%;
-    font-weight: bold; font-size: 1.2rem; cursor: pointer;
-    z-index: 10000; display: flex; align-items: center; justify-content: center;
+    position: absolute; top: -15px; right: -55px; width: 45px; height: 45px;
+    background: #8b0000; color: #fff; border: 2px solid #fff; border-radius: 50%;
+    font-weight: bold; font-size: 1.2rem; cursor: pointer; z-index: 10000;
+    display: flex; align-items: center; justify-content: center;
     box-shadow: 0 0 10px rgba(0,0,0,0.8); transition: transform 0.2s;
 }
 .btn-close-sheet:hover { background: #ff0000; transform: scale(1.1) rotate(90deg); }
@@ -79,107 +56,100 @@
 /* --- ELEMENTOS DO JOGADOR --- */
 
 .element-wrapper {
-    position: absolute;
-    pointer-events: auto; 
-    z-index: 100;
+    position: absolute; pointer-events: auto; z-index: 100;
+    /* Removido padding que atrapalhava o resize */
 }
 
 /* Estado Selecionado */
-.element-wrapper.selected {
-    border: 1px dashed var(--gold);
-    z-index: 1000;
+.element-wrapper.selected { border: 1px dashed var(--gold); z-index: 1000; }
+
+/* === NOVO: CAMADA DE ARRASTE (Fica por cima do texto) === */
+.drag-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    cursor: grab; /* Mãozinha para arrastar */
+    z-index: 5; /* Fica acima do textarea (z-index auto) */
+    background: transparent;
+}
+.element-wrapper:hover .drag-overlay {
+    background: rgba(0, 0, 255, 0.05); /* Leve destaque ao passar o mouse */
+    border: 1px dotted rgba(0, 0, 255, 0.3);
 }
 
-/* CAIXA DE TEXTO */
+/* === MODO EDIÇÃO (Quando dá duplo clique) === */
+.element-wrapper.is-editing .drag-overlay {
+    display: none; /* Esconde a camada de arraste para permitir digitação */
+}
+.element-wrapper.is-editing .user-textarea {
+    cursor: text; /* Volta cursor de texto */
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--gold);
+    z-index: 10; /* Traz o textarea para frente */
+}
+
+
+/* CAIXA DE TEXTO (Oculta sob o overlay normalmente) */
 .user-textarea {
-    width: 100%;
-    height: 100%;
-    background: rgba(255, 255, 255, 0.1); /* Fundo sutil para identificar área */
-    border: 1px dotted rgba(0, 0, 0, 0.3);
-    color: #000;
-    font-family: 'Courier New', monospace;
-    font-weight: 900; 
-    line-height: 1.1;
-    padding: 2px;
-    resize: none; 
-    overflow: hidden;
-    outline: none;
-    cursor: grab; /* Mão para mover */
-}
-
-/* Quando foca para escrever */
-.user-textarea:focus {
-    cursor: text;
-    background: rgba(255, 255, 255, 0.8);
-    border: 1px solid blue;
-}
-
-.element-wrapper:hover .user-textarea {
-    border: 1px dashed rgba(0, 0, 255, 0.5);
-}
-
-/* ALÇA DE REDIMENSIONAMENTO (RESIZE HANDLE) */
-.resize-handle {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 15px;
-    height: 15px;
-    background: linear-gradient(135deg, transparent 50%, var(--gold) 50%);
-    cursor: nwse-resize; /* Cursor diagonal */
-    z-index: 101;
-    display: none; /* Esconde até passar o mouse */
-}
-
-.element-wrapper:hover .resize-handle,
-.element-wrapper.selected .resize-handle {
-    display: block; /* Mostra ao passar mouse ou selecionar */
-}
-
-/* MARCADOR */
-.user-marker {
     width: 100%; height: 100%;
-    background-color: #000; border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none; /* Borda controlada pelo overlay agora */
+    color: #000; /* Cor padrão, sobrescrita pelo JS */
+    font-family: 'Courier New', monospace; font-weight: 900; line-height: 1.1;
+    padding: 4px; resize: none; overflow: hidden; outline: none;
+    pointer-events: none; /* Ignora mouse por padrão (overlay captura) */
+}
+/* No modo edição, reativa os eventos */
+.element-wrapper.is-editing .user-textarea { pointer-events: auto; }
+
+
+/* ALÇA DE REDIMENSIONAMENTO */
+.resize-handle {
+    position: absolute; bottom: 0; right: 0; width: 15px; height: 15px;
+    background: linear-gradient(135deg, transparent 50%, var(--gold) 50%);
+    cursor: nwse-resize; z-index: 20; /* Acima do overlay */
+    display: none;
+}
+.element-wrapper:hover .resize-handle, .element-wrapper.selected .resize-handle { display: block; }
+
+/* MARCADOR (Intacto) */
+.user-marker {
+    width: 100%; height: 100%; background-color: #000; border-radius: 50%;
     box-shadow: 0 0 2px #fff; pointer-events: none;
 }
-
-/* BOTÃO DE DELETAR (AJUSTADO) */
 .delete-handle {
-    position: absolute;
-    top: -10px; right: -10px;
-    background: red; color: white;
-    border-radius: 50%; width: 18px; height: 18px;
-    font-size: 12px; font-weight: bold;
-    cursor: pointer;
-    display: none;
-    align-items: center; justify-content: center;
-    z-index: 200;
-    border: 1px solid white;
+    position: absolute; top: -10px; right: -10px; background: red; color: white;
+    border-radius: 50%; width: 18px; height: 18px; font-size: 12px; font-weight: bold;
+    cursor: pointer; display: none; align-items: center; justify-content: center;
+    z-index: 200; border: 1px solid white;
 }
-/* Área segura invisível para não perder o hover */
-.delete-handle::after {
-    content: ''; position: absolute;
-    top: -10px; left: -10px; right: -10px; bottom: -10px;
-}
-
+.delete-handle::after { content: ''; position: absolute; top: -10px; left: -10px; right: -10px; bottom: -10px; }
 .element-wrapper:hover .delete-handle { display: flex; }
 
-/* MENU CONTEXTO */
+/* MENU CONTEXTO (Atualizado com Cores) */
 .element-context-menu {
-    position: absolute; top: -45px; left: 50%; transform: translateX(-50%);
+    position: absolute; top: -50px; left: 50%; transform: translateX(-50%);
     background: #222; border: 1px solid var(--gold); border-radius: 5px;
     display: none; gap: 5px; padding: 5px; z-index: 2000;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.8);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.8); align-items: center;
 }
 .element-wrapper.selected .element-context-menu { display: flex; }
 
 .ctx-btn {
     background: #444; color: #fff; border: 1px solid #666; border-radius: 4px;
-    width: 30px; height: 30px; cursor: pointer;
-    font-size: 14px; font-weight: bold; display: flex; align-items: center; justify-content: center;
+    width: 30px; height: 30px; cursor: pointer; font-size: 14px; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
 }
 .ctx-btn:hover { background: var(--gold); color: #000; }
 .ctx-btn.del:hover { background: #ff4444; color: #fff; }
+
+/* Botões de Cor */
+.color-separator { width: 1px; height: 30px; background: #555; margin: 0 5px; }
+.color-btn {
+    width: 24px; height: 24px; border-radius: 50%; border: 2px solid #555;
+    cursor: pointer; transition: transform 0.2s, border-color 0.2s;
+}
+.color-btn:hover { transform: scale(1.2); border-color: #fff; }
+.color-btn.active-color { border-color: var(--gold); box-shadow: 0 0 5px var(--gold); }
+
 
 /* Drag Box Temporário */
 .temp-box {
