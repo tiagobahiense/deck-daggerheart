@@ -557,29 +557,39 @@
 
         onAuthStateChanged(auth, u => {
             document.getElementById('loading-screen').style.display = 'none';
-            if(!u || u.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { window.location.href="index.html"; return; }
-            iniciarMonitoramentoPresenca();
+            
+            // SEGURANÇA: Se não estiver logado como mestre, chuta para o index
+            if(!u || u.email.toLowerCase().trim() !== EMAIL_MESTRE.toLowerCase().trim()) { 
+                window.location.href="index.html"; 
+                return; 
+            }
+            
+            iniciarMonitoramentoPresenca(); 
             iniciarPainelJogadores();
             
+            // FUNÇÃO PARA CARREGAR SCRIPT DINÂMICO
             function loadScript(src) {
                 const script = document.createElement('script');
                 script.src = src + "?t=" + Date.now();
                 document.body.appendChild(script);
             }
+
+            // CARREGA OS SCRIPTS NECESSÁRIOS
             loadScript("ficha.js");
             loadScript("dados.js");
             loadScript("inimigos.js");
             loadScript("medo.js");
-            loadScript("npcs.js"); // <--- ADICIONADO
+            loadScript("npcs.js"); // <--- ESTE É O NOVO QUE FALTAVA
 
+            // INICIALIZA AS FUNÇÕES DEPOIS DE 1 SEGUNDO
             setTimeout(() => {
                 if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
                 if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
                 if(window.escutarRolagens) window.escutarRolagens();
                 
-                // INICIAR NPCS
+                // INICIA O SISTEMA DE NPCS
                 if(window.carregarListaNPCs) window.carregarListaNPCs();
-                if(window.monitorarNPCAtivo) window.monitorarNPCAtivo(); // Opcional no mestre, mas bom pra garantir
+                if(window.monitorarNPCAtivo) window.monitorarNPCAtivo();
             }, 1000);
         });
 
