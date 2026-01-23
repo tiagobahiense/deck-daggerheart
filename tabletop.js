@@ -1,5 +1,5 @@
 // =========================================================
-// TABLETOP SYSTEM V8.0 (GM FULLSCREEN & TOKEN CONTROLS)
+// TABLETOP SYSTEM V9.0 (PERFECT SYNC & TOOLS)
 // =========================================================
 
 const REF_TABLETOP = 'mesa_rpg/tabuleiro';
@@ -9,56 +9,52 @@ let isDraggingToken = false;
 let isPanningMap = false;
 let currentTokenId = null;
 let dragStartPos = { x: 0, y: 0 };
-let mapOffset = { x: 0, y: 0 };
-let vttMinimizado = false; // Para jogador
+let mapOffset = { x: 0, y: 0 }; // Apenas para modo janela
+let vttMinimizado = false;
 
 // --- INICIALIZAÇÃO ---
 window.iniciarTabletop = function() {
     const area = document.getElementById('tabletop-area');
-    const mapContainer = document.getElementById('map-container');
-    const btnMinimizar = document.getElementById('btn-vtt-toggle'); // Jogador
+    const imgEl = document.getElementById('map-bg-img');
+    const btnMinimizar = document.getElementById('btn-vtt-toggle');
     
-    if(!area || !mapContainer) return;
+    if(!area) return;
 
-    // Pan do Mapa (Mover fundo)
+    // Pan do Mapa (Apenas modo Janela do GM)
     area.addEventListener('mousedown', startPanMap);
     window.addEventListener('mousemove', movePanMap);
     window.addEventListener('mouseup', endPanMap);
+    
+    // Listener de Resize para ajustar escala
+    window.addEventListener('resize', resizeMapToFit);
 
-    // Listener Firebase
     window.onValue(window.ref(window.db, REF_TABLETOP), (snap) => {
         const dados = snap.val() || {};
         const config = dados.config || {};
-        const tokens = dados.tokens || {};
         const isMestre = window.nomeJogador === "Mestre";
 
-        // Imagem do Mapa
-        const imgEl = document.getElementById('map-bg-img');
+        // 1. Configuração da Imagem
         if(config.imagem && imgEl.src !== config.imagem) {
             imgEl.src = config.imagem;
             imgEl.onload = () => {
-                // Se mestre não estiver fullscreen, usa tamanho real para edição
-                if(isMestre && !area.classList.contains('gm-fullscreen')) {
-                    mapContainer.style.width = imgEl.naturalWidth + 'px';
-                    mapContainer.style.height = imgEl.naturalHeight + 'px';
-                }
+                resizeMapToFit(); // Recalcula escala ao carregar
             };
         }
 
-        // Lógica de Exibição
+        // 2. Controle de Exibição
         if (isMestre) {
-            // Mestre sempre vê, mas controlamos se está expandido ou não via botão
-            area.style.display = 'block'; 
+            area.style.display = 'block'; // GM controla via CSS fullscreen
         } else {
             // Jogador
             if (config.visivel) {
                 if(btnMinimizar) btnMinimizar.style.display = 'block';
                 if (!vttMinimizado) {
-                    area.style.display = 'flex';
-                    document.body.classList.add('vtt-ativo'); 
+                    area.style.display = 'block';
+                    document.body.classList.add('vtt-ativo');
+                    resizeMapToFit(); // Garante ajuste
                 } else {
                     area.style.display = 'none';
-                    document.body.classList.remove('vtt-ativo'); 
+                    document.body.classList.remove('vtt-ativo');
                 }
             } else {
                 area.style.display = 'none';
@@ -68,10 +64,45 @@ window.iniciarTabletop = function() {
             }
         }
 
-        renderizarTokens(tokens);
+        renderizarTokens(dados.tokens || {});
     });
 };
 
+// --- ESCALA INTELIGENTE (O SEGREDO DO ALINHAMENTO) ---
+function resizeMapToFit() {
+    const area = document.getElementById('tabletop-area');
+    const scaler = document.getElementById('map-scaler');
+    const img = document.getElementById('map-bg-img');
+    const isMestre = window.nomeJogador === "Mestre";
+    const isFullscreen = document.body.classList.contains('gm-mode-fullscreen') || !isMestre; // Jogador é sempre fullscreen virtual
+
+    if (!img.naturalWidth || area.style.display === 'none') return;
+
+    // Reseta transformações para ler tamanho natural
+    if (isFullscreen) {
+        const winW = window.innerWidth;
+        const winH = window.innerHeight;
+        const imgW = img.naturalWidth;
+        const imgH = img.naturalHeight;
+
+        // Calcula a escala para "caber" (contain)
+        const scale = Math.min(winW / imgW, winH / imgH);
+
+        scaler.style.width = imgW + 'px';
+        scaler.style.height = imgH + 'px';
+        scaler.style.transform = `translate(-50%, -50%) scale(${scale})`;
+        scaler.style.top = '50%';
+        scaler.style.left = '50%';
+    } else {
+        // Modo Janela do GM (Sem escala, com Pan)
+        scaler.style.transform = 'translate(0, 0) scale(1)';
+        scaler.style.width = img.naturalWidth + 'px';
+        scaler.style.height = img.naturalHeight + 'px';
+        // A posição top/left será controlada pelo Pan
+    }
+}
+
+// --- RENDERIZAÇÃO ---
 function renderizarTokens(tokensData) {
     const container = document.getElementById('map-container');
     const isMestre = window.nomeJogador === "Mestre";
@@ -81,11 +112,10 @@ function renderizarTokens(tokensData) {
 
     Object.keys(tokensData).forEach(id => {
         const t = tokensData[id];
-        // Se for jogador e o token estiver invisível, não renderiza
+        
+        // Visibilidade para Jogador
         if (!isMestre && t.visivel === false) {
-            const el = document.getElementById(id);
-            if(el) el.remove();
-            return;
+            const el = document.getElementById(id); if(el) el.remove(); return;
         }
 
         let el = document.getElementById(id);
@@ -93,40 +123,40 @@ function renderizarTokens(tokensData) {
             el = document.createElement('div');
             el.id = id;
             el.className = `token ${t.tipo === 'pc' ? 'token-jogador' : 'token-monstro'}`;
-            // Barras apenas para Monstros ou se Mestre quiser ver
-            el.innerHTML = `<div class="token-bars-container"><div class="bar-track"><div class="fill-hp"></div></div></div>`;
+            
+            // HTML Interno (Barras + Toolbar do Mestre)
+            let toolbar = '';
+            if(isMestre) {
+                toolbar = `
+                <div class="token-toolbar">
+                    <div class="btn-mini-tool" onclick="toggleVis('${id}')" title="Visibilidade">👁️</div>
+                    <div class="btn-mini-tool" onclick="abrirInfoToken('${id}', true)" title="Info/Status">ℹ️</div>
+                    <div class="btn-mini-tool delete" onclick="removerTokenDoGrid('${id}')" title="Excluir">✖</div>
+                </div>`;
+            }
+            
+            el.innerHTML = `${toolbar}<div class="token-bars-container"><div class="fill-hp"></div><div class="fill-pf" style="margin-top:2px;"></div></div>`;
             
             // Eventos
-            let clickTime;
-            // Mouse Down (Inicia Drag)
-            el.addEventListener('mousedown', (e) => { 
+            el.addEventListener('mousedown', (e) => { e.stopPropagation(); startDragToken(e, id, t); });
+            el.addEventListener('click', (e) => {
+                // Jogador clica para ver info simples
+                if(!isDraggingToken && !isMestre) abrirInfoToken(id, false); 
+            });
+            // Duplo clique mestre abre gestão completa
+            el.addEventListener('dblclick', (e) => { 
                 e.stopPropagation(); 
-                clickTime = Date.now(); 
-                startDragToken(e, id, t); 
+                if(isMestre) abrirInfoToken(id, true); 
             });
-            
-            // Mouse Up (Detecta clique simples vs drag)
-            el.addEventListener('mouseup', (e) => { 
-                // Se soltou rápido, não é drag. Mas aqui não faz nada, ação é no DBLCLICK
-            });
-
-            // DUPLO CLIQUE (Abre Opções)
-            el.addEventListener('dblclick', (e) => {
-                e.stopPropagation();
-                if(isMestre) abrirModalOpcoesToken(id, t);
-            });
-
-            // Touch
-            el.addEventListener('touchstart', (e) => { e.stopPropagation(); startDragToken(e, id, t); }, {passive:false});
 
             container.appendChild(el);
         }
 
-        // Atualiza Classe Oculto (Mestre vê transparente)
+        // Estilos
         if(isMestre && t.visivel === false) el.classList.add('oculto');
         else el.classList.remove('oculto');
 
-        // Posição (só atualiza se não estiver arrastando este)
+        // Posição (só atualiza se não estiver arrastando)
         if (currentTokenId !== id) {
             el.style.left = t.x + 'px';
             el.style.top = t.y + 'px';
@@ -141,175 +171,140 @@ function renderizarTokens(tokensData) {
         // Barras
         const s = t.stats || {};
         const hpBar = el.querySelector('.fill-hp');
-        if(s.pv_max > 0) {
-            const pct = Math.max(0, Math.min(100, (s.pv_atual / s.pv_max) * 100));
-            hpBar.style.width = pct + '%';
+        const pfBar = el.querySelector('.fill-pf');
+        
+        if(hpBar && s.pv_max > 0) hpBar.style.width = Math.min(100, (s.pv_atual/s.pv_max)*100) + '%';
+        if(pfBar) {
+            if(s.pf_max > 0) {
+                pfBar.style.display = 'block';
+                pfBar.style.width = Math.min(100, (s.pf_atual/s.pf_max)*100) + '%';
+            } else pfBar.style.display = 'none';
         }
     });
 }
 
-// --- MODAL DE OPÇÕES (DUPLO CLIQUE) ---
-function abrirModalOpcoesToken(id, t) {
-    let modal = document.getElementById('token-options-modal');
-    if(!modal) {
-        modal = document.createElement('div');
-        modal.id = 'token-options-modal';
-        modal.className = 'token-options-modal';
-        document.body.appendChild(modal);
-    }
-
-    const visivel = t.visivel !== false; // Default true
-    const s = t.stats || { pv_atual:0, pv_max:0, pf_atual:0, pf_max:0 };
-
-    modal.innerHTML = `
-        <div class="token-options-header">
-            ${t.nome}
-            <span class="eye-toggle ${visivel?'visible':''}" onclick="toggleTokenVisibilidade('${id}')" title="Visível para Jogadores?">👁️</span>
-        </div>
+// --- MODAL DE INFO / GESTÃO ---
+window.abrirInfoToken = function(id, editavel) {
+    // Pega dados atualizados do Firebase (ou cache local se preferir, mas get é seguro)
+    window.get(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`)).then(snap => {
+        if(!snap.exists()) return;
+        const t = snap.val();
+        const modal = document.getElementById('token-info-modal') || criarModalInfo();
+        const s = t.stats || {};
         
-        <div class="token-control-row">
-            <span class="token-control-label">Tamanho</span>
-            <div style="display:flex; gap:5px;">
-                <button class="btn-ctrl" onclick="mudarTamanhoToken('${id}', -0.5)">-</button>
-                <span style="color:var(--gold); padding:0 5px;">${t.tamanho||1}x</span>
-                <button class="btn-ctrl" onclick="mudarTamanhoToken('${id}', 0.5)">+</button>
-            </div>
-        </div>
+        let html = `<h3 style="color:var(--gold);text-align:center;margin:0 0 10px 0;">${t.nome}</h3>`;
+        
+        // Info Básica
+        html += `<div class="info-row"><span>PV:</span> <strong>${s.pv_atual}/${s.pv_max}</strong></div>`;
+        if(s.pf_max > 0) html += `<div class="info-row"><span>PF:</span> <strong>${s.pf_atual}/${s.pf_max}</strong></div>`;
+        html += `<div class="info-row"><span>Defesa:</span> ${s.dificuldade}</div>`;
+        html += `<div class="info-row"><span>Ataque:</span> ${s.ataque}</div>`;
+        html += `<div class="info-row"><span>Dano:</span> ${s.dano}</div>`;
+        if(s.detalhes) html += `<div style="margin-top:10px;font-style:italic;font-size:0.9rem;">${s.detalhes}</div>`;
 
-        <div class="token-control-row">
-            <span class="token-control-label">Vida (PV)</span>
-            <div style="display:flex; gap:5px;">
-                <button class="btn-ctrl" style="border-color:#f00" onclick="mudarStatusToken('${id}', 'pv_atual', -1)">-</button>
-                <span style="min-width:40px; text-align:center;">${s.pv_atual}/${s.pv_max}</span>
-                <button class="btn-ctrl" style="border-color:#0f0" onclick="mudarStatusToken('${id}', 'pv_atual', 1)">+</button>
-            </div>
-        </div>
+        // Controles de Edição (Apenas Mestre)
+        if (editavel) {
+            html += `<hr style="border-color:#444; margin:15px 0;">`;
+            html += `<div style="text-align:center; color:#aaa; font-size:0.8rem; margin-bottom:5px;">Controles de Vida</div>`;
+            html += `<div class="hp-controls">
+                <button class="btn-ctrl" style="border-color:red" onclick="mudarStat('${id}','pv_atual',-1)">-1 PV</button>
+                <button class="btn-ctrl" style="border-color:green" onclick="mudarStat('${id}','pv_atual',1)">+1 PV</button>
+            </div>`;
+            if(s.pf_max > 0) {
+                html += `<div class="hp-controls">
+                    <button class="btn-ctrl" style="border-color:#00f" onclick="mudarStat('${id}','pf_atual',-1)">-1 PF</button>
+                    <button class="btn-ctrl" style="border-color:#00f" onclick="mudarStat('${id}','pf_atual',1)">+1 PF</button>
+                </div>`;
+            }
+            html += `<div style="margin-top:15px; display:flex; gap:10px; align-items:center; justify-content:center;">
+                <span style="color:#aaa;">Tamanho:</span>
+                <button onclick="mudarTam('${id}',-0.5)" style="width:30px;">-</button>
+                <span style="color:var(--gold);">${t.tamanho||1}</span>
+                <button onclick="mudarTam('${id}',0.5)" style="width:30px;">+</button>
+            </div>`;
+        }
 
-        ${s.pf_max > 0 ? `
-        <div class="token-control-row">
-            <span class="token-control-label">Estresse (PF)</span>
-            <div style="display:flex; gap:5px;">
-                <button class="btn-ctrl" style="border-color:#00f" onclick="mudarStatusToken('${id}', 'pf_atual', -1)">-</button>
-                <span style="min-width:40px; text-align:center;">${s.pf_atual}/${s.pf_max}</span>
-                <button class="btn-ctrl" style="border-color:#00f" onclick="mudarStatusToken('${id}', 'pf_atual', 1)">+</button>
-            </div>
-        </div>` : ''}
+        html += `<button onclick="document.getElementById('token-info-modal').style.display='none'" style="width:100%; margin-top:15px; padding:10px;">Fechar</button>`;
+        modal.innerHTML = html;
+        modal.style.display = 'block';
+    });
+};
 
-        <button class="btn-delete-token" onclick="deletarTokenDefinitivo('${id}')">🗑️ Excluir Token</button>
-        <div style="text-align:center; margin-top:10px; cursor:pointer; color:#888;" onclick="document.getElementById('token-options-modal').style.display='none'">Fechar</div>
-    `;
-
-    modal.style.display = 'block';
+function criarModalInfo() {
+    const m = document.createElement('div'); m.id='token-info-modal'; m.className='token-info-modal';
+    document.body.appendChild(m); return m;
 }
 
-// --- AÇÕES DO MODAL ---
-window.toggleTokenVisibilidade = function(id) {
-    const refVis = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/visivel`);
-    window.get(refVis).then(s => {
-        const val = s.val(); // Se for null (undefined), assume true
-        window.set(refVis, val === false ? true : false); // Inverte
-        document.getElementById('token-options-modal').style.display = 'none';
+// --- HELPERS ---
+window.toggleVis = function(id) {
+    const r = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/visivel`);
+    window.get(r).then(s => window.set(r, !s.val()));
+};
+window.mudarStat = function(id, stat, d) {
+    const r = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/stats`);
+    window.get(r).then(s => {
+        let v = (s.val()[stat]||0)+d;
+        const max = stat==='pv_atual' ? s.val().pv_max : s.val().pf_max;
+        if(v<0)v=0; if(v>max)v=max;
+        window.update(r, {[stat]: v});
+        window.abrirInfoToken(id, true); // Reabre para atualizar numeros
     });
 };
-
-window.mudarTamanhoToken = function(id, delta) {
-    const refTam = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/tamanho`);
-    window.get(refTam).then(s => {
-        let novo = (parseFloat(s.val()) || 1) + delta;
-        if(novo < 0.5) novo = 0.5;
-        window.set(refTam, novo);
-        document.getElementById('token-options-modal').style.display = 'none';
+window.mudarTam = function(id, d) {
+    const r = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/tamanho`);
+    window.get(r).then(s => {
+        let v = (parseFloat(s.val())||1)+d; if(v<0.5)v=0.5;
+        window.set(r, v);
+        window.abrirInfoToken(id, true);
     });
 };
-
-window.mudarStatusToken = function(id, stat, delta) {
-    const refStats = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/stats`);
-    window.get(refStats).then(s => {
-        const data = s.val();
-        let val = (data[stat] || 0) + delta;
-        const max = stat === 'pv_atual' ? data.pv_max : data.pf_max;
-        if(val < 0) val = 0; if(val > max) val = max;
-        
-        window.update(refStats, { [stat]: val });
-        document.getElementById('token-options-modal').style.display = 'none';
-    });
+window.removerTokenDoGrid = function(id) {
+    if(confirm("Excluir token?")) window.remove(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`));
 };
 
-window.deletarTokenDefinitivo = function(id) {
-    if(confirm("Excluir este token permanentemente?")) {
-        window.remove(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`));
-        document.getElementById('token-options-modal').style.display = 'none';
-    }
-};
-
-// --- CONTROLES GERAIS (GM FULLSCREEN) ---
+// --- MODO FULLSCREEN GM ---
 window.toggleGMFulscreen = function() {
-    const area = document.getElementById('tabletop-area');
-    area.classList.toggle('gm-fullscreen');
-    
-    // Reseta o mapa container para garantir alinhamento
-    const mapContainer = document.getElementById('map-container');
-    if(area.classList.contains('gm-fullscreen')) {
-        mapContainer.style.width = 'auto'; 
-        mapContainer.style.height = 'auto';
-        mapContainer.style.left = 'auto';
-        mapContainer.style.top = 'auto';
-    } else {
-        // Volta ao normal (tamanho da imagem)
-        const img = document.getElementById('map-bg-img');
-        mapContainer.style.width = img.naturalWidth + 'px';
-        mapContainer.style.height = img.naturalHeight + 'px';
-        mapContainer.style.left = '0';
-        mapContainer.style.top = '0';
-    }
+    document.body.classList.toggle('gm-mode-fullscreen');
+    resizeMapToFit(); // Recalcula escala ao entrar/sair
 };
 
-// --- OUTROS ---
+// --- UPLOAD E CRIAÇÃO ---
 window.uploadMapa = function() {
     const f = document.getElementById('map-upload-input').files[0];
-    if(!f) return;
-    const r = new FileReader();
-    r.onload = (e) => {
-        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { imagem: e.target.result, visivel: false });
-    };
-    r.readAsDataURL(f);
-};
-
-window.toggleMapaVisivel = function() {
-    window.get(window.ref(window.db, `${REF_TABLETOP}/config/visivel`)).then(s => {
-        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { visivel: !s.val() });
-    });
-};
-
-window.toggleVTTMinimizado = function() {
-    const area = document.getElementById('tabletop-area');
-    const btn = document.getElementById('btn-vtt-toggle');
-    vttMinimizado = !vttMinimizado;
-    if (vttMinimizado) {
-        area.style.display = 'none';
-        document.body.classList.remove('vtt-ativo');
-        btn.innerText = "🗺️ Abrir";
-    } else {
-        area.style.display = 'flex';
-        document.body.classList.add('vtt-ativo');
-        btn.innerText = "⬇️ Minimizar";
+    if(f) {
+        const r = new FileReader();
+        r.onload = (e) => window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { imagem: e.target.result, visivel: false });
+        r.readAsDataURL(f);
     }
 };
+window.toggleMapaVisivel = function() {
+    window.get(window.ref(window.db, `${REF_TABLETOP}/config/visivel`)).then(s => window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { visivel: !s.val() }));
+};
+window.criarTokenMonstro = function(k, d) {
+    const id = 'mob_'+Date.now();
+    const t = { tipo:'mob', nome:d.nome, imagem:d.imagem||'', tamanho:d.tamanho||1, x:100, y:100, visivel:true, stats:{...d} };
+    window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`), t);
+    alert("Token Criado!");
+};
+window.criarTokenPC = function(nome, img) {
+    const id = 'pc_'+Date.now();
+    const t = { tipo:'pc', nome:nome, imagem:img, tamanho:1, x:150, y:150, visivel:true, stats:{pv_atual:6, pv_max:6} };
+    window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`), t);
+    document.getElementById('modal-criar-token-pc').style.display='none';
+};
 
-// --- DRAG LOGIC ---
-function startPanMap(e) { 
+// --- DRAG ---
+function startPanMap(e) {
+    // Só faz pan se não estiver em fullscreen (modo janela)
+    if(document.body.classList.contains('gm-mode-fullscreen')) return;
     if(e.target.id!=='tabletop-area' && !e.target.classList.contains('grid-overlay')) return;
-    isPanningMap=true; dragStartPos={x:e.clientX, y:e.clientY}; 
-    const c=document.getElementById('map-container'); 
-    // Se estiver fullscreen ou jogador, não move (é estático centrado)
-    const area = document.getElementById('tabletop-area');
-    if(area.classList.contains('gm-fullscreen') || document.body.classList.contains('modo-jogador')) return;
-
+    isPanningMap=true; dragStartPos={x:e.clientX, y:e.clientY};
+    const c = document.getElementById('map-scaler'); // Move o scaler agora
     mapOffset={x:c.offsetLeft, y:c.offsetTop};
 }
 function movePanMap(e) {
     if(!isPanningMap) return;
-    const c=document.getElementById('map-container');
+    const c = document.getElementById('map-scaler');
     c.style.left = (mapOffset.x + (e.clientX-dragStartPos.x)) + 'px';
     c.style.top = (mapOffset.y + (e.clientY-dragStartPos.y)) + 'px';
 }
@@ -317,26 +312,32 @@ function endPanMap() { isPanningMap=false; }
 
 function startDragToken(e, id, t) {
     const isMestre = window.nomeJogador === "Mestre";
-    if(!isMestre && t.tipo !== 'pc') return; 
+    if(!isMestre && t.tipo !== 'pc') return; // Player só move PC
     isDraggingToken=true; currentTokenId=id;
     const el = document.getElementById(id);
     const rect = el.getBoundingClientRect();
-    const cx = e.touches?e.touches[0].clientX:e.clientX;
-    const cy = e.touches?e.touches[0].clientY:e.clientY;
-    dragStartPos = { x: cx - rect.left, y: cy - rect.top };
-    
+    dragStartPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
     window.addEventListener('mousemove', moveDragToken); window.addEventListener('mouseup', endDragToken);
-    window.addEventListener('touchmove', moveDragToken, {passive:false}); window.addEventListener('touchend', endDragToken);
 }
 function moveDragToken(e) {
     if(!isDraggingToken) return;
     e.preventDefault();
     const el = document.getElementById(currentTokenId);
-    const c = document.getElementById('map-container').getBoundingClientRect();
-    const cx = e.touches?e.touches[0].clientX:e.clientX;
-    const cy = e.touches?e.touches[0].clientY:e.clientY;
-    el.style.left = (cx - c.left - dragStartPos.x) + 'px';
-    el.style.top = (cy - c.top - dragStartPos.y) + 'px';
+    // IMPORTANTE: Calcula posição relativa levando em conta a escala do pai (#map-scaler)
+    const container = document.getElementById('map-container');
+    const bounds = container.getBoundingClientRect();
+    
+    // Pega a escala atual do scaler
+    const scaler = document.getElementById('map-scaler');
+    const style = window.getComputedStyle(scaler);
+    const matrix = new WebKitCSSMatrix(style.transform);
+    const scale = matrix.a || 1; // Pega escala X
+
+    const x = (e.clientX - bounds.left - dragStartPos.x) / scale;
+    const y = (e.clientY - bounds.top - dragStartPos.y) / scale;
+
+    el.style.left = x + 'px';
+    el.style.top = y + 'px';
 }
 function endDragToken() {
     if(!isDraggingToken) return;
@@ -346,23 +347,4 @@ function endDragToken() {
     window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${currentTokenId}`), {x:x, y:y});
     isDraggingToken=false;
     window.removeEventListener('mousemove', moveDragToken); window.removeEventListener('mouseup', endDragToken);
-    window.removeEventListener('touchmove', moveDragToken); window.removeEventListener('touchend', endDragToken);
 }
-
-// Helpers para criação (vindas do inimigos.js)
-window.criarTokenMonstro = function(k, dados) {
-    const imgSrc = dados.imagem || 'img/monsters/default.png';
-    const tokenId = 'mob_' + Date.now();
-    const novoToken = {
-        tipo: 'mob', nome: dados.nome, imagem: imgSrc, tamanho: dados.tamanho||1, x: 100, y: 100, visivel: true,
-        stats: { ...dados }
-    };
-    window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}`), novoToken);
-    alert("Token Criado!");
-};
-window.criarTokenPC = function(nome, img) {
-    const id = 'pc_' + Date.now();
-    const t = { tipo: 'pc', nome: nome, imagem: img, tamanho: 1, x: 150, y: 150, visivel: true, stats: { pv_atual:6, pv_max:6 } };
-    window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`), t);
-    document.getElementById('modal-criar-token-pc').style.display = 'none';
-};

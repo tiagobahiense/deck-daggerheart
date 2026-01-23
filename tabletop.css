@@ -1,5 +1,5 @@
 /* =========================================================
-   TABLETOP VIRTUAL (V8.0 - FULLSCREEN GM & CONTROLS)
+   TABLETOP VIRTUAL (V9.0 - ESCALA PERFEITA & CONTROLES)
    ========================================================= */
 
 /* --- ÁREA GERAL --- */
@@ -8,64 +8,58 @@
     overflow: hidden; background-color: #050505; z-index: 0; display: none;
 }
 
-#map-container {
-    position: absolute; 
-    transform-origin: top left;
-    box-shadow: 0 0 50px rgba(0,0,0,0.8); 
-    cursor: grab;
-    top: 0; left: 0;
+/* CONTAINER DE ESCALA (Responsável pelo Zoom) */
+#map-scaler {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform-origin: center center;
+    transform: translate(-50%, -50%); /* Centraliza */
+    transition: transform 0.3s ease;
+    /* Tamanho será definido via JS */
 }
-#map-container:active { cursor: grabbing; }
+
+/* O MAPA (Segura a imagem e tokens) */
+#map-container {
+    position: relative;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+    /* Cursor de pan apenas se não estiver em fullscreen */
+    cursor: grab;
+}
 
 .map-bg-img { 
     display: block; pointer-events: none; 
     max-width: none !important; width: auto !important; height: auto !important;
 }
 
-.grid-overlay {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
-    background-size: 50px 50px;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
-    z-index: 10;
-}
-
-/* --- MODO FULLSCREEN (JOGADOR E MESTRE EXPANDIDO) --- */
+/* --- MODO JOGADOR & MESTRE FULLSCREEN --- */
+/* Quando essas classes estão ativas, o mapa cobre tudo */
 .modo-jogador #tabletop-area,
-#tabletop-area.gm-fullscreen {
+body.gm-mode-fullscreen #tabletop-area {
     position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh;
-    z-index: 6000 !important; /* Acima de tudo */
-    background: #000;
-    display: flex !important; align-items: center; justify-content: center;
+    z-index: 6000 !important; background: #000;
+    display: block !important;
 }
 
-/* Centralização no modo fullscreen */
-.modo-jogador #map-container,
-#tabletop-area.gm-fullscreen #map-container {
-    position: relative !important;
-    top: auto !important; left: auto !important;
-    cursor: default !important;
-    box-shadow: none !important;
-    display: flex; align-items: center; justify-content: center;
+/* Esconde UI desnecessária no Fullscreen */
+body.gm-mode-fullscreen #area-jogadores,
+body.gm-mode-fullscreen #sidebar-escudo,
+body.gm-mode-fullscreen #titulo-batalha,
+body.gm-mode-fullscreen #tt-controls,
+body.gm-mode-fullscreen #gm-bottom-toolbar {
+    display: none !important; /* Esconde painéis laterais */
 }
 
-.modo-jogador .map-bg-img,
-#tabletop-area.gm-fullscreen .map-bg-img {
-    max-width: 100% !important; max-height: 100% !important;
-    width: auto !important; height: auto !important;
-    object-fit: contain;
-}
-
-/* Botão de Fechar/Minimizar para o Mestre no Fullscreen */
+/* Botão FECHAR MAPA (Só aparece no Fullscreen do Mestre) */
 #btn-exit-fullscreen {
     display: none;
     position: fixed; top: 20px; right: 20px; z-index: 7000;
     background: rgba(0,0,0,0.8); color: var(--gold); border: 2px solid var(--gold);
     padding: 10px 20px; font-weight: bold; cursor: pointer; border-radius: 5px;
+    font-family: 'MedievalSharp', cursive;
 }
-#tabletop-area.gm-fullscreen ~ #btn-exit-fullscreen { display: block; }
+body.gm-mode-fullscreen #btn-exit-fullscreen { display: block !important; }
 
-/* Oculta UI desnecessária no fullscreen */
+/* Oculta UI do Jogador */
 body.vtt-ativo #mao-area,
 body.vtt-ativo #deck-container-wrapper,
 body.vtt-ativo #reserva-area,
@@ -74,68 +68,69 @@ body.vtt-ativo #mesa-area { display: none !important; }
 /* --- TOKENS --- */
 .token {
     position: absolute; width: 50px; height: 50px; border-radius: 50%;
-    background-size: cover; 
-    background-position: center top; /* Foca no rosto */
-    background-repeat: no-repeat;
-    background-color: #000;
-    box-shadow: 0 0 5px #000; cursor: grab; z-index: 20;
+    background-size: cover; background-position: center center;
+    background-repeat: no-repeat; background-color: #000;
+    box-shadow: 0 0 5px #000; cursor: pointer; z-index: 20;
     border: 2px solid transparent; transition: transform 0.1s;
 }
-.token:active { cursor: grabbing; }
-.token:hover { transform: scale(1.2); z-index: 100; border-color: #fff; }
-
-/* Token Invisível (apenas mestre vê translúcido) */
-.token.oculto { opacity: 0.5; filter: grayscale(1); border-style: dashed; }
-
+.token:hover { z-index: 100; border-color: #fff; }
 .token.token-jogador { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
 .token.token-monstro { border-color: #ff0000; }
+.token.oculto { opacity: 0.5; filter: grayscale(1); border-style: dashed; }
 
-/* Barras */
+/* BARRA DE FERRAMENTAS DO TOKEN (Mini Menu) */
+.token-toolbar {
+    position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+    display: none; gap: 5px; background: rgba(0,0,0,0.9);
+    padding: 3px; border-radius: 5px; border: 1px solid var(--gold);
+    z-index: 200; white-space: nowrap;
+}
+/* Mostra toolbar ao passar o mouse (apenas mestre) */
+.modo-mestre .token:hover .token-toolbar { display: flex; }
+
+.btn-mini-tool {
+    width: 24px; height: 24px; border: 1px solid #555; background: #222;
+    color: #fff; border-radius: 3px; cursor: pointer; font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+}
+.btn-mini-tool:hover { background: var(--gold); color: #000; }
+.btn-mini-tool.delete:hover { background: #f00; color: #fff; }
+
+/* Barras de Vida */
 .token-bars-container {
-    position: absolute; bottom: -14px; left: -10%; width: 120%;
+    position: absolute; bottom: -10px; left: -10%; width: 120%;
     display: flex; flex-direction: column; gap: 2px; pointer-events: none;
-    background: rgba(0,0,0,0.7); padding: 2px; border-radius: 4px; z-index: 101;
+    padding: 1px; border-radius: 2px; z-index: 101;
 }
-.bar-track { width: 100%; height: 5px; background: #300; border: 1px solid #000; }
-.fill-hp { height: 100%; background: #0f0; width: 100%; transition: width 0.3s; }
-.fill-pf { height: 100%; background: #08f; width: 100%; transition: width 0.3s; }
+.fill-hp { height: 4px; background: #0f0; width: 100%; border: 1px solid #000; }
+.fill-pf { height: 4px; background: #08f; width: 100%; border: 1px solid #000; }
 
-/* --- MODAL DE OPÇÕES DO TOKEN (DUPLO CLIQUE) --- */
-.token-options-modal {
+/* --- LISTAS FLUTUANTES (FIX) --- */
+.floating-list-container {
+    position: absolute; top: 70px; width: 260px; max-height: 60vh;
+    background: rgba(10, 5, 5, 0.98); border: 2px solid var(--gold);
+    border-radius: 8px; display: none !important; 
+    flex-direction: column; z-index: 2000; box-shadow: 0 0 20px #000;
+}
+.floating-list-container.active { display: flex !important; }
+
+#gm-enemy-list-container { left: 10px; border-color: #8b0000; }
+#gm-npc-list-container { right: 10px; border-color: #4682B4; }
+
+.list-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #1a1a1a; border: 1px solid #333; padding: 8px; margin-bottom: 5px;
+    cursor: pointer; color: #ddd; font-size: 0.9rem;
+}
+.list-item:hover { background: #333; border-color: var(--gold); }
+
+/* --- MODAL DETALHES --- */
+.token-info-modal {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: #111; border: 2px solid var(--gold);
-    padding: 15px; border-radius: 10px; z-index: 8000; width: 280px;
-    box-shadow: 0 0 50px #000; display: none; color: #fff;
+    background: rgba(10, 10, 10, 0.98); border: 2px solid var(--gold);
+    padding: 20px; border-radius: 10px; z-index: 10000; min-width: 320px;
+    color: #fff; box-shadow: 0 0 100px #000; display: none;
 }
-.token-options-header {
-    text-align: center; border-bottom: 1px solid #333; padding-bottom: 10px; margin-bottom: 10px;
-    font-weight: bold; color: var(--gold); font-size: 1.1rem;
-}
-.token-control-row {
-    display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;
-    background: #222; padding: 5px; border-radius: 5px;
-}
-.token-control-label { color: #aaa; font-size: 0.85rem; }
-
-.btn-ctrl {
-    background: #333; border: 1px solid #555; color: white;
-    width: 30px; height: 30px; cursor: pointer; border-radius: 4px;
-    display: flex; align-items: center; justify-content: center; font-weight: bold;
-}
-.btn-ctrl:hover { background: #555; border-color: var(--gold); }
-
-.btn-delete-token {
-    width: 100%; background: #400; border: 1px solid #f00; color: #fff;
-    padding: 8px; cursor: pointer; margin-top: 10px; border-radius: 5px;
-}
-.btn-delete-token:hover { background: #600; }
-
-.eye-toggle { font-size: 1.2rem; cursor: pointer; opacity: 0.3; }
-.eye-toggle.visible { opacity: 1; text-shadow: 0 0 5px #0f0; }
-
-/* Botões do Jogador */
-#btn-vtt-toggle {
-    position: fixed; top: 10px; right: 80px; z-index: 10000;
-    background: rgba(0,0,0,0.8); color: var(--gold); border: 1px solid var(--gold);
-    padding: 5px 10px; cursor: pointer; border-radius: 5px; display: none;
-}
+.info-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #444; }
+.hp-controls { display: flex; gap: 5px; margin-top: 15px; }
+.btn-ctrl { flex: 1; padding: 8px; cursor: pointer; font-weight: bold; background: #333; color: #fff; border: 1px solid #555; }
