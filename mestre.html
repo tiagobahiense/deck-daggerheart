@@ -163,23 +163,24 @@
                 <button onclick="window.toggleMapaVisivel()" style="font-size:0.8rem;">👁️ Visibilidade</button>
             </div>
         
-            <div id="gm-bottom-toolbar">
-                <button class="btn-toolbar" onclick="window.toggleListaInimigos()">👹 Inimigos</button>
-                <button class="btn-toolbar" onclick="window.toggleListaNPCs()">👤 NPCs</button>
-            </div>
-        
-            <div id="gm-enemy-list-container" class="floating-list-container" style="left:50%; transform:translateX(-110%);">
+            <div id="gm-enemy-list-container" class="floating-list-container">
                 <div class="list-header">
                     <span>Lista de Inimigos</span>
-                    <span onclick="abrirCriadorInimigo()" style="cursor:pointer; font-size:1.2rem;">+</span>
+                    <div style="display:flex; gap:10px;">
+                        <span onclick="abrirCriadorInimigo()" style="cursor:pointer; font-size:1.2rem;">+</span>
+                        <span onclick="window.toggleListaInimigos()" style="cursor:pointer; color:#f55;">X</span>
+                    </div>
                 </div>
                 <div id="enemy-list-scroll" class="list-scroll"></div>
             </div>
         
-            <div id="gm-npc-list-container" class="floating-list-container" style="left:50%; transform:translateX(10%);">
+            <div id="gm-npc-list-container" class="floating-list-container">
                 <div class="list-header">
                     <span>Lista de NPCs</span>
-                    <span onclick="abrirCriadorNPC()" style="cursor:pointer; font-size:1.2rem;">+</span>
+                    <div style="display:flex; gap:10px;">
+                        <span onclick="abrirCriadorNPC()" style="cursor:pointer; font-size:1.2rem;">+</span>
+                        <span onclick="window.toggleListaNPCs()" style="cursor:pointer; color:#f55;">X</span>
+                    </div>
                 </div>
                 <div id="npc-list-scroll" class="list-scroll"></div>
             </div>
@@ -199,6 +200,11 @@
                     </div>
                 </div>
                 <div id="medo-tokens-grid"></div>
+            </div>
+
+            <div style="display:flex; gap:5px; margin: 15px 0 5px 0;">
+                <button class="btn-topico" onclick="window.toggleListaInimigos()" style="flex:1; text-align:center; background:#400; border-color:#800; font-size:0.9rem;">👹 Inimigos</button>
+                <button class="btn-topico" onclick="window.toggleListaNPCs()" style="flex:1; text-align:center; background:#004; border-color:#008; font-size:0.9rem;">👤 NPCs</button>
             </div>
 
             <h3 style="color:var(--gold); text-align:center; border-bottom:1px solid #333; padding-bottom:5px; margin-top:20px;">ESCUDO GM</h3>

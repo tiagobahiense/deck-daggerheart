@@ -1,5 +1,5 @@
 // =========================================================
-// TABLETOP SYSTEM V3.1 (TAMANHO REAL FIX & SYNC)
+// TABLETOP SYSTEM V3.2 (FIX EXCLUSÃO & UI)
 // =========================================================
 
 const REF_TABLETOP = 'mesa_rpg/tabuleiro';
@@ -15,26 +15,23 @@ window.iniciarTabletop = function() {
     if(!area) return;
 
     window.onValue(window.ref(window.db, REF_TABLETOP), (snap) => {
-        const dados = snap.val();
+        const dados = snap.val() || {}; // Garante objeto vazio se nulo
         
         // Controle de Visibilidade e Imagem
-        if(dados && dados.config && dados.config.imagem) {
+        if(dados.config && dados.config.imagem) {
             const isMestre = window.nomeJogador === "Mestre";
             const mapaAtivo = dados.config.visivel;
             const imgEl = document.getElementById('map-bg-img');
             const mapContainer = document.getElementById('map-container');
 
-            // CORREÇÃO TAMANHO DA IMAGEM:
-            // Ajusta o container para o tamanho natural da imagem ao carregar
+            // Ajusta tamanho da imagem
             imgEl.onload = function() {
                 mapContainer.style.width = this.naturalWidth + 'px';
                 mapContainer.style.height = this.naturalHeight + 'px';
             };
-            // Só atualiza src se mudou para evitar piscar
             if(imgEl.src !== dados.config.imagem) {
                 imgEl.src = dados.config.imagem;
             } else {
-                // Se já estava carregada, força ajuste de tamanho (caso tenha redimensionado janela)
                 mapContainer.style.width = imgEl.naturalWidth + 'px';
                 mapContainer.style.height = imgEl.naturalHeight + 'px';
             }
@@ -43,10 +40,8 @@ window.iniciarTabletop = function() {
             if (isMestre) {
                 area.style.display = 'block'; 
             } else {
-                // Jogador
                 if (mapaAtivo) {
                     if (btnMinimizar) btnMinimizar.style.display = 'block';
-                    
                     if (!vttMinimizado) {
                         area.style.display = 'block';
                         document.body.classList.add('vtt-ativo'); 
@@ -60,20 +55,28 @@ window.iniciarTabletop = function() {
                     document.body.classList.remove('vtt-ativo');
                 }
             }
-
-            if(dados.tokens) renderizarTokens(dados.tokens);
         }
+
+        // --- CORREÇÃO DO BUG DO ÚLTIMO TOKEN ---
+        // Passa um objeto vazio se não houver tokens, para forçar a limpeza
+        renderizarTokens(dados.tokens || {});
     });
 };
 
 // --- RENDERIZAÇÃO DE TOKENS ---
 function renderizarTokens(tokensData) {
     const container = document.getElementById('map-container');
-    
-    // Limpeza
     const existing = document.querySelectorAll('.token');
-    existing.forEach(el => { if(!tokensData[el.id]) el.remove(); });
+    
+    // 1. Remove tokens que não estão mais no banco (incluindo o último)
+    existing.forEach(el => { 
+        if(!tokensData[el.id]) el.remove(); 
+    });
 
+    // 2. Se não tem dados, para por aqui
+    if (!tokensData || Object.keys(tokensData).length === 0) return;
+
+    // 3. Cria ou Atualiza tokens existentes
     Object.keys(tokensData).forEach(id => {
         const t = tokensData[id];
         let el = document.getElementById(id);
@@ -82,25 +85,20 @@ function renderizarTokens(tokensData) {
             el = document.createElement('div');
             el.id = id;
             el.className = `token ${t.tipo === 'pc' ? 'token-jogador' : 'token-monstro'}`;
-            
-            // HTML das Barras
             el.innerHTML = `
                 <div class="token-bars-container">
                     <div class="bar-track"><div class="fill-hp"></div></div>
                     <div class="bar-track" style="display:none;"><div class="fill-pf"></div></div>
                 </div>
             `;
-            
             el.onclick = (e) => { e.stopPropagation(); abrirInfoToken(id, t); };
             el.addEventListener('mousedown', (e) => startDragToken(e, id, t));
             el.addEventListener('touchstart', (e) => startDragToken(e, id, t), {passive: false});
             container.appendChild(el);
         }
 
-        // Imagem
         const imgSrc = t.imagem || 'img/monsters/default.png';
         el.style.backgroundImage = `url('${imgSrc}')`;
-        
         el.style.width = (t.tamanho * GRID_SIZE) + 'px';
         el.style.height = (t.tamanho * GRID_SIZE) + 'px';
         
@@ -109,19 +107,16 @@ function renderizarTokens(tokensData) {
             el.style.top = t.y + 'px';
         }
 
-        // Atualização de Barras
         const s = t.stats || {};
         const hpBar = el.querySelector('.fill-hp');
         const pfBar = el.querySelector('.fill-pf');
         const pfTrack = pfBar.parentElement;
 
-        // Vida
         if(s.pv_max > 0) {
             const hpPct = Math.max(0, Math.min(100, (s.pv_atual / s.pv_max) * 100));
             hpBar.style.width = hpPct + '%';
         }
 
-        // PF
         if(s.pf_max > 0) {
             pfTrack.style.display = 'block';
             const pfPct = Math.max(0, Math.min(100, (s.pf_atual / s.pf_max) * 100));
@@ -132,7 +127,44 @@ function renderizarTokens(tokensData) {
     });
 }
 
-// --- MODAL DE DETALHES ---
+// ... (MANTENHA AS FUNÇÕES DE DRAG, INFO E UPLOAD IGUAIS ABAIXO) ...
+// (Para economizar espaço, vou colocar apenas a função de Upload atualizada, 
+//  o resto do arquivo tabletop.js (modal info, drag, etc) mantém igual ao anterior)
+
+// --- UPLOAD DE AVATAR (JOGADOR) CORRIGIDO ---
+window.uploadAvatarJogador = function() {
+    const input = document.createElement('input');
+    input.type = 'file'; 
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+        if (!e.target.files || !e.target.files[0]) return;
+        
+        const r = new FileReader();
+        r.onload = (ev) => {
+            if(window.nomeJogador) {
+                const img = ev.target.result;
+                // Atualiza perfil
+                window.update(window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}`), { avatar: img });
+                
+                // Cria/Atualiza token no mapa
+                const tokenId = 'pc_' + window.nomeJogador;
+                const token = {
+                    tipo: 'pc', nome: window.nomeJogador, imagem: img, tamanho: 1, x: 50, y: 50,
+                    stats: { pv_atual: 10, pv_max: 10 }
+                };
+                window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}`), token);
+                alert("Foto enviada!");
+            }
+        };
+        r.readAsDataURL(e.target.files[0]);
+    };
+    input.click();
+};
+
+// ... Restante do código (abrirInfoToken, startDragToken, etc) continua igual ...
+// Se precisar eu mando o arquivo inteiro de novo, mas é só substituir essas partes chave.
+// Para garantir, segue as funções auxiliares essenciais:
+
 function abrirInfoToken(id, t) {
     const modal = document.getElementById('token-info-modal') || criarModalInfo();
     const isMestre = window.nomeJogador === "Mestre";
@@ -148,7 +180,7 @@ function abrirInfoToken(id, t) {
     };
 
     html += row("PV", `${s.pv_atual} / ${s.pv_max}`, 'hp');
-    if(s.pf_max > 0) html += row("PF", `${s.pf_atual} / ${s.pf_max}`, 'hp');
+    if(s.pf_max > 0) html += row("PF", `${s.pf_atual} / ${s.pf_max}`, 'hp'); // Usa visibilidade de HP
 
     html += row("Dificuldade", s.dificuldade, 'ac');
     html += row("Ataque", s.ataque, 'atk');
@@ -177,13 +209,10 @@ function abrirInfoToken(id, t) {
 
 function criarModalInfo() {
     const m = document.createElement('div');
-    m.id = 'token-info-modal';
-    m.className = 'token-info-modal';
-    document.body.appendChild(m);
-    return m;
+    m.id = 'token-info-modal'; m.className = 'token-info-modal';
+    document.body.appendChild(m); return m;
 }
 
-// --- AÇÕES ---
 window.toggleInfoVis = function(tokenId, field) {
     const refVis = window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}/stats/vis/${field}`);
     window.get(refVis).then(snap => { window.set(refVis, !snap.val()); });
@@ -194,15 +223,14 @@ window.alterarVidaToken = function(id, delta) {
     window.get(refStats).then(snap => {
         const s = snap.val();
         let novo = (s.pv_atual || 0) + delta;
-        if(novo < 0) novo = 0;
-        if(novo > s.pv_max) novo = s.pv_max;
+        if(novo < 0) novo = 0; if(novo > s.pv_max) novo = s.pv_max;
         window.update(refStats, { pv_atual: novo });
-        document.getElementById('token-info-modal').style.display='none'; // Fecha para atualizar
+        document.getElementById('token-info-modal').style.display='none';
     });
 };
 
 window.removerTokenDoGrid = function(id) {
-    if(confirm("Remover este token do mapa?")) {
+    if(confirm("Remover este token?")) {
         window.remove(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`));
         document.getElementById('token-info-modal').style.display='none';
     }
@@ -212,48 +240,37 @@ window.toggleVTTMinimizado = function() {
     const area = document.getElementById('tabletop-area');
     const btn = document.getElementById('btn-vtt-toggle');
     vttMinimizado = !vttMinimizado;
-
     if (vttMinimizado) {
-        area.style.display = 'none';
-        document.body.classList.remove('vtt-ativo'); 
-        btn.innerText = "🗺️ Abrir Mapa";
+        area.style.display = 'none'; document.body.classList.remove('vtt-ativo'); btn.innerText = "🗺️ Abrir Mapa";
     } else {
-        area.style.display = 'block';
-        document.body.classList.add('vtt-ativo');
-        btn.innerText = "⬇️ Minimizar";
+        area.style.display = 'block'; document.body.classList.add('vtt-ativo'); btn.innerText = "⬇️ Minimizar";
     }
 };
 
-// --- DRAG ---
+// Funções de Drag (Start, Move, End) iguais...
 function startDragToken(e, id, t) {
     const isMestre = window.nomeJogador === "Mestre";
     if(!isMestre && t.tipo !== 'pc') return; 
-    
     isDraggingToken = true; currentTokenId = id;
     const el = document.getElementById(id);
     const rect = el.getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    
     window.dragOffset = { x: clientX - rect.left, y: clientY - rect.top };
-    
     document.addEventListener('mousemove', moveDragToken);
     document.addEventListener('mouseup', endDragToken);
     document.addEventListener('touchmove', moveDragToken, {passive:false});
     document.addEventListener('touchend', endDragToken);
 }
-
 function moveDragToken(e) {
     if(!isDraggingToken) return;
     const el = document.getElementById(currentTokenId);
     const container = document.getElementById('map-container').getBoundingClientRect();
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    
     el.style.left = (clientX - container.left - window.dragOffset.x) + 'px';
     el.style.top = (clientY - container.top - window.dragOffset.y) + 'px';
 }
-
 function endDragToken() {
     if(!isDraggingToken) return;
     const el = document.getElementById(currentTokenId);
@@ -261,28 +278,19 @@ function endDragToken() {
     let y = Math.round(parseFloat(el.style.top) / GRID_SIZE) * GRID_SIZE;
     window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${currentTokenId}`), { x: x, y: y });
     isDraggingToken = false;
-    document.removeEventListener('mousemove', moveDragToken);
-    document.removeEventListener('mouseup', endDragToken);
-    document.removeEventListener('touchmove', moveDragToken);
-    document.removeEventListener('touchend', endDragToken);
+    document.removeEventListener('mousemove', moveDragToken); document.removeEventListener('mouseup', endDragToken);
+    document.removeEventListener('touchmove', moveDragToken); document.removeEventListener('touchend', endDragToken);
 }
 
-// --- SETUP GM & PLAYER ---
 window.uploadMapa = function() {
     const file = document.getElementById('map-upload-input').files[0];
     const reader = new FileReader();
-    reader.onload = (e) => {
-        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { imagem: e.target.result, visivel: false });
-    };
+    reader.onload = (e) => { window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { imagem: e.target.result, visivel: false }); };
     if(file) reader.readAsDataURL(file);
 };
-
 window.toggleMapaVisivel = function() {
-    window.get(window.ref(window.db, `${REF_TABLETOP}/config/visivel`)).then(s => {
-        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { visivel: !s.val() });
-    });
+    window.get(window.ref(window.db, `${REF_TABLETOP}/config/visivel`)).then(s => { window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { visivel: !s.val() }); });
 };
-
 window.criarTokenMonstro = function(keyIgnorada, dados) {
     const imgSrc = dados.imagem || 'img/monsters/default.png';
     const tokenId = 'mob_' + Date.now();
@@ -292,26 +300,4 @@ window.criarTokenMonstro = function(keyIgnorada, dados) {
     };
     window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}`), novoToken);
     alert("Token Criado!");
-};
-
-window.uploadAvatarJogador = function() {
-    const input = document.createElement('input');
-    input.type = 'file'; input.accept = 'image/*';
-    input.onchange = (e) => {
-        const r = new FileReader();
-        r.onload = (ev) => {
-            if(window.nomeJogador) {
-                const img = ev.target.result;
-                window.update(window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}`), { avatar: img });
-                const tokenId = 'pc_' + window.nomeJogador;
-                const token = {
-                    tipo: 'pc', nome: window.nomeJogador, imagem: img, tamanho: 1, x: 50, y: 50,
-                    stats: { pv_atual: 10, pv_max: 10 }
-                };
-                window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}`), token);
-            }
-        };
-        r.readAsDataURL(e.target.files[0]);
-    };
-    input.click();
 };
