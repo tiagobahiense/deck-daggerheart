@@ -413,20 +413,32 @@ window.criarNovoPersonagem = async function() {
 };
 
 window.atualizarSincronia = function() {
-    const btn = document.querySelector('.btn-refresh-player');
-    if(btn) btn.classList.add('spin-anim');
+    const loading = document.getElementById('loading-overlay');
+    
+    // 1. Mostra a tela de carregamento
+    if(loading) {
+        loading.style.display = 'flex';
+        loading.querySelector('div:first-child').innerText = "Ressincronizando Mesa...";
+    }
+
+    // 2. Limpa e reinicia os sistemas
     document.getElementById('area-inimigos').innerHTML = "";
     
-    // Reinicia sistemas
     if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
-    if(window.monitorarNPCAtivo) window.monitorarNPCAtivo(); // <--- LINHA NOVA DO NPC
+    if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
+    if(window.monitorarNPCAtivo) window.monitorarNPCAtivo();
     
+    // 3. Renderiza e avisa o servidor
     renderizar();
     if(nomeJogador) { 
         const pRef = ref(db, `mesa_rpg/presenca/${nomeJogador}`); 
         set(pRef, true); 
     }
-    setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
+
+    // 4. Remove a tela de carregamento após 1.5s (para dar tempo visual)
+    setTimeout(() => { 
+        if(loading) loading.style.display = 'none'; 
+    }, 1500);
 };
 
 // Funções de Cartas
@@ -594,22 +606,44 @@ window.setVolume = function() { document.getElementById('bg-music').volume = par
 // =========================================================
 // AUTO-RECONEXÃO (F5)
 // =========================================================
+// =========================================================
+// AUTO-RECONEXÃO INTELIGENTE (SEM PISCAR LOGIN)
+// =========================================================
 onAuthStateChanged(auth, (user) => {
+    const loadingScreen = document.getElementById('loading-overlay');
+    const loginScreen = document.getElementById('login-screen');
+    const appContainer = document.getElementById('app-container');
+
     if (user) {
         currentUser = user;
-        // Verifica se tinha personagem salvo antes do refresh
-        const ultimo = localStorage.getItem('ultimoPersonagem');
+        const ultimoPersonagem = localStorage.getItem('ultimoPersonagem');
         
-        // Se tem personagem e NÃO é o mestre, reconecta
-        if (ultimo && user.email.toLowerCase().trim() !== "tgbahiense@gmail.com") {
-             console.log("Reconectando personagem: " + ultimo);
+        // Cenario 1: Jogador dando F5 (Tem personagem salvo)
+        if (ultimoPersonagem && user.email.toLowerCase().trim() !== "tgbahiense@gmail.com") {
+             console.log("Retomando sessão de: " + ultimoPersonagem);
              
-             // Pequeno delay para garantir carregamento dos scripts
-             setTimeout(() => {
-                 document.getElementById('login-screen').style.display = 'none';
-                 window.selecionarPersonagem(ultimo);
-             }, 500);
+             // Garante que o login fique escondido
+             loginScreen.style.display = 'none';
+             
+             // Carrega o personagem
+             window.selecionarPersonagem(ultimoPersonagem).then(() => {
+                 // SÓ AGORA tira a tela de carregamento
+                 setTimeout(() => {
+                     if(loadingScreen) loadingScreen.style.display = 'none';
+                 }, 500);
+             });
+        } 
+        // Cenario 2: Mestre ou Usuário sem personagem selecionado
+        else {
+            if(loadingScreen) loadingScreen.style.display = 'none';
+            // Se for mestre, vai pro admin ou mestre logic (depende da sua pag), aqui assume fluxo normal
         }
+    } else {
+        // Cenario 3: Ninguém logado (Mostra Login)
+        console.log("Nenhum usuário. Mostrando login.");
+        if(loadingScreen) loadingScreen.style.display = 'none';
+        loginScreen.style.display = 'flex';
+        appContainer.style.display = 'none';
     }
 });
 // --- FUNÇÕES DE LEITURA DE PDF (ANCESTRALIDADE/COMUNIDADE) ---
