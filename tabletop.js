@@ -1,5 +1,5 @@
 // =========================================================
-// TABLETOP SYSTEM V6.0 (GM PLAYER TOKEN & MAP FIX)
+// TABLETOP SYSTEM V7.0 (SYNC REAL-TIME, SCALE & PF)
 // =========================================================
 
 const REF_TABLETOP = 'mesa_rpg/tabuleiro';
@@ -25,46 +25,61 @@ window.iniciarTabletop = function() {
     window.addEventListener('mousemove', movePanMap);
     window.addEventListener('mouseup', endPanMap);
 
+    // LISTENER ÚNICO E ROBUSTO
     window.onValue(window.ref(window.db, REF_TABLETOP), (snap) => {
         const dados = snap.val() || {};
+        const config = dados.config || {};
+        const tokens = dados.tokens || {};
         
-        // Configuração Mapa
-        if(dados.config && dados.config.imagem) {
-            const isMestre = window.nomeJogador === "Mestre";
-            const imgEl = document.getElementById('map-bg-img');
+        // 1. Configuração do Mapa e Visibilidade
+        const isMestre = window.nomeJogador === "Mestre";
+        const mapaAtivo = config.visivel;
+        const imgEl = document.getElementById('map-bg-img');
 
-            if(imgEl.src !== dados.config.imagem) {
-                imgEl.src = dados.config.imagem;
-                imgEl.onload = () => {
+        // Atualiza Imagem se mudou
+        if(config.imagem && imgEl.src !== config.imagem) {
+            imgEl.src = config.imagem;
+            imgEl.onload = () => {
+                if(isMestre) { // Mestre usa tamanho real para editar
                     mapContainer.style.width = imgEl.naturalWidth + 'px';
                     mapContainer.style.height = imgEl.naturalHeight + 'px';
-                };
-            }
+                }
+            };
+        }
 
-            // Exibição
-            if (isMestre) {
-                area.style.display = 'block'; 
-            } else {
-                if (dados.config.visivel) {
-                    btnMinimizar.style.display = 'block';
-                    if (!vttMinimizado) {
-                        area.style.display = 'block';
-                        document.body.classList.add('vtt-ativo'); 
-                    }
+        // Lógica de Exibição (Sincronia Player/Mestre)
+        if (isMestre) {
+            area.style.display = 'block'; // Mestre vê sempre
+        } else {
+            if (mapaAtivo) {
+                // Se o mestre ativou, o jogador VÊ.
+                btnMinimizar.style.display = 'block';
+                if (!vttMinimizado) {
+                    area.style.display = 'flex'; // Flex para centralizar
+                    document.body.classList.add('vtt-ativo'); 
                 } else {
                     area.style.display = 'none';
-                    btnMinimizar.style.display = 'none';
-                    document.body.classList.remove('vtt-ativo');
+                    document.body.classList.remove('vtt-ativo'); 
                 }
+            } else {
+                // Se o mestre fechou, fecha pra todos na hora
+                area.style.display = 'none';
+                btnMinimizar.style.display = 'none';
+                document.body.classList.remove('vtt-ativo');
+                vttMinimizado = false; // Reseta estado
             }
         }
-        renderizarTokens(dados.tokens || {});
+
+        // 2. Renderiza Tokens
+        renderizarTokens(tokens);
     });
 };
 
 function renderizarTokens(tokensData) {
     const container = document.getElementById('map-container');
     const existing = document.querySelectorAll('.token');
+    
+    // Remove deletados
     existing.forEach(el => { if(!tokensData[el.id]) el.remove(); });
 
     Object.keys(tokensData).forEach(id => {
@@ -74,8 +89,15 @@ function renderizarTokens(tokensData) {
         if (!el) {
             el = document.createElement('div');
             el.id = id;
+            // Define classes base
             el.className = `token ${t.tipo === 'pc' ? 'token-jogador' : 'token-monstro'}`;
-            el.innerHTML = `<div class="token-bars-container"><div class="bar-track"><div class="fill-hp"></div></div></div>`;
+            
+            // Só monstros têm barra de vida visível por padrão
+            let htmlBarras = '';
+            if(t.tipo === 'mob') {
+                htmlBarras = `<div class="token-bars-container"><div class="bar-track"><div class="fill-hp"></div></div><div class="bar-track pf-track" style="display:none; margin-top:2px;"><div class="fill-pf"></div></div></div>`;
+            }
+            el.innerHTML = htmlBarras;
             
             // Eventos
             let clickTime;
@@ -87,56 +109,92 @@ function renderizarTokens(tokensData) {
             container.appendChild(el);
         }
 
+        // Posicionamento
         if (currentTokenId !== id) {
             el.style.left = t.x + 'px';
             el.style.top = t.y + 'px';
         }
 
+        // Estilo e Tamanho (ESCALA)
+        const sizeMult = t.tamanho || 1; // 1, 2, 3...
+        el.style.width = (sizeMult * GRID_SIZE) + 'px';
+        el.style.height = (sizeMult * GRID_SIZE) + 'px';
+        
         const imgSrc = t.imagem || 'img/monsters/default.png';
         el.style.backgroundImage = `url('${imgSrc}')`;
-        el.style.width = (t.tamanho * GRID_SIZE) + 'px';
-        el.style.height = (t.tamanho * GRID_SIZE) + 'px';
 
-        const s = t.stats || {};
-        const hpBar = el.querySelector('.fill-hp');
-        if(s.pv_max > 0) {
-            const pct = Math.max(0, Math.min(100, (s.pv_atual / s.pv_max) * 100));
-            hpBar.style.width = pct + '%';
+        // Atualiza Barras (Apenas monstros)
+        if(t.tipo === 'mob') {
+            const s = t.stats || {};
+            const hpBar = el.querySelector('.fill-hp');
+            const pfTrack = el.querySelector('.pf-track');
+            const pfBar = el.querySelector('.fill-pf');
+
+            if(hpBar && s.pv_max > 0) {
+                const pct = Math.max(0, Math.min(100, (s.pv_atual / s.pv_max) * 100));
+                hpBar.style.width = pct + '%';
+            }
+            if(pfBar && s.pf_max > 0) {
+                pfTrack.style.display = 'block';
+                const pctPf = Math.max(0, Math.min(100, (s.pf_atual / s.pf_max) * 100));
+                pfBar.style.width = pctPf + '%';
+            } else if (pfTrack) {
+                pfTrack.style.display = 'none';
+            }
         }
     });
 }
 
+// --- INFO MODAL ---
 function abrirInfoToken(id, t) {
-    const modal = document.getElementById('token-info-modal') || criarModalInfo();
+    // Se for jogador e clicar em monstro, não mostra NADA (nem abre modal) se não for mestre
+    // A MENOS que tenha alguma info visível. Vamos simplificar: Player só clica no seu.
     const isMestre = window.nomeJogador === "Mestre";
+    if (!isMestre && t.tipo === 'mob') return; // Jogador não abre ficha de monstro
+
+    const modal = document.getElementById('token-info-modal') || criarModalInfo();
     const s = t.stats || {};
     const vis = s.vis || { hp:false, ac:false, atk:false, dmg:false, desc:false };
 
     let html = `<h3 style="margin:0 0 10px 0; color:var(--gold); text-align:center;">${t.nome}</h3>`;
 
     const row = (lbl, val, k) => {
-        if (!isMestre && !vis[k] && t.tipo !== 'pc') return `<div class="info-row"><span><strong>${lbl}:</strong> ???</span></div>`;
-        // Se for PC, jogadores veem tudo
-        const ver = (t.tipo === 'pc' || isMestre || vis[k]); 
-        if(!ver) return '';
-        
         const eye = isMestre ? `<span class="eye-btn ${vis[k]?'visible':''}" onclick="toggleInfoVis('${id}', '${k}')">👁️</span>` : '';
         return `<div class="info-row"><span><strong>${lbl}:</strong> ${val}</span>${eye}</div>`;
     };
 
     html += row("PV", `${s.pv_atual}/${s.pv_max}`, 'hp');
+    if(s.pf_max > 0) html += row("PF", `${s.pf_atual}/${s.pf_max}`, 'hp'); // Usa visibilidade do HP por enq
+
     html += row("Defesa", s.dificuldade, 'ac');
     html += row("Ataque", s.ataque, 'atk');
     html += row("Dano", s.dano, 'dmg');
 
     if(isMestre) {
-        html += `<div class="hp-control-group">
-            <button class="btn-dmg" onclick="alterarVidaToken('${id}', -1)">-1</button>
-            <button class="btn-heal" onclick="alterarVidaToken('${id}', 1)">+1</button>
-            <button class="btn-trash" onclick="removerTokenDoGrid('${id}')">🗑️</button>
+        html += `<div style="margin-top:10px; font-size:0.8rem; color:#aaa;">${s.detalhes || ''}</div>`;
+        // CONTROLES DE VIDA E PF
+        html += `
+        <div style="margin-top:15px; border-top:1px solid #333; padding-top:10px;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:5px; color:#ddd; font-size:0.8rem;">
+                <span>Vida (PV)</span>
+                <span>Fadiga (PF)</span>
+            </div>
+            <div style="display:flex; gap:10px;">
+                <div class="hp-control-group" style="flex:1; margin:0;">
+                    <button class="btn-dmg" onclick="alterarStatToken('${id}', 'pv_atual', -1)">-1</button>
+                    <button class="btn-heal" onclick="alterarStatToken('${id}', 'pv_atual', 1)">+1</button>
+                </div>
+                ${s.pf_max > 0 ? `
+                <div class="hp-control-group" style="flex:1; margin:0;">
+                    <button class="btn-dmg" style="border-color:#00f; background:#003;" onclick="alterarStatToken('${id}', 'pf_atual', -1)">-1</button>
+                    <button class="btn-heal" style="border-color:#00f; background:#003;" onclick="alterarStatToken('${id}', 'pf_atual', 1)">+1</button>
+                </div>` : ''}
+            </div>
+            <button class="btn-trash" onclick="removerTokenDoGrid('${id}')" style="width:100%; margin-top:10px; background:#300;">🗑️ Excluir Token</button>
         </div>`;
     }
-    html += `<button onclick="document.getElementById('token-info-modal').style.display='none'" style="width:100%; margin-top:10px;">Fechar</button>`;
+
+    html += `<button onclick="document.getElementById('token-info-modal').style.display='none'" style="width:100%; margin-top:10px; background:#222; border:1px solid #555; color:#ccc;">Fechar</button>`;
     
     modal.innerHTML = html;
     modal.style.display = 'block';
@@ -147,14 +205,56 @@ function criarModalInfo() {
     document.body.appendChild(m); return m;
 }
 
-// --- FUNÇÕES GM ---
-window.criarTokenMonstro = function(k, d) {
-    const id = 'mob_' + Date.now();
-    const t = {
-        tipo: 'mob', nome: d.nome, imagem: d.imagem||'', tamanho: 1, x: 100, y: 100,
-        stats: { ...d, vis: { hp:false, ac:false, atk:false, dmg:false, desc:false } }
+// --- AÇÕES DO MESTRE ---
+window.toggleInfoVis = function(id, f) {
+    const r = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/stats/vis/${f}`);
+    window.get(r).then(s => { window.set(r, !s.val()); document.getElementById('token-info-modal').style.display='none'; });
+};
+
+window.alterarStatToken = function(id, stat, delta) {
+    const r = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/stats`);
+    window.get(r).then(snap => { 
+        const s = snap.val();
+        const max = stat === 'pv_atual' ? s.pv_max : s.pf_max;
+        let v = (s[stat]||0)+delta; 
+        if(v<0)v=0; if(v>max)v=max; 
+        
+        const updates = {};
+        updates[stat] = v;
+        window.update(r, updates);
+        
+        // Animação visual na barra (Feedback imediato)
+        const el = document.getElementById(id);
+        if(el && stat === 'pv_atual') {
+            const bar = el.querySelector('.fill-hp');
+            if(bar) {
+                bar.classList.add(delta < 0 ? 'dano' : 'cura');
+                setTimeout(() => bar.classList.remove('dano', 'cura'), 300);
+            }
+        }
+        document.getElementById('token-info-modal').style.display='none';
+    });
+};
+
+window.removerTokenDoGrid = function(id) {
+    if(confirm("Tem certeza que deseja excluir este token?")) { 
+        window.remove(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`)); 
+        document.getElementById('token-info-modal').style.display='none'; 
+    }
+};
+
+window.criarTokenMonstro = function(keyIgnorada, dados) {
+    // Recebe escala do modal ou padrão 1
+    const tamanho = parseInt(dados.tamanho) || 1;
+    const imgSrc = dados.imagem || 'img/monsters/default.png';
+    const tokenId = 'mob_' + Date.now();
+    const novoToken = {
+        tipo: 'mob', nome: dados.nome, imagem: imgSrc, 
+        tamanho: tamanho, // Salva escala
+        x: 100, y: 100,
+        stats: { ...dados, vis: { hp:false, ac:false, atk:false, dmg:false, desc:false } }
     };
-    window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`), t);
+    window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}`), novoToken);
     alert("Monstro Criado!");
 };
 
@@ -162,54 +262,35 @@ window.criarTokenPC = function(nome, img) {
     const id = 'pc_' + Date.now();
     const t = {
         tipo: 'pc', nome: nome, imagem: img, tamanho: 1, x: 150, y: 150,
-        stats: { pv_atual:6, pv_max:6, dificuldade:10, ataque:"+0", dano:"1d8" } // Padrão
+        stats: { pv_atual:6, pv_max:6 } 
     };
     window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`), t);
-    // Fecha modal
     document.getElementById('modal-criar-token-pc').style.display = 'none';
 };
+
+// ... (Funções de Upload e Drag iguais a V5.0) ...
+// (Mantenha o uploadMapa, toggleMapaVisivel, startPanMap etc do código anterior, 
+//  só alterei o onValue e renderizarTokens que são o coração do problema)
 
 window.uploadMapa = function() {
     const f = document.getElementById('map-upload-input').files[0];
     if(!f) return;
     const r = new FileReader();
-    r.onload = (e) => {
-        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { imagem: e.target.result, visivel: false });
-    };
+    r.onload = (e) => { window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { imagem: e.target.result, visivel: false }); };
     r.readAsDataURL(f);
 };
-
 window.toggleMapaVisivel = function() {
-    window.get(window.ref(window.db, `${REF_TABLETOP}/config/visivel`)).then(s => {
-        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { visivel: !s.val() });
-    });
+    window.get(window.ref(window.db, `${REF_TABLETOP}/config/visivel`)).then(s => { window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { visivel: !s.val() }); });
 };
-
 window.toggleVTTMinimizado = function() {
     const a = document.getElementById('tabletop-area');
     const b = document.getElementById('btn-vtt-toggle');
     vttMinimizado = !vttMinimizado;
     if(vttMinimizado) { a.style.display='none'; document.body.classList.remove('vtt-ativo'); b.innerText="🗺️ Abrir"; }
-    else { a.style.display='block'; document.body.classList.add('vtt-ativo'); b.innerText="⬇️ Minimizar"; }
+    else { a.style.display='flex'; document.body.classList.add('vtt-ativo'); b.innerText="⬇️ Minimizar"; }
 };
 
-window.toggleInfoVis = function(id, f) {
-    const r = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/stats/vis/${f}`);
-    window.get(r).then(s => { window.set(r, !s.val()); document.getElementById('token-info-modal').style.display='none'; });
-};
-window.alterarVidaToken = function(id, d) {
-    const r = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/stats`);
-    window.get(r).then(s => { 
-        let v = (s.val().pv_atual||0)+d; 
-        if(v<0)v=0; if(v>s.val().pv_max)v=s.val().pv_max; 
-        window.update(r, {pv_atual:v}); document.getElementById('token-info-modal').style.display='none';
-    });
-};
-window.removerTokenDoGrid = function(id) {
-    if(confirm("Remover?")) { window.remove(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`)); document.getElementById('token-info-modal').style.display='none'; }
-};
-
-// Drag & Pan (Simplificado)
+// Drag & Pan (Importante manter)
 function startPanMap(e) { 
     if(e.target.id!=='tabletop-area' && !e.target.classList.contains('grid-overlay')) return;
     isPanningMap=true; dragStartPos={x:e.clientX, y:e.clientY}; 

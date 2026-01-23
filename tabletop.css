@@ -1,103 +1,123 @@
 /* =========================================================
-   TABLETOP VIRTUAL (V6.0 - FIX FINAL)
+   TABLETOP VIRTUAL (V7.0 - SYNC & FULLSCREEN FIX)
    ========================================================= */
 
 /* --- ÁREA GERAL --- */
 #tabletop-area {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    overflow: hidden; background-color: #111; z-index: 0; display: none;
+    overflow: hidden; background-color: #050505; z-index: 0; display: none;
 }
 
+/* O MAPA (Container que se move) */
 #map-container {
     position: absolute; 
     transform-origin: top left;
     box-shadow: 0 0 50px rgba(0,0,0,0.8); 
     cursor: grab;
     top: 0; left: 0;
-    /* Importante: O tamanho será definido pelo JS */
 }
 #map-container:active { cursor: grabbing; }
 
 .map-bg-img { 
     display: block; 
     pointer-events: none; 
-    max-width: none !important; width: auto !important; height: auto !important;
+    /* Mestre: Tamanho real para dar zoom/pan livremente */
+    max-width: none !important; width: auto !important;
 }
 
 .grid-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
     background-size: 50px 50px;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+                      linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
     z-index: 10;
 }
 
-/* --- MODO JOGADOR --- */
+/* --- MODO JOGADOR (TELA INTEIRA SEM CORTE) --- */
 .modo-jogador #tabletop-area {
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
     z-index: 5; background: #000;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.modo-jogador #map-container {
+    position: relative !important; /* Reseta posicionamento absoluto */
+    top: auto !important; left: auto !important;
+    width: 100% !important; height: 100% !important;
+    cursor: default !important;
+    box-shadow: none !important;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.modo-jogador .map-bg-img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: auto !important; height: auto !important;
+    object-fit: contain; /* PULO DO GATO: Garante imagem inteira */
+}
+
+/* Esconde grid no modo "visão geral" do jogador se preferir, ou ajusta */
+.modo-jogador .grid-overlay {
+    background-size: 50px 50px; /* Mantém grid relativo */
+    /* Grid pode ficar desalinhado no modo contain, ideal é o mestre alinhar */
 }
 
 /* Oculta UI do jogador quando maximizado */
 body.vtt-ativo #mao-area,
 body.vtt-ativo #deck-container-wrapper,
 body.vtt-ativo #reserva-area,
-body.vtt-ativo #mesa-area {
+body.vtt-ativo #mesa-area,
+body.vtt-ativo #player-portrait-container {
     display: none !important;
 }
 
 /* --- TOKENS --- */
 .token {
     position: absolute; width: 50px; height: 50px; border-radius: 50%;
-    background-size: cover; background-position: center;
+    /* Cover preenche, Contain mostra tudo. Tente Contain se Cover corta muito */
+    background-size: cover; 
+    background-position: center top; /* Foca no rosto geralmente */
+    background-repeat: no-repeat;
+    background-color: #000;
     box-shadow: 0 0 5px #000; cursor: pointer; z-index: 20;
     border: 2px solid transparent; transition: transform 0.1s;
 }
-.token:hover { transform: scale(1.15); z-index: 100; border-color: #fff; }
+.token:hover { transform: scale(1.2); z-index: 100; border-color: #fff; }
 
-/* Cores de Borda */
 .token.token-jogador { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
 .token.token-monstro { border-color: #ff0000; }
 
 /* Barras */
 .token-bars-container {
-    position: absolute; bottom: -12px; left: -10%; width: 120%;
+    position: absolute; bottom: -14px; left: -10%; width: 120%;
     display: flex; flex-direction: column; gap: 2px; pointer-events: none;
-    background: rgba(0,0,0,0.6); padding: 1px; border-radius: 2px;
+    background: rgba(0,0,0,0.7); padding: 2px; border-radius: 4px; z-index: 101;
 }
-.bar-track { width: 100%; height: 4px; background: #300; border: 1px solid #000; }
-.fill-hp { height: 100%; background: #0f0; width: 100%; transition: width 0.2s; }
-.fill-pf { height: 100%; background: #08f; width: 100%; transition: width 0.2s; }
+.bar-track { width: 100%; height: 5px; background: #300; border: 1px solid #000; position:relative; }
+.fill-hp { height: 100%; background: #0f0; width: 100%; transition: width 0.3s ease-in-out; }
+.fill-pf { height: 100%; background: #08f; width: 100%; transition: width 0.3s ease-in-out; }
 
-/* --- LISTAS FLUTUANTES (FIXADAS PARA NÃO QUEBRAR) --- */
+/* Animação de Dano/Cura na barra */
+.fill-hp.dano { background: #fff !important; filter: drop-shadow(0 0 5px white); }
+.fill-hp.cura { background: #00ff00 !important; filter: drop-shadow(0 0 5px lime); }
+
+/* --- LISTAS FLUTUANTES (TRAVAMENTO FIX) --- */
 .floating-list-container {
-    position: absolute; 
-    top: 60px; /* Abaixo do menu superior */
-    width: 250px; 
-    max-height: 70vh;
-    background: rgba(10, 5, 5, 0.98); 
-    border: 2px solid var(--gold);
-    border-radius: 8px; 
-    display: none; 
-    flex-direction: column;
-    z-index: 2000; /* Acima do mapa */
-    box-shadow: 0 0 20px #000;
+    position: absolute; top: 60px; width: 260px; max-height: 70vh;
+    background: rgba(10, 5, 5, 0.98); border: 2px solid var(--gold);
+    border-radius: 8px; display: none !important; /* Força oculto */
+    flex-direction: column; z-index: 2000; box-shadow: 0 0 20px #000;
 }
-.floating-list-container.active { display: flex; }
+.floating-list-container.active { display: flex !important; } /* Força visível */
 
-/* Lista de Inimigos (Esquerda) */
 #gm-enemy-list-container { left: 20px; border-color: #8b0000; }
-
-/* Lista de NPCs (Direita) */
 #gm-npc-list-container { right: 20px; border-color: #4682B4; }
 
 .list-header {
-    background: #221100; color: var(--gold); padding: 8px;
-    font-weight: bold; border-bottom: 1px solid #553311;
-    display: flex; justify-content: space-between; align-items: center;
+    background: #221100; color: var(--gold); padding: 8px; font-weight: bold;
+    border-bottom: 1px solid #553311; display: flex; justify-content: space-between; align-items: center;
 }
 .list-scroll { padding: 5px; overflow-y: auto; flex: 1; }
-
 .list-item {
     display: flex; justify-content: space-between; align-items: center;
     background: #1a1a1a; border: 1px solid #333; padding: 8px; margin-bottom: 5px;
@@ -105,18 +125,25 @@ body.vtt-ativo #mesa-area {
 }
 .list-item:hover { background: #333; border-color: var(--gold); }
 
-/* --- OUTROS --- */
+/* --- MODAL DETALHES --- */
+.token-info-modal {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(15, 10, 5, 0.98); border: 2px solid var(--gold);
+    padding: 20px; border-radius: 10px; z-index: 10000; min-width: 320px;
+    color: #fff; box-shadow: 0 0 100px #000; display: none;
+}
+.info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #444; align-items: center; }
+.eye-btn { cursor: pointer; margin-left: 10px; opacity: 0.3; font-size: 1.2rem; filter:grayscale(1); }
+.eye-btn.visible { opacity: 1; text-shadow: 0 0 5px #0f0; filter:grayscale(0); }
+
+.hp-control-group { display: flex; gap: 5px; margin-top: 15px; }
+.btn-dmg { background: #500; color: #fff; border: 1px solid #f00; flex: 1; cursor: pointer; padding: 8px; }
+.btn-heal { background: #050; color: #fff; border: 1px solid #0f0; flex: 1; cursor: pointer; padding: 8px; }
+.btn-trash { background: #333; color: #fff; width: 40px; cursor: pointer; border: 1px solid #666; display:flex; align-items:center; justify-content:center;}
+.btn-trash:hover { background: #f00; border-color: #f00; }
+
 #btn-vtt-toggle {
     position: fixed; top: 10px; right: 80px; z-index: 10000;
     background: rgba(0,0,0,0.8); color: var(--gold); border: 1px solid var(--gold);
     padding: 5px 10px; cursor: pointer; border-radius: 5px; display: none;
 }
-
-.token-info-modal {
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: rgba(15, 10, 5, 0.98); border: 2px solid var(--gold);
-    padding: 20px; border-radius: 10px; z-index: 10000; min-width: 300px;
-    color: #fff; box-shadow: 0 0 100px #000; display: none;
-}
-.eye-btn { cursor: pointer; margin-left: 10px; opacity: 0.3; font-size: 1.2rem; }
-.eye-btn.visible { opacity: 1; text-shadow: 0 0 5px #0f0; }
