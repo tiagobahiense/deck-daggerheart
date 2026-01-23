@@ -5,7 +5,10 @@
 const REF_NPCS = 'mesa_rpg/npcs_data';   
 const REF_NPC_ATIVO = 'mesa_rpg/npc_ativo'; 
 
-// --- FUNÇÕES DO MESTRE ---
+// Estado local do preview
+window.npcAtualEstado = { id: null, dados: null, visivel: false };
+
+// --- FUNÇÕES DE CRIAÇÃO ---
 
 window.abrirCriadorNPC = function() {
     const modal = document.getElementById('modal-criar-npc');
@@ -51,6 +54,7 @@ window.salvarNovoNPC = function() {
 
     window.push(window.ref(window.db, REF_NPCS), novoNPC).then(() => {
         window.fecharCriadorNPC();
+        // Limpar campos
         document.getElementById('new-npc-name').value = '';
         document.getElementById('new-npc-desc-player').value = '';
         document.getElementById('new-npc-desc-gm').value = '';
@@ -61,9 +65,9 @@ window.salvarNovoNPC = function() {
 };
 
 window.deletarNPC = function(id) {
-    if(confirm("Excluir este NPC permanentemente?")) {
+    if(confirm("Tem certeza que deseja excluir este NPC?")) {
         window.remove(window.ref(window.db, `${REF_NPCS}/${id}`));
-        // Se estiver ativo, recolhe
+        // Se ele estiver ativo na tela, remove também
         window.get(window.ref(window.db, REF_NPC_ATIVO)).then(snap => {
             if(snap.exists() && snap.val().id === id) {
                 window.recolherNPC();
@@ -72,63 +76,82 @@ window.deletarNPC = function(id) {
     }
 };
 
-// 1. Abre o Preview para o Mestre (Ainda não mostra pro jogador)
-window.abrirPreviewNPC = function(id, dados) {
+// --- FUNÇÕES DE APRESENTAÇÃO (COM TOGGLE) ---
+
+// 1. Abre o Preview para o Mestre (Reseta estado para Oculto)
+window.apresentarNPC = function(id, dados) {
     const previewMestre = document.getElementById('gm-npc-preview-modal');
     
-    // Converte objeto para string para passar no onclick
-    // (Gambiarra segura: salva no window temporariamente para evitar erro de aspas)
-    window.tempNPC = { id, ...dados };
+    // Reseta estado local
+    window.npcAtualEstado = { id: id, dados: dados, visivel: false };
 
+    // HTML do Preview com botão TOGGLE
     previewMestre.innerHTML = `
         <img src="${dados.imagem}" class="gm-npc-img">
         <h2 style="color:var(--gold); margin:5px 0;">${dados.nome}</h2>
-        
         <div class="gm-npc-info">
-            <div class="desc-box-jogador">
-                <strong>👁️ Jogadores verão:</strong><br>${dados.desc_jogador || '...'}
-            </div>
-            <div class="desc-box-mestre">
-                <strong>🔒 Mestre vê:</strong><br>${dados.desc_mestre || '...'}
-            </div>
+            <div class="desc-box-jogador"><strong>👁️ Jogadores veem:</strong><br>${dados.desc_jogador || '...'}</div>
+            <div class="desc-box-mestre"><strong>🔒 Mestre vê:</strong><br>${dados.desc_mestre || '...'}</div>
         </div>
+        
+        <button id="btn-eye-toggle" class="btn-eye-npc oculto" onclick="window.toggleVisibilidadeNPC()">
+            🙈 Oculto para Jogadores
+        </button>
 
-        <button class="btn-action-npc btn-show-player" onclick="window.transmitirNPC()">📡 MOSTRAR AOS JOGADORES</button>
-        <button class="btn-action-npc btn-hide-player" onclick="window.recolherNPC()">❌ FECHAR / RECOLHER</button>
+        <button onclick="window.recolherNPC()" style="margin-top:10px; padding:10px; background:#333; color:#ddd; border:1px solid #555; cursor:pointer; width:100%;">
+            ❌ Fechar Janela
+        </button>
     `;
-    
     previewMestre.style.display = 'flex';
 };
 
-// 2. Transmite para o Firebase (Aparece na tela de todos)
-window.transmitirNPC = function() {
-    if(!window.tempNPC) return;
-    
-    const dados = window.tempNPC;
-    window.set(window.ref(window.db, REF_NPC_ATIVO), {
-        id: dados.id,
-        nome: dados.nome,
-        imagem: dados.imagem,
-        desc_jogador: dados.desc_jogador,
-        ativo: true
-    }).then(() => {
-        alert("NPC Enviado para a tela dos jogadores!");
-    });
+// 2. Função que Liga/Desliga a visibilidade (SEM ALERT)
+window.toggleVisibilidadeNPC = function() {
+    const btn = document.getElementById('btn-eye-toggle');
+    const estado = window.npcAtualEstado;
+
+    if (!estado.visivel) {
+        // MOSTRAR
+        estado.visivel = true;
+        
+        // Atualiza Botão para VERDE
+        btn.className = "btn-eye-npc visivel";
+        btn.innerHTML = "👁️ VISÍVEL PARA JOGADORES";
+
+        // Manda pro Firebase
+        window.set(window.ref(window.db, REF_NPC_ATIVO), {
+            id: estado.id,
+            nome: estado.dados.nome,
+            imagem: estado.dados.imagem,
+            desc_jogador: estado.dados.desc_jogador,
+            ativo: true
+        });
+
+    } else {
+        // OCULTAR
+        estado.visivel = false;
+
+        // Atualiza Botão para VERMELHO
+        btn.className = "btn-eye-npc oculto";
+        btn.innerHTML = "🙈 Oculto para Jogadores";
+
+        // Remove do Firebase
+        window.set(window.ref(window.db, REF_NPC_ATIVO), null);
+    }
 };
 
-// 3. Recolhe (Limpa a tela)
+// 3. Fecha janela e limpa tela
 window.recolherNPC = function() {
     document.getElementById('gm-npc-preview-modal').style.display = 'none';
-    window.set(window.ref(window.db, REF_NPC_ATIVO), null); // Limpa no banco
-    window.tempNPC = null;
+    window.set(window.ref(window.db, REF_NPC_ATIVO), null);
+    window.npcAtualEstado = { id: null, dados: null, visivel: false };
 };
 
 // --- LISTENERS (CARREGAMENTO) ---
 
-// Carregar Lista de NPCs (Apenas Mestre)
 window.carregarListaNPCs = function() {
     const listaContainer = document.getElementById('npc-list-scroll');
-    if (!listaContainer) return;
+    if (!listaContainer) return; 
 
     window.onValue(window.ref(window.db, REF_NPCS), (snap) => {
         listaContainer.innerHTML = '';
@@ -139,55 +162,34 @@ window.carregarListaNPCs = function() {
 
         const npcs = snap.val();
         
-        // Verifica qual está ativo para marcar na lista
-        window.get(window.ref(window.db, REF_NPC_ATIVO)).then(ativoSnap => {
-            const idAtivo = ativoSnap.exists() ? ativoSnap.val().id : null;
-
-            Object.keys(npcs).forEach(key => {
-                const npc = npcs[key];
-                // Cria elemento da lista
-                const div = document.createElement('div');
-                div.className = `npc-list-item ${idAtivo === key ? 'ativo' : ''}`;
-                
-                // Texto clicável para abrir preview
-                const spanNome = document.createElement('span');
-                spanNome.style.flex = '1';
-                spanNome.innerText = npc.nome;
-                spanNome.onclick = () => window.abrirPreviewNPC(key, npc);
-
-                // Botão deletar
-                const btnDel = document.createElement('button');
-                btnDel.className = 'btn-del-npc';
-                btnDel.innerText = 'X';
-                btnDel.onclick = (e) => { e.stopPropagation(); window.deletarNPC(key); };
-
-                div.appendChild(spanNome);
-                div.appendChild(btnDel);
-                listaContainer.appendChild(div);
-            });
+        Object.keys(npcs).forEach(key => {
+            const npc = npcs[key];
+            const div = document.createElement('div');
+            div.className = `npc-list-item`;
+            div.innerHTML = `
+                <span onclick='window.apresentarNPC("${key}", ${JSON.stringify(npc)})' style="flex:1;">${npc.nome}</span>
+                <button class="btn-del-npc" onclick="window.deletarNPC('${key}')">X</button>
+            `;
+            listaContainer.appendChild(div);
         });
     });
 };
 
-// Monitorar NPC Ativo (Para o Jogador e para Sync do Mestre)
 window.monitorarNPCAtivo = function() {
     const overlay = document.getElementById('player-npc-overlay');
-    if(!overlay) return; // Se não tiver o elemento no HTML (ex: admin), ignora
+    if(!overlay) return;
     
     window.onValue(window.ref(window.db, REF_NPC_ATIVO), (snap) => {
         const dados = snap.val();
 
         if (dados && dados.ativo) {
-            // MOSTRAR (Slide In)
             overlay.innerHTML = `
                 ${dados.imagem ? `<img src="${dados.imagem}" class="player-npc-img">` : ''}
                 <div class="player-npc-name">${dados.nome}</div>
                 ${dados.desc_jogador ? `<div class="player-npc-desc">${dados.desc_jogador}</div>` : ''}
             `;
-            // Força reflow e anima
-            overlay.classList.add('ativo');
+            requestAnimationFrame(() => { overlay.classList.add('ativo'); });
         } else {
-            // ESCONDER (Slide Out)
             overlay.classList.remove('ativo');
         }
     });

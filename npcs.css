@@ -31,7 +31,6 @@
     flex-shrink: 0;
 }
 
-/* Scroll na lista */
 .npc-list-scroll {
     overflow-y: auto;
     overflow-x: hidden;
