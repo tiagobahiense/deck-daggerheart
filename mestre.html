@@ -129,6 +129,7 @@
              <button class="btn-rest" style="background: #2c3e50; border: 1px solid #4682B4;" onclick="abrirCriadorNPC()">👤 Novo NPC</button> 
              
              <button class="btn-rest" style="background: #330000; border: 1px solid red;" onclick="removerTodosInimigos()">🗑️ Limpar</button>
+             <button class="btn-rest" style="background: #004d00; border: 1px solid #00ff00;" onclick="document.getElementById('modal-criar-token-pc').style.display='flex'">👤 Novo Player</button>
         </div>
 
         <div style="display:flex; gap:10px; align-items:center;">
@@ -164,24 +165,12 @@
             </div>
         
             <div id="gm-enemy-list-container" class="floating-list-container">
-                <div class="list-header">
-                    <span>Lista de Inimigos</span>
-                    <div style="display:flex; gap:10px;">
-                        <span onclick="abrirCriadorInimigo()" style="cursor:pointer; font-size:1.2rem;">+</span>
-                        <span onclick="window.toggleListaInimigos()" style="cursor:pointer; color:#f55;">X</span>
-                    </div>
-                </div>
+                <div class="list-header"><span>Inimigos</span></div>
                 <div id="enemy-list-scroll" class="list-scroll"></div>
             </div>
         
             <div id="gm-npc-list-container" class="floating-list-container">
-                <div class="list-header">
-                    <span>Lista de NPCs</span>
-                    <div style="display:flex; gap:10px;">
-                        <span onclick="abrirCriadorNPC()" style="cursor:pointer; font-size:1.2rem;">+</span>
-                        <span onclick="window.toggleListaNPCs()" style="cursor:pointer; color:#f55;">X</span>
-                    </div>
-                </div>
+                <div class="list-header"><span>NPCs</span></div>
                 <div id="npc-list-scroll" class="list-scroll"></div>
             </div>
         
@@ -650,5 +639,20 @@
         window.realizarDescanso = function(t){ get(ref(db,'mesa_rpg/jogadores')).then(s=>{if(s.exists()){Object.keys(s.val()).forEach(n=>{const p=s.val()[n]; if(p.mao){let m=false;p.mao.forEach(c=>{if(c&&(t==='longo'||c.estado==='curto')){c.estado='ativo';m=true}});if(m)set(ref(db,`mesa_rpg/jogadores/${n}/mao`),p.mao)} if(p.slots){let m=false;Object.keys(p.slots).forEach(k=>{if(p.slots[k]&&(t==='longo'||p.slots[k].estado==='curto')){p.slots[k].estado='ativo';m=true}});if(m)set(ref(db,`mesa_rpg/jogadores/${n}/slots`),p.slots)}})}})};
         function animarCartaEspecifica(n,c){const g=document.querySelector(`[data-jogador="${n}"]`);if(!g)return;const i=g.querySelectorAll('.mini-carta');i.forEach(e=>{if(e.style.backgroundImage.includes(c.caminho.split('/').pop())){e.style.transform="scale(1.2)";e.style.boxShadow="0 0 15px gold";setTimeout(()=>{e.style.transform="";e.style.boxShadow=""},1000)}});const p=document.getElementById('preview-carta-mestre');p.style.backgroundImage=`url('${c.caminho}')`;p.style.display='block';setTimeout(()=>p.style.display='none',3000)};
     </script>
+    <div id="modal-criar-token-pc" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.9); z-index:9000; align-items:center; justify-content:center;">
+        <div style="background:#1a1a1a; padding:20px; border:2px solid #00ff00; border-radius:10px; width:300px; display:flex; flex-direction:column; gap:10px;">
+            <h3 style="color:#00ff00; text-align:center; margin:0;">Novo Token de Jogador</h3>
+            <input type="text" id="new-pc-name" placeholder="Nome do Personagem">
+    
+            <label style="background:#333; padding:10px; text-align:center; border:1px dashed #00ff00; cursor:pointer;">
+                📷 Escolher Foto
+                <input type="file" id="pc-token-upload" accept="image/*" style="display:none" onchange="const r=new FileReader(); r.onload=e=>document.getElementById('preview-pc').src=e.target.result; r.readAsDataURL(this.files[0]);">
+            </label>
+            <img id="preview-pc" style="width:100px; height:100px; margin:0 auto; object-fit:cover; border-radius:50%; border:2px solid #00ff00;">
+    
+            <button onclick="window.criarTokenPC(document.getElementById('new-pc-name').value, document.getElementById('preview-pc').src)" style="padding:10px; background:#004d00; color:white; border:none; cursor:pointer;">Criar Token</button>
+            <button onclick="document.getElementById('modal-criar-token-pc').style.display='none'" style="padding:5px; background:#333; color:#ccc; border:none; cursor:pointer;">Cancelar</button>
+        </div>
+    </div>
 </body>
 </html>

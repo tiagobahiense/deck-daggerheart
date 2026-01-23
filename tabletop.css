@@ -1,29 +1,27 @@
 /* =========================================================
-   TABLETOP VIRTUAL (V5.0 - UI FIX & ALINHAMENTO)
+   TABLETOP VIRTUAL (V6.0 - FIX FINAL)
    ========================================================= */
 
-/* --- ÁREA GERAL DO MAPA --- */
+/* --- ÁREA GERAL --- */
 #tabletop-area {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     overflow: hidden; background-color: #111; z-index: 0; display: none;
 }
 
-/* O MAPA (Container que se move) */
 #map-container {
     position: absolute; 
     transform-origin: top left;
     box-shadow: 0 0 50px rgba(0,0,0,0.8); 
     cursor: grab;
-    /* Começa no 0,0 */
     top: 0; left: 0;
+    /* Importante: O tamanho será definido pelo JS */
 }
 #map-container:active { cursor: grabbing; }
 
 .map-bg-img { 
     display: block; 
     pointer-events: none; 
-    /* Garante tamanho real da imagem */
-    max-width: none !important; width: auto !important;
+    max-width: none !important; width: auto !important; height: auto !important;
 }
 
 .grid-overlay {
@@ -40,7 +38,7 @@
     z-index: 5; background: #000;
 }
 
-/* Esconder UI do jogador quando VTT está MAXIMIZADO */
+/* Oculta UI do jogador quando maximizado */
 body.vtt-ativo #mao-area,
 body.vtt-ativo #deck-container-wrapper,
 body.vtt-ativo #reserva-area,
@@ -48,115 +46,77 @@ body.vtt-ativo #mesa-area {
     display: none !important;
 }
 
-/* --- GRUPO DE BOTÕES DO JOGADOR (ALINHADOS) --- */
-.action-buttons-container {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    flex-direction: column-reverse; /* De baixo pra cima */
-    align-items: flex-end;
-    gap: 15px;
-    z-index: 9000;
-    pointer-events: auto;
-}
-
-.action-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-/* Botão Dado (Reestilizado para alinhar) */
-#btn-abrir-dados {
-    position: static !important; /* Remove posicionamento antigo */
-    width: 60px; height: 60px;
-    font-size: 2rem;
-    display: flex; align-items: center; justify-content: center;
-    border-radius: 10px;
-    background: #222;
-    border: 2px solid var(--gold);
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(0,0,0,0.8);
-}
-
-.btn-action-rect {
-    padding: 10px 15px;
-    border-radius: 8px;
-    border: 2px solid #fff;
-    background: #333;
-    color: #fff;
-    font-family: 'MedievalSharp';
-    font-weight: bold;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(0,0,0,0.8);
-    font-size: 1rem;
-}
-.btn-action-rect:hover { background: var(--gold); color: #000; border-color: var(--gold); }
-
-/* --- VITRAL (PORTRAIT) --- */
-#player-portrait-container {
-    position: fixed;
-    bottom: 20px; left: 20px;
-    width: 140px; height: 140px;
-    z-index: 8000;
-    display: none; /* Controlado via JS */
-    pointer-events: none; /* Permite clicar através nas bordas */
-}
-.portrait-frame {
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    border: 4px solid var(--gold);
-    box-shadow: 0 0 20px rgba(0,0,0,0.9), inset 0 0 20px rgba(0,0,0,0.8);
-    overflow: hidden;
-    background: #000;
-    position: relative;
-    pointer-events: auto;
-}
-.portrait-img {
-    width: 100%; height: 100%; object-fit: cover;
-}
-
 /* --- TOKENS --- */
 .token {
     position: absolute; width: 50px; height: 50px; border-radius: 50%;
     background-size: cover; background-position: center;
     box-shadow: 0 0 5px #000; cursor: pointer; z-index: 20;
-    border: 2px solid transparent; transition: transform 0.1s, border-color 0.2s;
+    border: 2px solid transparent; transition: transform 0.1s;
 }
 .token:hover { transform: scale(1.15); z-index: 100; border-color: #fff; }
-.token.token-jogador { border-color: #00ff00; box-shadow: 0 0 8px #00ff00; }
+
+/* Cores de Borda */
+.token.token-jogador { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
 .token.token-monstro { border-color: #ff0000; }
 
-/* Barras de Vida */
+/* Barras */
 .token-bars-container {
-    position: absolute; bottom: -14px; left: -10%; width: 120%;
+    position: absolute; bottom: -12px; left: -10%; width: 120%;
     display: flex; flex-direction: column; gap: 2px; pointer-events: none;
-    background: rgba(0,0,0,0.5); padding: 2px; border-radius: 4px;
+    background: rgba(0,0,0,0.6); padding: 1px; border-radius: 2px;
 }
-.bar-track { width: 100%; height: 5px; background: #300; border: 1px solid #000; }
+.bar-track { width: 100%; height: 4px; background: #300; border: 1px solid #000; }
 .fill-hp { height: 100%; background: #0f0; width: 100%; transition: width 0.2s; }
 .fill-pf { height: 100%; background: #08f; width: 100%; transition: width 0.2s; }
 
-/* --- MODAL DETALHES --- */
-.token-info-modal {
-    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    background: rgba(15, 10, 5, 0.98); border: 2px solid var(--gold);
-    padding: 20px; border-radius: 10px; z-index: 10000; min-width: 320px;
-    color: #fff; box-shadow: 0 0 100px rgba(0,0,0,1); display: none;
+/* --- LISTAS FLUTUANTES (FIXADAS PARA NÃO QUEBRAR) --- */
+.floating-list-container {
+    position: absolute; 
+    top: 60px; /* Abaixo do menu superior */
+    width: 250px; 
+    max-height: 70vh;
+    background: rgba(10, 5, 5, 0.98); 
+    border: 2px solid var(--gold);
+    border-radius: 8px; 
+    display: none; 
+    flex-direction: column;
+    z-index: 2000; /* Acima do mapa */
+    box-shadow: 0 0 20px #000;
 }
-.info-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed #444; align-items: center; }
-.eye-btn { cursor: pointer; margin-left: 10px; opacity: 0.3; font-size: 1.2rem; filter: grayscale(1); }
-.eye-btn.visible { opacity: 1; filter: none; text-shadow: 0 0 5px #0f0; }
+.floating-list-container.active { display: flex; }
 
-.hp-control-group { display: flex; gap: 5px; margin-top: 15px; }
-.btn-dmg { background: #500; color: #fff; border: 1px solid #f00; flex: 1; cursor: pointer; padding: 8px; }
-.btn-heal { background: #050; color: #fff; border: 1px solid #0f0; flex: 1; cursor: pointer; padding: 8px; }
-.btn-trash { background: #333; color: #fff; width: 40px; cursor: pointer; border: 1px solid #666; }
+/* Lista de Inimigos (Esquerda) */
+#gm-enemy-list-container { left: 20px; border-color: #8b0000; }
 
-/* --- BOTÃO MINIMIZAR --- */
+/* Lista de NPCs (Direita) */
+#gm-npc-list-container { right: 20px; border-color: #4682B4; }
+
+.list-header {
+    background: #221100; color: var(--gold); padding: 8px;
+    font-weight: bold; border-bottom: 1px solid #553311;
+    display: flex; justify-content: space-between; align-items: center;
+}
+.list-scroll { padding: 5px; overflow-y: auto; flex: 1; }
+
+.list-item {
+    display: flex; justify-content: space-between; align-items: center;
+    background: #1a1a1a; border: 1px solid #333; padding: 8px; margin-bottom: 5px;
+    cursor: pointer; color: #ddd; font-size: 0.9rem;
+}
+.list-item:hover { background: #333; border-color: var(--gold); }
+
+/* --- OUTROS --- */
 #btn-vtt-toggle {
     position: fixed; top: 10px; right: 80px; z-index: 10000;
     background: rgba(0,0,0,0.8); color: var(--gold); border: 1px solid var(--gold);
     padding: 5px 10px; cursor: pointer; border-radius: 5px; display: none;
 }
+
+.token-info-modal {
+    position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    background: rgba(15, 10, 5, 0.98); border: 2px solid var(--gold);
+    padding: 20px; border-radius: 10px; z-index: 10000; min-width: 300px;
+    color: #fff; box-shadow: 0 0 100px #000; display: none;
+}
+.eye-btn { cursor: pointer; margin-left: 10px; opacity: 0.3; font-size: 1.2rem; }
+.eye-btn.visible { opacity: 1; text-shadow: 0 0 5px #0f0; }

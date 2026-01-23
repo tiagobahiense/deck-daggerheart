@@ -88,8 +88,12 @@ window.fazerLoginJogador = function() {
     const email = document.getElementById('player-email').value.trim().toLowerCase();
     const pass = document.getElementById('player-pass').value;
     const msg = document.getElementById('error-msg-player');
+    
     if(email === EMAIL_MESTRE.toLowerCase().trim()) { msg.innerText = "❌ Mestre não loga aqui."; return; }
     if(!email || !pass) { msg.innerText = "Preencha tudo."; return; }
+
+    // --- CORREÇÃO: Limpa o "auto-login" ao fazer login manual ---
+    localStorage.removeItem('ultimoPersonagem'); 
 
     signInWithEmailAndPassword(auth, email, pass).then((uc) => {
         currentUser = uc.user;
@@ -98,16 +102,9 @@ window.fazerLoginJogador = function() {
             
             document.getElementById('fase-login-jogador').style.display = 'none';
             
-            // VERIFICA SE TINHA PERSONAGEM SALVO
-            const ultimo = localStorage.getItem('ultimoPersonagem');
-            if (ultimo) {
-                // Tenta carregar direto o personagem
-                window.selecionarPersonagem(ultimo);
-            } else {
-                // Se não, vai pra seleção
-                document.getElementById('fase-personagem').style.display = 'block';
-                carregarListaPersonagens();
-            }
+            // --- CORREÇÃO: Sempre manda para a seleção de personagem ---
+            document.getElementById('fase-personagem').style.display = 'block';
+            carregarListaPersonagens();
         });
     }).catch((e) => msg.innerText = e.message.includes("Conta inativa") ? "❌ Conta desativada." : "❌ Login inválido.");
 };
