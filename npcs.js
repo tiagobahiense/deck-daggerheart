@@ -175,19 +175,30 @@ window.carregarListaNPCs = function() {
     });
 };
 
+// Monitorar NPC Ativo (Para o Jogador e para Sync do Mestre)
 window.monitorarNPCAtivo = function() {
     const overlay = document.getElementById('player-npc-overlay');
     if(!overlay) return;
     
-    window.onValue(window.ref(window.db, REF_NPC_ATIVO), (snap) => {
-        const dados = snap.val();
+    // Desliga listener anterior se houver para evitar duplicidade
+    if (window.npcListenerRef) window.off(window.npcListenerRef);
 
-        if (dados && dados.ativo) {
+    window.npcListenerRef = window.ref(window.db, REF_NPC_ATIVO);
+
+    window.onValue(window.npcListenerRef, (snap) => {
+        const dados = snap.val();
+        
+        // VERIFICAÇÃO DE SEGURANÇA:
+        // Só mostra se tiver dados, se estiver ativo E se o jogador já tiver selecionado personagem
+        const jogadorLogado = document.getElementById('app-container').style.display !== 'none';
+
+        if (dados && dados.ativo && jogadorLogado) {
             overlay.innerHTML = `
                 ${dados.imagem ? `<img src="${dados.imagem}" class="player-npc-img">` : ''}
                 <div class="player-npc-name">${dados.nome}</div>
                 ${dados.desc_jogador ? `<div class="player-npc-desc">${dados.desc_jogador}</div>` : ''}
             `;
+            // Pequeno delay para garantir que o DOM renderizou
             requestAnimationFrame(() => { overlay.classList.add('ativo'); });
         } else {
             overlay.classList.remove('ativo');

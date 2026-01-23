@@ -59,6 +59,7 @@ window.irParaLoginNarrador = function() { document.getElementById('fase-selecao'
 window.voltarParaSelecao = function() { document.getElementById('fase-login-jogador').style.display = 'none'; document.getElementById('fase-login-narrador').style.display = 'none'; document.getElementById('fase-personagem').style.display = 'none'; document.getElementById('fase-selecao').style.display = 'block'; };
 
 window.forcarLogout = function() {
+    localStorage.removeItem('ultimoPersonagem'); // <--- ADICIONE ISSO
     signOut(auth).then(() => {
         currentUser = null; nomeJogador = ""; maoDoJogador = []; reservaDoJogador = [];
         if (window.presencaInterval) clearInterval(window.presencaInterval);
@@ -94,9 +95,19 @@ window.fazerLoginJogador = function() {
         currentUser = uc.user;
         get(ref(db, `mesa_rpg/accounts/${currentUser.uid}/status`)).then(snap => {
             if (snap.exists() && snap.val() === 'inactive') { signOut(auth); throw new Error("Conta inativa"); }
+            
             document.getElementById('fase-login-jogador').style.display = 'none';
-            document.getElementById('fase-personagem').style.display = 'block';
-            carregarListaPersonagens();
+            
+            // VERIFICA SE TINHA PERSONAGEM SALVO
+            const ultimo = localStorage.getItem('ultimoPersonagem');
+            if (ultimo) {
+                // Tenta carregar direto o personagem
+                window.selecionarPersonagem(ultimo);
+            } else {
+                // Se não, vai pra seleção
+                document.getElementById('fase-personagem').style.display = 'block';
+                carregarListaPersonagens();
+            }
         });
     }).catch((e) => msg.innerText = e.message.includes("Conta inativa") ? "❌ Conta desativada." : "❌ Login inválido.");
 };
@@ -335,6 +346,7 @@ async function carregarListaPersonagens() {
 
 // Selecionar Personagem
 window.selecionarPersonagem = async function(charName) {
+    localStorage.setItem('ultimoPersonagem', charName); // <--- ADICIONE ESTA LINHA
     nomeJogador = charName.toUpperCase();
     if(typeof window !== 'undefined') window.nomeJogador = nomeJogador;
 
@@ -404,9 +416,16 @@ window.atualizarSincronia = function() {
     const btn = document.querySelector('.btn-refresh-player');
     if(btn) btn.classList.add('spin-anim');
     document.getElementById('area-inimigos').innerHTML = "";
+    
+    // Reinicia sistemas
     if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
+    if(window.monitorarNPCAtivo) window.monitorarNPCAtivo(); // <--- LINHA NOVA DO NPC
+    
     renderizar();
-    if(nomeJogador) { const pRef = ref(db, `mesa_rpg/presenca/${nomeJogador}`); set(pRef, true); }
+    if(nomeJogador) { 
+        const pRef = ref(db, `mesa_rpg/presenca/${nomeJogador}`); 
+        set(pRef, true); 
+    }
     setTimeout(() => { if(btn) btn.classList.remove('spin-anim'); }, 1000);
 };
 
@@ -572,6 +591,27 @@ window.abrirReserva = function() {
 window.toggleMusic = function() { const a=document.getElementById('bg-music'); if(a.paused) { a.play(); document.getElementById('btn-music').innerText='🔊'; } else { a.pause(); document.getElementById('btn-music').innerText='🔇'; } };
 window.setVolume = function() { document.getElementById('bg-music').volume = parseFloat(document.getElementById('volume').value); };
 
+// =========================================================
+// AUTO-RECONEXÃO (F5)
+// =========================================================
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        // Verifica se tinha personagem salvo antes do refresh
+        const ultimo = localStorage.getItem('ultimoPersonagem');
+        
+        // Se tem personagem e NÃO é o mestre, reconecta
+        if (ultimo && user.email.toLowerCase().trim() !== "tgbahiense@gmail.com") {
+             console.log("Reconectando personagem: " + ultimo);
+             
+             // Pequeno delay para garantir carregamento dos scripts
+             setTimeout(() => {
+                 document.getElementById('login-screen').style.display = 'none';
+                 window.selecionarPersonagem(ultimo);
+             }, 500);
+        }
+    }
+});
 // --- FUNÇÕES DE LEITURA DE PDF (ANCESTRALIDADE/COMUNIDADE) ---
 
 // --- FUNÇÕES DE LEITURA DE PDF ATUALIZADAS COM ZOOM ---
