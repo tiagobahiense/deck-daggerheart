@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="inimigos.css?v=3.6">
     <link rel="stylesheet" href="medo.css?v=1.1">
     <link rel="stylesheet" href="npcs.css">
+    <link rel="stylesheet" href="tabletop.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; margin: 0; overflow: hidden; }
@@ -148,10 +149,24 @@
 
         <div id="area-batalha-gm">
             <div id="titulo-batalha">CAMPO DE BATALHA</div>
+
+            <div id="tt-controls">
+                <label for="map-upload-input" style="color:white; cursor:pointer;">🗺️ Mapa</label>
+                <input type="file" id="map-upload-input" style="display:none" accept="image/*" onchange="window.uploadMapa()">
+                <button onclick="window.toggleMapaVisivel()" style="font-size:0.8rem;">👁️ Visibilidade</button>
+            </div>
+    
+            <div id="tabletop-area">
+                <div id="map-container">
+                    <img id="map-bg-img" class="map-bg-img" src="">
+                    <div class="grid-overlay"></div>
+                    </div>
+            </div>
+
             <div id="area-inimigos"></div>
             
             <div id="gm-npc-preview-modal"></div>
-
+            
             <div id="gm-npc-list-container">
                 <div class="npc-list-header">
                     <span>Lista de NPCs</span>
@@ -579,10 +594,12 @@
             loadScript("dados.js");
             loadScript("inimigos.js");
             loadScript("medo.js");
-            loadScript("npcs.js"); // <--- ESTE É O NOVO QUE FALTAVA
+            loadScript("npcs.js");
+            loadScript("tabletop.js"); // <--- ESTE É O NOVO QUE FALTAVA
 
             // INICIALIZA AS FUNÇÕES DEPOIS DE 1 SEGUNDO
             setTimeout(() => {
+                if(window.iniciarTabletop) window.iniciarTabletop();
                 if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
                 if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
                 if(window.escutarRolagens) window.escutarRolagens();

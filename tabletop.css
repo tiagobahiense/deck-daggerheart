@@ -1,0 +1,104 @@
+/* =========================================================
+   TABLETOP VIRTUAL (GRID & TOKENS)
+   ========================================================= */
+
+/* CONTAINER PRINCIPAL DO MAPA */
+#tabletop-area {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Mestre vê dentro do container */
+    background-color: #050505;
+    display: none; /* Oculto por padrão até ter imagem */
+}
+
+/* NO JOGADOR: Ocupa a tela toda (atrás dos menus, frente do fundo) */
+.modo-jogador #tabletop-area {
+    position: fixed;
+    top: 0; left: 0;
+    z-index: 5; /* Acima do background, abaixo da UI */
+    background: #000;
+}
+
+/* O MAPA EM SI (Que se move/rola) */
+#map-container {
+    position: relative;
+    transform-origin: top left;
+    cursor: grab;
+    box-shadow: 0 0 50px rgba(0,0,0,0.8);
+}
+
+#map-container:active { cursor: grabbing; }
+
+/* A IMAGEM DE FUNDO */
+.map-bg-img {
+    display: block;
+    max-width: none; /* Permite ser maior que a tela */
+    pointer-events: none;
+}
+
+/* O GRID (SOBREPOSTO) */
+.grid-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    /* Truque de CSS para fazer grid sem milhares de divs */
+    background-size: 50px 50px; /* Tamanho padrão do grid */
+    background-image:
+        linear-gradient(to right, rgba(255, 255, 255, 0.15) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.15) 1px, transparent 1px);
+    z-index: 10;
+}
+
+/* TOKENS */
+.token {
+    position: absolute;
+    width: 50px; height: 50px; /* Será sobrescrito pelo JS */
+    border-radius: 50%;
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 0 5px #000;
+    cursor: grab;
+    z-index: 20;
+    transition: top 0.2s, left 0.2s, box-shadow 0.2s; /* Movimento suave */
+    border: 2px solid transparent;
+}
+
+.token:active { cursor: grabbing; z-index: 100; transform: scale(1.1); }
+.token.token-jogador { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
+.token.token-monstro { border-color: #ff0000; }
+
+/* BARRA DE VIDA NO TOKEN */
+.token-hp-bar {
+    position: absolute;
+    bottom: -8px; left: 0;
+    width: 100%; height: 5px;
+    background: #330000;
+    border: 1px solid #000;
+    border-radius: 2px;
+    overflow: hidden;
+    pointer-events: none;
+}
+.token-hp-fill {
+    height: 100%; background: #00ff00; width: 100%;
+    transition: width 0.3s, background-color 0.3s;
+}
+
+/* CONTROLES DO TABLETOP (MESTRE) */
+#tt-controls {
+    position: absolute; bottom: 10px; left: 10px;
+    background: rgba(0,0,0,0.8); padding: 5px;
+    border: 1px solid #555; border-radius: 5px;
+    display: flex; gap: 5px; z-index: 500;
+}
+
+/* BOTÃO DE UPLOAD AVATAR (JOGADOR) */
+#btn-avatar-upload {
+    position: absolute; top: 10px; left: 10px;
+    background: rgba(0,0,0,0.6); border: 1px solid var(--gold);
+    color: var(--gold); width: 40px; height: 40px; border-radius: 50%;
+    cursor: pointer; z-index: 100; font-size: 1.5rem;
+    display: flex; align-items: center; justify-content: center;
+}
+#btn-avatar-upload:hover { background: var(--gold); color: #000; }

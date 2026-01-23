@@ -1,5 +1,5 @@
 // =========================================================
-// SISTEMA DE INIMIGOS V6.0 (REFRESH SEGURO)
+// SISTEMA DE INIMIGOS V6.1 (COM INTEGRAÇÃO TABLETOP)
 // =========================================================
 
 // --- FUNÇÕES DE CONTROLE (MESTRE) ---
@@ -127,11 +127,9 @@ window.iniciarSistemaInimigos = function() {
     if (!container) return;
 
     // LIMPEZA: Se já existe um listener rodando, desliga ele antes de criar um novo
-    // Isso é CRUCIAL para o botão de refresh não duplicar coisas
     if (inimigosRefAtivo && window.off && callbackInimigos) {
         try {
             window.off(inimigosRefAtivo, 'value', callbackInimigos); 
-            console.log("♻️ Listener de inimigos reiniciado.");
         } catch(e) { console.warn("Erro ao limpar listener antigo", e); }
     }
 
@@ -195,6 +193,9 @@ function criarTokenInimigo(id, data, isGM) {
 
     let controlsHTML = '';
     if(isGM) {
+        // Prepara objeto seguro para passar no onclick
+        const dataSafe = JSON.stringify(data).replace(/"/g, '&quot;');
+
         controlsHTML = `
             <div class="token-gm-controls">
                 <div class="gm-btn-row">
@@ -206,6 +207,9 @@ function criarTokenInimigo(id, data, isGM) {
                     <div class="btn-gm-mini btn-gm-eye ${data.visivel ? 'ativo' : ''}" onclick="toggleVisibilidadeInimigo('${id}')" title="Visibilidade">👁️</div>
                     <div class="btn-gm-mini btn-gm-info" onclick="toggleDetalhesToken('${id}')" title="Detalhes">i</div>
                     <div class="btn-gm-mini btn-gm-trash" onclick="deletarInimigoIndividual('${id}')" title="Remover">🗑️</div>
+                </div>
+                <div class="gm-btn-row" style="margin-top:4px;">
+                     <button class="btn-gm-mini" style="width:100%; background:#222; border:1px solid #666;" onclick="window.criarTokenMonstro('${id}', ${dataSafe})">♟️ Virar Token</button>
                 </div>
             </div>
         `;
