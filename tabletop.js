@@ -1,55 +1,62 @@
 // =========================================================
-// TABLETOP SYSTEM V2.0 (VITRAL, HAND HIDE, INFO MODAL)
+// TABLETOP SYSTEM V3.0 (CORREÇÕES TÉCNICAS E UX)
 // =========================================================
 
 const REF_TABLETOP = 'mesa_rpg/tabuleiro';
 const GRID_SIZE = 50;
 let isDraggingToken = false;
 let currentTokenId = null;
+let vttMinimizado = false;
 
-// --- INICIALIZAÇÃO E LISTENERS ---
+// --- INICIALIZAÇÃO ---
 window.iniciarTabletop = function() {
     const area = document.getElementById('tabletop-area');
+    const btnMinimizar = document.getElementById('btn-vtt-toggle');
     if(!area) return;
 
     window.onValue(window.ref(window.db, REF_TABLETOP), (snap) => {
         const dados = snap.val();
         
-        // 1. Controle de Visibilidade do Mapa
+        // Controle de Visibilidade
         if(dados && dados.config && dados.config.imagem) {
             const isMestre = window.nomeJogador === "Mestre";
-            
-            if (dados.config.visivel || isMestre) {
-                area.style.display = 'block';
-                document.getElementById('map-bg-img').src = dados.config.imagem;
-                
-                // SE FOR JOGADOR e MAPA VISIVEL -> Esconde Mão e Mostra Vitral
-                if(!isMestre && dados.config.visivel) {
-                    document.body.classList.add('vtt-ativo');
-                    document.getElementById('player-portrait-container').style.display = 'block';
-                }
+            const mapaAtivo = dados.config.visivel;
+
+            document.getElementById('map-bg-img').src = dados.config.imagem;
+
+            // Lógica de Exibição
+            if (isMestre) {
+                area.style.display = 'block'; // Mestre vê sempre
             } else {
-                area.style.display = 'none';
-                document.body.classList.remove('vtt-ativo');
-                document.getElementById('player-portrait-container').style.display = 'none';
+                // Jogador
+                if (mapaAtivo) {
+                    if (btnMinimizar) btnMinimizar.style.display = 'block';
+                    
+                    if (!vttMinimizado) {
+                        area.style.display = 'block';
+                        document.body.classList.add('vtt-ativo'); // Esconde mão/portrait
+                    } else {
+                        area.style.display = 'none';
+                        document.body.classList.remove('vtt-ativo'); // Mostra mão/portrait
+                    }
+                } else {
+                    // Mapa desativado pelo mestre
+                    area.style.display = 'none';
+                    if (btnMinimizar) btnMinimizar.style.display = 'none';
+                    document.body.classList.remove('vtt-ativo');
+                }
             }
 
             if(dados.tokens) renderizarTokens(dados.tokens);
         }
     });
-
-    // Listener do Avatar do Jogador (Vitral)
-    if(window.nomeJogador && window.nomeJogador !== "Mestre") {
-        window.onValue(window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}/avatar`), (snap) => {
-            if(snap.exists()) {
-                document.getElementById('player-portrait-img').src = snap.val();
-            }
-        });
-    }
 };
 
+// --- RENDERIZAÇÃO DE TOKENS ---
 function renderizarTokens(tokensData) {
     const container = document.getElementById('map-container');
+    
+    // Limpeza de tokens removidos
     const existing = document.querySelectorAll('.token');
     existing.forEach(el => { if(!tokensData[el.id]) el.remove(); });
 
@@ -61,81 +68,104 @@ function renderizarTokens(tokensData) {
             el = document.createElement('div');
             el.id = id;
             el.className = `token ${t.tipo === 'pc' ? 'token-jogador' : 'token-monstro'}`;
-            // Clique abre Info
-            el.onclick = (e) => { e.stopPropagation(); abrirInfoToken(id, t); };
             
-            // Drag (Mestre ou Dono)
+            // HTML das Barras
+            el.innerHTML = `
+                <div class="token-bars-container">
+                    <div class="bar-track"><div class="fill-hp"></div></div>
+                    <div class="bar-track" style="display:none;"><div class="fill-pf"></div></div>
+                </div>
+            `;
+            
+            el.onclick = (e) => { e.stopPropagation(); abrirInfoToken(id, t); };
             el.addEventListener('mousedown', (e) => startDragToken(e, id, t));
             el.addEventListener('touchstart', (e) => startDragToken(e, id, t), {passive: false});
-            
-            el.innerHTML = `<div class="token-hp-bar"><div class="token-hp-fill"></div></div>`;
             container.appendChild(el);
         }
 
-        el.style.backgroundImage = `url('${t.imagem}')`;
+        // Imagem (Prioridade: imagem do token > imagem placeholder)
+        const imgSrc = t.imagem || 'img/monsters/default.png';
+        el.style.backgroundImage = `url('${imgSrc}')`;
+        
         el.style.width = (t.tamanho * GRID_SIZE) + 'px';
         el.style.height = (t.tamanho * GRID_SIZE) + 'px';
+        
         if (currentTokenId !== id) {
             el.style.left = t.x + 'px';
             el.style.top = t.y + 'px';
         }
 
-        // Barra de Vida
-        const bar = el.querySelector('.token-hp-fill');
-        if(t.stats && t.stats.pv_max) {
-            const pct = (t.stats.pv_atual / t.stats.pv_max) * 100;
-            bar.style.width = pct + '%';
+        // Atualização de Barras
+        const s = t.stats || {};
+        const hpBar = el.querySelector('.fill-hp');
+        const pfBar = el.querySelector('.fill-pf');
+        const pfTrack = pfBar.parentElement;
+
+        // Vida
+        if(s.pv_max > 0) {
+            const hpPct = Math.max(0, Math.min(100, (s.pv_atual / s.pv_max) * 100));
+            hpBar.style.width = hpPct + '%';
+        }
+
+        // PF (Só mostra se tiver max > 0)
+        if(s.pf_max > 0) {
+            pfTrack.style.display = 'block';
+            const pfPct = Math.max(0, Math.min(100, (s.pf_atual / s.pf_max) * 100));
+            pfBar.style.width = pfPct + '%';
+        } else {
+            pfTrack.style.display = 'none';
         }
     });
 }
 
-// --- INFO MODAL (O PULO DO GATO) ---
+// --- MODAL DE DETALHES ---
 function abrirInfoToken(id, t) {
     const modal = document.getElementById('token-info-modal') || criarModalInfo();
     const isMestre = window.nomeJogador === "Mestre";
     const s = t.stats || {};
-    const vis = s.vis || { hp: false, ac: false, atk: false, dmg: false, desc: false }; // Defaults
+    const vis = s.vis || { hp: false, ac: false, atk: false, dmg: false, desc: false };
 
-    let html = `<h3 style="margin:0 0 10px 0; color:var(--gold); text-align:center;">${t.nome}</h3>`;
+    let html = `<h3 style="margin:0 0 15px 0; color:var(--gold); text-align:center; border-bottom:1px solid #333; padding-bottom:5px;">${t.nome}</h3>`;
 
-    // Função auxiliar para gerar linha com Toggle
-    const linha = (label, valor, key) => {
-        if (!isMestre && !vis[key]) return ''; // Jogador não vê se oculto
-        
-        const olho = isMestre ? 
-            `<span class="eye-toggle ${vis[key]?'visible':''}" onclick="toggleInfoVis('${id}', '${key}')">👁️</span>` : '';
-        
-        return `<div class="token-info-row">
-                    <span><strong>${label}:</strong> ${valor}</span>
-                    ${olho}
-                </div>`;
+    // Helper para linhas
+    const row = (label, val, key) => {
+        if (!isMestre && !vis[key]) return ''; 
+        const eye = isMestre ? `<span class="eye-btn ${vis[key]?'visible':''}" onclick="toggleInfoVis('${id}', '${key}')">👁️</span>` : '';
+        return `<div class="info-row"><span><strong>${label}:</strong> ${val}</span>${eye}</div>`;
     };
 
-    html += linha("PV", `${s.pv_atual} / ${s.pv_max}`, 'hp');
-    html += linha("Dificuldade", s.dificuldade, 'ac');
-    html += linha("Ataque", s.ataque, 'atk');
-    html += linha("Dano", s.dano, 'dmg');
+    html += row("PV", `${s.pv_atual} / ${s.pv_max}`, 'hp');
     
+    if(s.pf_max > 0) {
+        html += row("PF", `${s.pf_atual} / ${s.pf_max}`, 'hp'); // Usa mesma visibilidade de HP por enquanto
+    }
+
+    html += row("Dificuldade", s.dificuldade, 'ac');
+    html += row("Ataque", s.ataque, 'atk');
+    html += row("Dano", s.dano, 'dmg');
+
     if(isMestre || vis.desc) {
-        html += `<div style="margin-top:10px; font-size:0.9rem; font-style:italic;">${s.detalhes || ''}</div>`;
-        if(isMestre) html += `<span class="eye-toggle ${vis.desc?'visible':''}" onclick="toggleInfoVis('${id}', 'desc')" style="float:right;">👁️ Descrição</span>`;
+        html += `<div style="margin-top:10px; font-style:italic; font-size:0.9rem; white-space: pre-wrap;">${s.detalhes || ''}</div>`;
+        if(isMestre) html += `<div style="text-align:right; margin-top:5px;"><span class="eye-btn ${vis.desc?'visible':''}" onclick="toggleInfoVis('${id}', 'desc')">👁️ Descrição</span></div>`;
     }
 
+    // Controles do Mestre
     if(isMestre) {
-        html += `<div style="display:flex; gap:5px; margin-top:15px;">
-                    <button onclick="alterarVidaToken('${id}', -1)" style="flex:1; background:#500; color:white;">-1 PV</button>
-                    <button onclick="alterarVidaToken('${id}', 1)" style="flex:1; background:#050; color:white;">+1 PV</button>
-                    <button onclick="removerToken('${id}')" style="flex:1; background:#333; border:1px solid red;">🗑️</button>
-                 </div>`;
+        html += `
+            <div class="hp-control-group">
+                <button class="btn-dmg" onclick="alterarVidaToken('${id}', -1)">-1 PV</button>
+                <button class="btn-heal" onclick="alterarVidaToken('${id}', 1)">+1 PV</button>
+                <button class="btn-trash" onclick="removerTokenDoGrid('${id}')">🗑️</button>
+            </div>
+        `;
     }
 
-    html += `<button onclick="document.getElementById('token-info-modal').style.display='none'" style="width:100%; margin-top:10px;">Fechar</button>`;
-
+    html += `<button onclick="document.getElementById('token-info-modal').style.display='none'" style="width:100%; margin-top:15px; padding:10px;">Fechar</button>`;
+    
     modal.innerHTML = html;
     modal.style.display = 'block';
 }
 
-// Cria o modal dinamicamente no Jogador se não existir
 function criarModalInfo() {
     const m = document.createElement('div');
     m.id = 'token-info-modal';
@@ -144,76 +174,78 @@ function criarModalInfo() {
     return m;
 }
 
-// --- AÇÕES DO MESTRE ---
+// --- LÓGICA DE DADOS E AÇÕES ---
+
 window.toggleInfoVis = function(tokenId, field) {
-    // Busca o valor atual e inverte
     const refVis = window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}/stats/vis/${field}`);
     window.get(refVis).then(snap => {
         window.set(refVis, !snap.val());
-        // O listener global vai atualizar a tela automaticamente
-        setTimeout(() => document.getElementById('token-info-modal').style.display='none', 100); // Fecha pra reabrir atualizado
+        // Listener global atualiza a UI
     });
 };
 
 window.alterarVidaToken = function(id, delta) {
-    const refPV = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/stats/pv_atual`);
-    window.get(refPV).then(snap => {
-        let atual = snap.val();
-        window.set(refPV, atual + delta);
-        setTimeout(() => document.getElementById('token-info-modal').style.display='none', 100);
+    const refStats = window.ref(window.db, `${REF_TABLETOP}/tokens/${id}/stats`);
+    window.get(refStats).then(snap => {
+        const s = snap.val();
+        let novo = (s.pv_atual || 0) + delta;
+        if(novo < 0) novo = 0;
+        if(novo > s.pv_max) novo = s.pv_max;
+        
+        window.update(refStats, { pv_atual: novo });
+        
+        // REABRE O MODAL PARA ATUALIZAR OS NÚMEROS VISUALMENTE
+        // (Pequeno hack para feedback instantâneo sem criar listeners complexos dentro do modal)
+        setTimeout(() => {
+            const t = { id: id, ...snap.val(), stats: { ...s, pv_atual: novo } }; // Mock com dados novos
+            // Não reabre, apenas deixa o listener principal atualizar a barra
+            // Se quiser atualizar o TEXTO do modal aberto, teria que refazer o HTML.
+            // Para simplificar: Fechamos e abrimos rapidamente ou confiamos na barra visual.
+            document.getElementById('token-info-modal').style.display='none';
+        }, 50);
     });
 };
 
-window.removerToken = function(id) {
-    if(confirm("Remover token?")) {
+window.removerTokenDoGrid = function(id) {
+    if(confirm("Remover este token do mapa?")) {
         window.remove(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`));
         document.getElementById('token-info-modal').style.display='none';
     }
 };
 
-window.criarTokenMonstro = function(monstroId, dados) {
-    const tokenId = 'mob_' + Date.now();
-    const novoToken = {
-        tipo: 'mob',
-        nome: dados.nome,
-        imagem: dados.imagem || '',
-        tamanho: 1,
-        x: 100, y: 100,
-        stats: { ...dados } // Copia todos os status e visibilidade
-    };
-    window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}`), novoToken);
+window.toggleVTTMinimizado = function() {
+    const area = document.getElementById('tabletop-area');
+    const btn = document.getElementById('btn-vtt-toggle');
+    vttMinimizado = !vttMinimizado;
+
+    if (vttMinimizado) {
+        area.style.display = 'none';
+        document.body.classList.remove('vtt-ativo'); // Mostra UI normal
+        btn.innerText = "🗺️ Abrir Mapa";
+    } else {
+        area.style.display = 'block';
+        document.body.classList.add('vtt-ativo'); // Esconde UI normal
+        btn.innerText = "⬇️ Minimizar";
+    }
 };
 
-// --- UPLOAD MAPA E DRAG (MANTIDOS DO CÓDIGO ANTERIOR) ---
-window.uploadMapa = function() { /* ... igual anterior ... */ 
-    const file = document.getElementById('map-upload-input').files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { imagem: e.target.result, visivel: false });
-    };
-    if(file) reader.readAsDataURL(file);
-};
-window.toggleMapaVisivel = function() { /* ... igual anterior ... */ 
-    window.get(window.ref(window.db, `${REF_TABLETOP}/config/visivel`)).then(s => {
-        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { visivel: !s.val() });
-    });
-};
-
-// Drag Logic (Simplificado para o exemplo)
+// --- DRAG (SIMPLIFICADO) ---
 function startDragToken(e, id, t) {
     const isMestre = window.nomeJogador === "Mestre";
-    if(!isMestre && t.tipo !== 'pc') return; // Jogador só move o dele (PC)
-    // ... código de drag igual ao anterior ...
+    if(!isMestre && t.tipo !== 'pc') return; 
+    
     isDraggingToken = true; currentTokenId = id;
     const el = document.getElementById(id);
     const rect = el.getBoundingClientRect();
-    // Offset visual
     const clientX = e.touches ? e.touches[0].clientX : e.clientX;
     const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    
     window.dragOffset = { x: clientX - rect.left, y: clientY - rect.top };
     
     document.addEventListener('mousemove', moveDragToken);
     document.addEventListener('mouseup', endDragToken);
+    document.addEventListener('touchmove', moveDragToken, {passive:false});
+    document.addEventListener('touchend', endDragToken);
 }
 
 function moveDragToken(e) {
@@ -237,30 +269,43 @@ function endDragToken() {
     isDraggingToken = false;
     document.removeEventListener('mousemove', moveDragToken);
     document.removeEventListener('mouseup', endDragToken);
+    document.removeEventListener('touchmove', moveDragToken);
+    document.removeEventListener('touchend', endDragToken);
 }
 
-// UPLOAD DE AVATAR (JOGADOR)
-window.uploadAvatarJogador = function() {
-    const input = document.createElement('input');
-    input.type = 'file'; input.accept = 'image/*';
-    input.onchange = (e) => {
-        const r = new FileReader();
-        r.onload = (ev) => {
-            // Salva no perfil do jogador E cria/atualiza token
-            if(window.nomeJogador) {
-                const img = ev.target.result;
-                window.update(window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}`), { avatar: img });
-                
-                // Cria Token PC se não existir
-                const tokenId = 'pc_' + window.nomeJogador;
-                const token = {
-                    tipo: 'pc', nome: window.nomeJogador, imagem: img, tamanho: 1, x: 50, y: 50,
-                    stats: { pv_atual: 10, pv_max: 10 } // Exemplo
-                };
-                window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}`), token);
-            }
-        };
-        r.readAsDataURL(e.target.files[0]);
+// --- FUNÇÕES DE SETUP GM ---
+window.uploadMapa = function() {
+    const file = document.getElementById('map-upload-input').files[0];
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { imagem: e.target.result, visivel: false });
     };
-    input.click();
+    if(file) reader.readAsDataURL(file);
+};
+
+window.toggleMapaVisivel = function() {
+    window.get(window.ref(window.db, `${REF_TABLETOP}/config/visivel`)).then(s => {
+        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), { visivel: !s.val() });
+    });
+};
+
+window.criarTokenMonstro = function(keyIgnorada, dados) {
+    // Corrige problema da imagem não ir: Se dados.imagem estiver vazio, tenta pegar do DOM ou define padrão
+    const imgSrc = dados.imagem || 'img/monsters/default.png';
+    
+    const tokenId = 'mob_' + Date.now();
+    const novoToken = {
+        tipo: 'mob',
+        nome: dados.nome,
+        imagem: imgSrc,
+        tamanho: 1,
+        x: 100, y: 100,
+        stats: { 
+            ...dados,
+            // Garante que visibilidade existe
+            vis: { hp: false, ac: false, atk: false, dmg: false, desc: false } 
+        }
+    };
+    window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}`), novoToken);
+    alert("Token Criado!");
 };
