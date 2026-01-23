@@ -1,0 +1,186 @@
+/* =========================================================
+   SISTEMA DE NPCS (Mestre & Jogador)
+   ========================================================= */
+
+/* --- 1. LISTA DE NPCS (PAINEL DO MESTRE) --- */
+/* Fica no canto inferior direito do grid central */
+#gm-npc-list-container {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 250px;
+    max-height: 300px;
+    background: rgba(10, 5, 5, 0.9);
+    border: 2px solid #553311;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    z-index: 500;
+    box-shadow: 0 0 15px rgba(0,0,0,0.8);
+}
+
+.npc-list-header {
+    background: #221100;
+    color: #eba900;
+    padding: 8px;
+    text-align: center;
+    font-weight: bold;
+    border-bottom: 1px solid #553311;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.npc-list-scroll {
+    overflow-y: auto;
+    flex: 1;
+    padding: 5px;
+}
+
+.npc-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    padding: 8px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+    color: #ddd;
+}
+
+.npc-list-item:hover {
+    background: #333;
+    border-color: #eba900;
+    color: #fff;
+}
+
+.npc-list-item.ativo {
+    border-color: #00ff00;
+    background: rgba(0, 50, 0, 0.5);
+    box-shadow: 0 0 5px #00ff00;
+}
+
+.btn-del-npc {
+    background: none;
+    border: none;
+    color: #666;
+    font-weight: bold;
+    cursor: pointer;
+    padding: 0 5px;
+}
+.btn-del-npc:hover { color: red; }
+
+
+/* --- 2. MODAL DE VISUALIZAÇÃO DO MESTRE (CENTRO) --- */
+#gm-npc-preview-modal {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 500px;
+    background: rgba(0, 0, 0, 0.85); /* Leve transparência */
+    border: 2px solid #eba900;
+    border-radius: 10px;
+    padding: 20px;
+    z-index: 1000;
+    display: none; /* Controlado via JS */
+    flex-direction: column;
+    align-items: center;
+    color: white;
+    backdrop-filter: blur(2px);
+}
+
+.gm-npc-img {
+    max-width: 100%;
+    max-height: 300px;
+    object-fit: contain;
+    mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 80%, transparent 100%);
+}
+
+.gm-npc-info {
+    width: 100%;
+    margin-top: 15px;
+    text-align: left;
+    font-size: 0.9rem;
+}
+
+.desc-box-mestre {
+    background: rgba(50, 0, 0, 0.3);
+    border-left: 3px solid red;
+    padding: 5px;
+    margin-bottom: 5px;
+    color: #ffcccc;
+}
+
+.desc-box-jogador {
+    background: rgba(0, 50, 0, 0.3);
+    border-left: 3px solid #00ff00;
+    padding: 5px;
+    color: #ccffcc;
+}
+
+/* --- 3. APRESENTAÇÃO PARA O JOGADOR (SLIDE-IN) --- */
+#player-npc-overlay {
+    position: fixed;
+    top: 0; right: 0;
+    height: 100%;
+    width: 500px; /* Largura da gaveta */
+    max-width: 80%;
+    background: linear-gradient(to left, rgba(0,0,0,0.95) 60%, transparent);
+    z-index: 8000;
+    transform: translateX(110%); /* Começa escondido na direita */
+    transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1); /* Animação suave */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 40px;
+    pointer-events: none; /* Deixa clicar no jogo atrás se não tiver imagem */
+}
+
+#player-npc-overlay.ativo {
+    transform: translateX(0); /* Entra na tela */
+    pointer-events: auto;
+}
+
+.player-npc-img {
+    max-height: 60vh;
+    width: auto;
+    max-width: 100%;
+    filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
+    mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
+}
+
+.player-npc-name {
+    font-family: 'MedievalSharp', cursive;
+    font-size: 2.5rem;
+    color: #eba900;
+    text-shadow: 0 0 10px #000;
+    margin-top: 20px;
+    text-align: center;
+}
+
+.player-npc-desc {
+    font-family: 'MedievalSharp', cursive;
+    font-size: 1.2rem;
+    color: #fff;
+    text-shadow: 0 2px 2px #000;
+    text-align: center;
+    margin-top: 10px;
+    background: rgba(0, 20, 0, 0.6); /* Fundo verde muito sutil */
+    border: 1px solid rgba(0, 255, 0, 0.3);
+    padding: 15px;
+    border-radius: 8px;
+    width: 100%;
+}
+
+/* --- 4. FORMULÁRIO DE CRIAÇÃO --- */
+.input-desc-player {
+    border: 2px solid #00ff00 !important; /* Borda Verde solicitada */
+    background: rgba(0, 20, 0, 0.2) !important;
+}
+.input-desc-gm {
+    border: 1px solid #777 !important;
+}

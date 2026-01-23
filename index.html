@@ -29,6 +29,7 @@
     <link rel="stylesheet" href="dados.css?v=2.0">
     <link rel="stylesheet" href="inimigos.css?v=3.6">
     <link rel="stylesheet" href="medo.css?v=1.0">
+    <link rel="stylesheet" href="npcs.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         .btn-refresh-player { position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.7); border: 2px solid #555; color: #aaa; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
@@ -218,6 +219,7 @@
     <div id="hover-preview-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:350px;height:525px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
     <div id="hover-preview-slot" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:400px;height:600px;background-size:contain;background-repeat:no-repeat;background-position:center;border:3px solid var(--gold);pointer-events:none;z-index:99999;"></div>
 
+    <div id="player-npc-overlay"></div>
     <div id="app-container" style="display: none; opacity: 0;">
         
         <button class="btn-refresh-player" onclick="atualizarSincronia()" title="Ressincronizar Mesa">🔄</button>
@@ -280,6 +282,12 @@
                 loadScript("dados.js");
                 loadScript("inimigos.js");
                 loadScript("medo.js");
+                loadScript("npcs.js"); // <--- ADICIONE ESTA LINHA
+                
+                // Iniciar monitoramento
+                setTimeout(() => {
+                    if(window.monitorarNPCAtivo) window.monitorarNPCAtivo();
+                }, 1000);
             }, 500);
         });
     </script>
