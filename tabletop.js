@@ -1,5 +1,5 @@
 // =========================================================
-// TABLETOP SYSTEM V3.0 (CORREÇÕES TÉCNICAS E UX)
+// TABLETOP SYSTEM V3.1 (TAMANHO REAL FIX & SYNC)
 // =========================================================
 
 const REF_TABLETOP = 'mesa_rpg/tabuleiro';
@@ -17,16 +17,31 @@ window.iniciarTabletop = function() {
     window.onValue(window.ref(window.db, REF_TABLETOP), (snap) => {
         const dados = snap.val();
         
-        // Controle de Visibilidade
+        // Controle de Visibilidade e Imagem
         if(dados && dados.config && dados.config.imagem) {
             const isMestre = window.nomeJogador === "Mestre";
             const mapaAtivo = dados.config.visivel;
+            const imgEl = document.getElementById('map-bg-img');
+            const mapContainer = document.getElementById('map-container');
 
-            document.getElementById('map-bg-img').src = dados.config.imagem;
+            // CORREÇÃO TAMANHO DA IMAGEM:
+            // Ajusta o container para o tamanho natural da imagem ao carregar
+            imgEl.onload = function() {
+                mapContainer.style.width = this.naturalWidth + 'px';
+                mapContainer.style.height = this.naturalHeight + 'px';
+            };
+            // Só atualiza src se mudou para evitar piscar
+            if(imgEl.src !== dados.config.imagem) {
+                imgEl.src = dados.config.imagem;
+            } else {
+                // Se já estava carregada, força ajuste de tamanho (caso tenha redimensionado janela)
+                mapContainer.style.width = imgEl.naturalWidth + 'px';
+                mapContainer.style.height = imgEl.naturalHeight + 'px';
+            }
 
             // Lógica de Exibição
             if (isMestre) {
-                area.style.display = 'block'; // Mestre vê sempre
+                area.style.display = 'block'; 
             } else {
                 // Jogador
                 if (mapaAtivo) {
@@ -34,13 +49,12 @@ window.iniciarTabletop = function() {
                     
                     if (!vttMinimizado) {
                         area.style.display = 'block';
-                        document.body.classList.add('vtt-ativo'); // Esconde mão/portrait
+                        document.body.classList.add('vtt-ativo'); 
                     } else {
                         area.style.display = 'none';
-                        document.body.classList.remove('vtt-ativo'); // Mostra mão/portrait
+                        document.body.classList.remove('vtt-ativo'); 
                     }
                 } else {
-                    // Mapa desativado pelo mestre
                     area.style.display = 'none';
                     if (btnMinimizar) btnMinimizar.style.display = 'none';
                     document.body.classList.remove('vtt-ativo');
@@ -56,7 +70,7 @@ window.iniciarTabletop = function() {
 function renderizarTokens(tokensData) {
     const container = document.getElementById('map-container');
     
-    // Limpeza de tokens removidos
+    // Limpeza
     const existing = document.querySelectorAll('.token');
     existing.forEach(el => { if(!tokensData[el.id]) el.remove(); });
 
@@ -83,7 +97,7 @@ function renderizarTokens(tokensData) {
             container.appendChild(el);
         }
 
-        // Imagem (Prioridade: imagem do token > imagem placeholder)
+        // Imagem
         const imgSrc = t.imagem || 'img/monsters/default.png';
         el.style.backgroundImage = `url('${imgSrc}')`;
         
@@ -107,7 +121,7 @@ function renderizarTokens(tokensData) {
             hpBar.style.width = hpPct + '%';
         }
 
-        // PF (Só mostra se tiver max > 0)
+        // PF
         if(s.pf_max > 0) {
             pfTrack.style.display = 'block';
             const pfPct = Math.max(0, Math.min(100, (s.pf_atual / s.pf_max) * 100));
@@ -127,7 +141,6 @@ function abrirInfoToken(id, t) {
 
     let html = `<h3 style="margin:0 0 15px 0; color:var(--gold); text-align:center; border-bottom:1px solid #333; padding-bottom:5px;">${t.nome}</h3>`;
 
-    // Helper para linhas
     const row = (label, val, key) => {
         if (!isMestre && !vis[key]) return ''; 
         const eye = isMestre ? `<span class="eye-btn ${vis[key]?'visible':''}" onclick="toggleInfoVis('${id}', '${key}')">👁️</span>` : '';
@@ -135,10 +148,7 @@ function abrirInfoToken(id, t) {
     };
 
     html += row("PV", `${s.pv_atual} / ${s.pv_max}`, 'hp');
-    
-    if(s.pf_max > 0) {
-        html += row("PF", `${s.pf_atual} / ${s.pf_max}`, 'hp'); // Usa mesma visibilidade de HP por enquanto
-    }
+    if(s.pf_max > 0) html += row("PF", `${s.pf_atual} / ${s.pf_max}`, 'hp');
 
     html += row("Dificuldade", s.dificuldade, 'ac');
     html += row("Ataque", s.ataque, 'atk');
@@ -149,7 +159,6 @@ function abrirInfoToken(id, t) {
         if(isMestre) html += `<div style="text-align:right; margin-top:5px;"><span class="eye-btn ${vis.desc?'visible':''}" onclick="toggleInfoVis('${id}', 'desc')">👁️ Descrição</span></div>`;
     }
 
-    // Controles do Mestre
     if(isMestre) {
         html += `
             <div class="hp-control-group">
@@ -174,14 +183,10 @@ function criarModalInfo() {
     return m;
 }
 
-// --- LÓGICA DE DADOS E AÇÕES ---
-
+// --- AÇÕES ---
 window.toggleInfoVis = function(tokenId, field) {
     const refVis = window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}/stats/vis/${field}`);
-    window.get(refVis).then(snap => {
-        window.set(refVis, !snap.val());
-        // Listener global atualiza a UI
-    });
+    window.get(refVis).then(snap => { window.set(refVis, !snap.val()); });
 };
 
 window.alterarVidaToken = function(id, delta) {
@@ -191,18 +196,8 @@ window.alterarVidaToken = function(id, delta) {
         let novo = (s.pv_atual || 0) + delta;
         if(novo < 0) novo = 0;
         if(novo > s.pv_max) novo = s.pv_max;
-        
         window.update(refStats, { pv_atual: novo });
-        
-        // REABRE O MODAL PARA ATUALIZAR OS NÚMEROS VISUALMENTE
-        // (Pequeno hack para feedback instantâneo sem criar listeners complexos dentro do modal)
-        setTimeout(() => {
-            const t = { id: id, ...snap.val(), stats: { ...s, pv_atual: novo } }; // Mock com dados novos
-            // Não reabre, apenas deixa o listener principal atualizar a barra
-            // Se quiser atualizar o TEXTO do modal aberto, teria que refazer o HTML.
-            // Para simplificar: Fechamos e abrimos rapidamente ou confiamos na barra visual.
-            document.getElementById('token-info-modal').style.display='none';
-        }, 50);
+        document.getElementById('token-info-modal').style.display='none'; // Fecha para atualizar
     });
 };
 
@@ -220,16 +215,16 @@ window.toggleVTTMinimizado = function() {
 
     if (vttMinimizado) {
         area.style.display = 'none';
-        document.body.classList.remove('vtt-ativo'); // Mostra UI normal
+        document.body.classList.remove('vtt-ativo'); 
         btn.innerText = "🗺️ Abrir Mapa";
     } else {
         area.style.display = 'block';
-        document.body.classList.add('vtt-ativo'); // Esconde UI normal
+        document.body.classList.add('vtt-ativo');
         btn.innerText = "⬇️ Minimizar";
     }
 };
 
-// --- DRAG (SIMPLIFICADO) ---
+// --- DRAG ---
 function startDragToken(e, id, t) {
     const isMestre = window.nomeJogador === "Mestre";
     if(!isMestre && t.tipo !== 'pc') return; 
@@ -264,7 +259,6 @@ function endDragToken() {
     const el = document.getElementById(currentTokenId);
     let x = Math.round(parseFloat(el.style.left) / GRID_SIZE) * GRID_SIZE;
     let y = Math.round(parseFloat(el.style.top) / GRID_SIZE) * GRID_SIZE;
-    
     window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${currentTokenId}`), { x: x, y: y });
     isDraggingToken = false;
     document.removeEventListener('mousemove', moveDragToken);
@@ -273,7 +267,7 @@ function endDragToken() {
     document.removeEventListener('touchend', endDragToken);
 }
 
-// --- FUNÇÕES DE SETUP GM ---
+// --- SETUP GM & PLAYER ---
 window.uploadMapa = function() {
     const file = document.getElementById('map-upload-input').files[0];
     const reader = new FileReader();
@@ -290,22 +284,34 @@ window.toggleMapaVisivel = function() {
 };
 
 window.criarTokenMonstro = function(keyIgnorada, dados) {
-    // Corrige problema da imagem não ir: Se dados.imagem estiver vazio, tenta pegar do DOM ou define padrão
     const imgSrc = dados.imagem || 'img/monsters/default.png';
-    
     const tokenId = 'mob_' + Date.now();
     const novoToken = {
-        tipo: 'mob',
-        nome: dados.nome,
-        imagem: imgSrc,
-        tamanho: 1,
-        x: 100, y: 100,
-        stats: { 
-            ...dados,
-            // Garante que visibilidade existe
-            vis: { hp: false, ac: false, atk: false, dmg: false, desc: false } 
-        }
+        tipo: 'mob', nome: dados.nome, imagem: imgSrc, tamanho: 1, x: 100, y: 100,
+        stats: { ...dados, vis: { hp: false, ac: false, atk: false, dmg: false, desc: false } }
     };
     window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}`), novoToken);
     alert("Token Criado!");
+};
+
+window.uploadAvatarJogador = function() {
+    const input = document.createElement('input');
+    input.type = 'file'; input.accept = 'image/*';
+    input.onchange = (e) => {
+        const r = new FileReader();
+        r.onload = (ev) => {
+            if(window.nomeJogador) {
+                const img = ev.target.result;
+                window.update(window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}`), { avatar: img });
+                const tokenId = 'pc_' + window.nomeJogador;
+                const token = {
+                    tipo: 'pc', nome: window.nomeJogador, imagem: img, tamanho: 1, x: 50, y: 50,
+                    stats: { pv_atual: 10, pv_max: 10 }
+                };
+                window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${tokenId}`), token);
+            }
+        };
+        r.readAsDataURL(e.target.files[0]);
+    };
+    input.click();
 };
