@@ -1,5 +1,5 @@
 /* =========================================================
-   SISTEMA DE NPCS (Mestre & Jogador) - ATUALIZADO
+   SISTEMA DE NPCS (Mestre & Jogador) - VERSÃO FINAL
    ========================================================= */
 
 /* --- 1. LISTA DE NPCS (PAINEL DO MESTRE) --- */
@@ -8,7 +8,7 @@
     bottom: 20px;
     right: 20px;
     width: 250px;
-    max-height: 200px; /* Limite de altura para +- 3 a 4 itens */
+    max-height: 200px;
     background: rgba(10, 5, 5, 0.95);
     border: 2px solid #553311;
     border-radius: 8px;
@@ -28,30 +28,22 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    flex-shrink: 0; /* Header não encolhe */
+    flex-shrink: 0;
 }
 
 /* Scroll na lista */
 .npc-list-scroll {
-    overflow-y: auto; /* Barra de rolagem vertical */
+    overflow-y: auto;
     overflow-x: hidden;
     flex: 1;
     padding: 5px;
-    scrollbar-width: thin; /* Firefox */
+    scrollbar-width: thin;
     scrollbar-color: #eba900 #221100;
 }
 
-/* Estilização da Scrollbar (Chrome/Webkit) */
-.npc-list-scroll::-webkit-scrollbar {
-    width: 6px;
-}
-.npc-list-scroll::-webkit-scrollbar-track {
-    background: #221100;
-}
-.npc-list-scroll::-webkit-scrollbar-thumb {
-    background-color: #eba900;
-    border-radius: 3px;
-}
+.npc-list-scroll::-webkit-scrollbar { width: 6px; }
+.npc-list-scroll::-webkit-scrollbar-track { background: #221100; }
+.npc-list-scroll::-webkit-scrollbar-thumb { background-color: #eba900; border-radius: 3px; }
 
 .npc-list-item {
     display: flex;
@@ -67,22 +59,10 @@
     font-size: 0.9rem;
 }
 
-.npc-list-item:hover {
-    background: #333;
-    border-color: #eba900;
-    color: #fff;
-}
+.npc-list-item:hover { background: #333; border-color: #eba900; color: #fff; }
+.npc-list-item.ativo { border-color: #00ff00; background: rgba(0, 50, 0, 0.5); box-shadow: 0 0 5px #00ff00; }
 
-.npc-list-item.ativo {
-    border-color: #00ff00;
-    background: rgba(0, 50, 0, 0.5);
-    box-shadow: 0 0 5px #00ff00;
-}
-
-.btn-del-npc {
-    background: none; border: none; color: #666;
-    font-weight: bold; cursor: pointer; padding: 0 5px;
-}
+.btn-del-npc { background: none; border: none; color: #666; font-weight: bold; cursor: pointer; padding: 0 5px; }
 .btn-del-npc:hover { color: red; }
 
 
@@ -92,7 +72,7 @@
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     width: 500px;
-    background: rgba(0, 0, 0, 0.9);
+    background: rgba(0, 0, 0, 0.95);
     border: 2px solid #eba900;
     border-radius: 10px;
     padding: 20px;
@@ -109,7 +89,6 @@
     max-width: 100%;
     max-height: 250px;
     object-fit: contain;
-    /* Suavização de bordas na imagem */
     mask-image: radial-gradient(ellipse at center, black 60%, transparent 100%);
     -webkit-mask-image: radial-gradient(ellipse at center, black 60%, transparent 100%);
 }
@@ -121,22 +100,10 @@
     font-size: 0.9rem;
 }
 
-.desc-box-mestre {
-    background: rgba(50, 0, 0, 0.3);
-    border-left: 3px solid red;
-    padding: 8px;
-    margin-bottom: 8px;
-    color: #ffcccc;
-}
+.desc-box-mestre { background: rgba(50, 0, 0, 0.3); border-left: 3px solid red; padding: 8px; margin-bottom: 8px; color: #ffcccc; }
+.desc-box-jogador { background: rgba(0, 50, 0, 0.3); border-left: 3px solid #00ff00; padding: 8px; color: #ccffcc; }
 
-.desc-box-jogador {
-    background: rgba(0, 50, 0, 0.3);
-    border-left: 3px solid #00ff00;
-    padding: 8px;
-    color: #ccffcc;
-}
-
-/* Botões do Preview */
+/* Botões de Ação do Mestre */
 .btn-action-npc {
     margin-top: 10px;
     padding: 10px;
@@ -147,15 +114,38 @@
     transition: 0.2s;
 }
 
-.btn-show-player {
-    background: #006400; color: white; border: 1px solid #00ff00;
+/* --- ESTILOS DO BOTÃO DE OLHO (TOGGLE) --- */
+.btn-eye-npc {
+    margin-top: 10px;
+    padding: 12px;
+    width: 100%;
+    font-weight: bold;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all 0.3s ease;
 }
-.btn-show-player:hover { background: #008000; box-shadow: 0 0 10px #00ff00; }
 
-.btn-hide-player {
-    background: #8b0000; color: white; border: 1px solid red;
+/* Estado: Oculto (Vermelho/Cinza) */
+.btn-eye-npc.oculto {
+    background: #331111;
+    border: 1px solid #774444;
+    color: #aaa;
 }
-.btn-hide-player:hover { background: #a00000; box-shadow: 0 0 10px red; }
+.btn-eye-npc.oculto:hover { background: #552222; color: #fff; }
+
+/* Estado: Visível (Verde Brilhante) */
+.btn-eye-npc.visivel {
+    background: #053305;
+    border: 1px solid #00ff00;
+    color: #00ff00;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+}
+.btn-eye-npc.visivel:hover { background: #0a440a; }
 
 
 /* --- 3. APRESENTAÇÃO PARA O JOGADOR (SLIDE-IN) --- */
@@ -165,10 +155,10 @@
     height: 100%;
     width: 500px;
     max-width: 80%;
-    /* Gradiente suave para não cobrir tudo */
     background: linear-gradient(to left, rgba(0,0,0,0.9) 40%, transparent 100%);
-    z-index: 8000;
-    transform: translateX(110%); /* Escondido */
+    /* Z-INDEX EXTREMO PARA FICAR ACIMA DE TUDO */
+    z-index: 99999 !important; 
+    transform: translateX(110%);
     transition: transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
     display: flex;
     flex-direction: column;
@@ -180,7 +170,7 @@
 
 #player-npc-overlay.ativo {
     transform: translateX(0); /* Mostra */
-    pointer-events: auto; /* Permite interação se necessário (scroll de texto) */
+    pointer-events: auto;
 }
 
 .player-npc-img {
@@ -188,7 +178,6 @@
     width: auto;
     max-width: 100%;
     filter: drop-shadow(0 0 20px rgba(0,0,0,0.8));
-    /* Máscara suave na base da imagem */
     mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, black 85%, transparent 100%);
 }
@@ -216,6 +205,6 @@
     width: 100%;
 }
 
-/* --- 4. FORMULÁRIO --- */
+/* --- 4. FORMULÁRIO DE CRIAÇÃO --- */
 .input-desc-player { border: 2px solid #00ff00 !important; background: rgba(0, 20, 0, 0.2) !important; }
 .input-desc-gm { border: 1px solid #777 !important; }
