@@ -147,35 +147,41 @@
             </div>
         </div>
 
-        <div id="area-batalha-gm">
-            <div id="titulo-batalha">CAMPO DE BATALHA</div>
+        <div id="area-batalha-gm" style="position: relative;"> <div id="titulo-batalha" style="position:relative; z-index:50;">CAMPO DE BATALHA</div>
 
-            <div id="tt-controls">
-                <label for="map-upload-input" style="color:white; cursor:pointer;">🗺️ Mapa</label>
-                <input type="file" id="map-upload-input" style="display:none" accept="image/*" onchange="window.uploadMapa()">
-                <button onclick="window.toggleMapaVisivel()" style="font-size:0.8rem;">👁️ Visibilidade</button>
-            </div>
-    
-            <div id="tabletop-area">
-                <div id="map-container">
-                    <img id="map-bg-img" class="map-bg-img" src="">
-                    <div class="grid-overlay"></div>
-                    </div>
-            </div>
-
-            <div id="area-inimigos"></div>
-            
-            <div id="gm-npc-preview-modal"></div>
-            
-            <div id="gm-npc-list-container">
-                <div class="npc-list-header">
-                    <span>Lista de NPCs</span>
-                    <span onclick="abrirCriadorNPC()" style="cursor:pointer; font-size:1.2rem;">+</span>
-                </div>
-                <div id="npc-list-scroll" class="npc-list-scroll">
-                    </div>
-            </div>
+    <div id="tabletop-area">
+        <div id="map-container">
+            <img id="map-bg-img" class="map-bg-img" src="">
+            <div class="grid-overlay"></div>
         </div>
+    </div>
+
+    <div id="tt-controls">
+        <label for="map-upload-input" style="color:white; cursor:pointer;">🗺️ Mapa</label>
+        <input type="file" id="map-upload-input" style="display:none" accept="image/*" onchange="window.uploadMapa()">
+        <button onclick="window.toggleMapaVisivel()" style="font-size:0.8rem;">👁️ Visibilidade</button>
+    </div>
+
+    <div id="gm-enemy-list-container">
+        <div class="enemy-list-header">
+            <span>Inimigos</span>
+            <span onclick="abrirCriadorInimigo()" style="cursor:pointer; font-size:1.2rem;">+</span>
+        </div>
+        <div id="enemy-list-scroll" class="npc-list-scroll" style="padding:5px; overflow-y:auto; flex:1;">
+            </div>
+    </div>
+    
+    <div id="gm-npc-preview-modal"></div>
+    <div id="gm-npc-list-container">
+        <div class="npc-list-header">
+            <span>NPCs</span>
+            <span onclick="abrirCriadorNPC()" style="cursor:pointer; font-size:1.2rem;">+</span>
+        </div>
+        <div id="npc-list-scroll" class="npc-list-scroll"></div>
+    </div>
+
+    <div id="token-info-modal" class="token-info-modal"></div>
+</div>
 
         <div id="sidebar-escudo">
             
