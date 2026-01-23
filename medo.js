@@ -113,7 +113,7 @@ function mostrarMensagemMedo(tipo) {
     if (tipo === 'add') {
         overlay.innerHTML = `<div class="msg-medo-texto">👁️ O Mestre recolheu <span style="color:#d0a0ff">MEDO</span>...</div>`;
     } else if (tipo === 'use') {
-        overlay.innerHTML = `<div class="msg-medo-texto msg-medo-uso">⚡ O Mestre usou um token de <span style="color:#bf00ff">MEDO</span>!</div>`;
+        overlay.innerHTML = `<div class="msg-medo-texto msg-medo-uso">🌑 A sombra cresce: o <span style="color:#bf00ff">MEDO</span> foi imposto.</div>`;
     }
 
     // Ativar Animação CSS
