@@ -158,10 +158,13 @@
                 </div>
             </div>
         
-            <div id="tt-controls" style="position:absolute; top:40px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); padding:5px 15px; border-radius:0 0 10px 10px; border:1px solid var(--gold); z-index:100;">
-                <label for="map-upload-input" style="color:white; cursor:pointer; margin-right:10px;">🗺️ Mapa</label>
+            <div id="tt-controls" style="position:absolute; top:40px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); padding:5px 15px; border-radius:0 0 10px 10px; border:1px solid var(--gold); z-index:100; display:flex; gap:10px;">
+                <label for="map-upload-input" style="color:white; cursor:pointer;">🗺️ Mapa</label>
                 <input type="file" id="map-upload-input" style="display:none" accept="image/*" onchange="window.uploadMapa()">
-                <button onclick="window.toggleMapaVisivel()" style="font-size:0.8rem;">👁️ Visibilidade</button>
+                
+                <button onclick="window.toggleMapaVisivel()" style="font-size:0.8rem; cursor:pointer;">👁️ Visibilidade</button>
+                
+                <button onclick="window.toggleGMFulscreen()" style="font-size:0.8rem; cursor:pointer; background:#222; color:var(--gold); border:1px solid var(--gold);">⛶ Expandir</button>
             </div>
         
             <div id="gm-enemy-list-container" class="floating-list-container">
@@ -655,5 +658,6 @@
             <button onclick="document.getElementById('modal-criar-token-pc').style.display='none'" style="padding:5px; background:#333; color:#ccc; border:none; cursor:pointer;">Cancelar</button>
         </div>
     </div>
+    <button id="btn-exit-fullscreen" onclick="window.toggleGMFulscreen()">❌ Fechar Mapa</button>
 </body>
 </html>
