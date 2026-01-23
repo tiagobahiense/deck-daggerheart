@@ -413,31 +413,38 @@ window.criarNovoPersonagem = async function() {
 };
 
 window.atualizarSincronia = function() {
+    // 1. Pega referências do botão e da tela de loading
+    const btn = document.querySelector('.btn-refresh-player');
     const loading = document.getElementById('loading-overlay');
     
-    // 1. Mostra a tela de carregamento
+    // 2. Ativa animações
+    if(btn) btn.classList.add('spin-anim'); // Botão começa a girar
+    
     if(loading) {
         loading.style.display = 'flex';
-        loading.querySelector('div:first-child').innerText = "Ressincronizando Mesa...";
+        // Tenta mudar o texto se encontrar a div
+        const msgDiv = loading.querySelector('div');
+        if(msgDiv) msgDiv.innerText = "Ressincronizando Mesa...";
     }
 
-    // 2. Limpa e reinicia os sistemas
+    // 3. Reinicia os sistemas
     document.getElementById('area-inimigos').innerHTML = "";
     
     if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
     if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
     if(window.monitorarNPCAtivo) window.monitorarNPCAtivo();
     
-    // 3. Renderiza e avisa o servidor
+    // 4. Renderiza e avisa o servidor
     renderizar();
     if(nomeJogador) { 
         const pRef = ref(db, `mesa_rpg/presenca/${nomeJogador}`); 
         set(pRef, true); 
     }
 
-    // 4. Remove a tela de carregamento após 1.5s (para dar tempo visual)
+    // 5. FINALIZA TUDO APÓS 1.5s
     setTimeout(() => { 
-        if(loading) loading.style.display = 'none'; 
+        if(loading) loading.style.display = 'none'; // Tira a tela preta
+        if(btn) btn.classList.remove('spin-anim');  // <--- ESSA LINHA FALTAVA (Para de girar)
     }, 1500);
 };
 
