@@ -1,12 +1,22 @@
 // =========================================================
-// SOUND BAR & SYNC SYSTEM (V4.0 - VISUAL MUTE & LOCAL VOL)
+// SOUND BAR & SYNC SYSTEM (V5.0 - FIXED INIT & VISUALS)
 // =========================================================
 
 let soundbarAudio = null;
 let savedVolume = 0.5; // Guarda o volume anterior ao mutar
 let isMuted = false;
 
+// Função principal de inicialização
 window.initSoundSystemPlayer = function() {
+    // Evita rodar se o Firebase (db) ainda não carregou
+    if (!window.db || !window.ref) {
+        console.log("Aguardando Firebase para iniciar SoundBar...");
+        setTimeout(window.initSoundSystemPlayer, 500);
+        return;
+    }
+
+    console.log("Iniciando Sistema de Som...");
+
     // 1. Cria o elemento de áudio se não existir
     if (!document.getElementById('soundbar-player-element')) {
         soundbarAudio = new Audio();
@@ -24,8 +34,7 @@ window.initSoundSystemPlayer = function() {
              document.querySelectorAll('.sound-progress-bar').forEach(b => b.style.width = '0%');
         });
         soundbarAudio.addEventListener('error', (e) => {
-            console.error("Erro ao carregar áudio:", soundbarAudio.src, e);
-            // alert("Erro ao tocar. Verifique se o arquivo está na pasta audio/sound-bar/");
+            console.error("Erro ao carregar áudio:", soundbarAudio.src);
         });
     } else {
         soundbarAudio = document.getElementById('soundbar-player-element');
@@ -46,6 +55,10 @@ window.initSoundSystemPlayer = function() {
         slider.value = savedVolume;
         soundbarAudio.volume = savedVolume;
         
+        // Se já começar mutado (opcional, por enquanto reseta pro volume salvo)
+        isMuted = false;
+        atualizarBotoesMuteVisualmente(false);
+        
         slider.addEventListener('input', (e) => {
             // Se mexer no slider, sai do mudo automaticamente
             if (isMuted) window.toggleMute(); 
@@ -57,32 +70,32 @@ window.initSoundSystemPlayer = function() {
         });
     }
 
-    // 4. Monitora Firebase (Apenas Play/Pause - Volume é local)
+    // 4. Monitora Firebase para Tocar/Pausar
+    // (Apenas ouve comandos, não sincroniza volume, volume é local)
     window.onValue(window.ref(window.db, 'mesa_rpg/soundbar/status'), (snap) => {
         if (!snap.exists()) return;
         const data = snap.val();
         
         if (data.action === 'play') {
-            // Constrói o caminho. EncodeURI ajuda com espaços
-            // IMPORTANTE: O arquivo DEVE estar em 'audio/sound-bar/'
+            // Tratamento do nome do arquivo
             let nomeArquivo = data.file.trim();
+            // Caminho relativo. Certifique-se que a pasta existe.
             let src = `audio/sound-bar/${nomeArquivo}`;
             
-            // Verifica se precisa trocar a música
-            // Decodificamos o src atual para comparar com o nome simples
             let currentSrcDecoded = decodeURI(soundbarAudio.src);
             
+            // Só troca a música se for diferente ou se estiver parada
             if (!currentSrcDecoded.endsWith(nomeArquivo) || soundbarAudio.paused) {
                 soundbarAudio.src = src;
-                // Aplica o volume local (se estiver mutado, mantém 0)
                 soundbarAudio.volume = isMuted ? 0 : savedVolume;
                 
-                soundbarAudio.play().catch(e => {
-                    console.warn("Autoplay bloqueado ou arquivo não encontrado:", e);
-                });
+                var playPromise = soundbarAudio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.warn("Autoplay impedido ou arquivo não encontrado. Interaja com a página.", error);
+                    });
+                }
             }
-            
-            // Atualiza botões visuais (caso tenha entrado no meio da sessão)
             atualizarBotoesPlay(nomeArquivo, true);
 
         } else if (data.action === 'pause') {
@@ -92,6 +105,7 @@ window.initSoundSystemPlayer = function() {
         } else if (data.action === 'stop') {
             soundbarAudio.pause();
             soundbarAudio.currentTime = 0;
+            // Reseta visual
             document.querySelectorAll('.btn-play-sound').forEach(b => { b.classList.remove('playing'); b.innerHTML = "▶"; });
             document.querySelectorAll('.sound-progress-bar').forEach(b => b.style.width = '0%');
         }
@@ -99,34 +113,29 @@ window.initSoundSystemPlayer = function() {
 };
 
 function atualizarBotoesPlay(arquivo, isPlaying) {
+    // Atualiza ícones de Play/Pause na lista do Mestre
     document.querySelectorAll('.btn-play-sound').forEach(btn => {
-        // O botão tem um onclick que passa o nome do arquivo. 
-        // Vamos tentar identificar pelo contexto ou refazer a lista.
-        // Como simplificação, resetamos todos e ativamos o que clicou se formos o mestre.
-        // Se formos jogador, essa função é apenas visual.
-        
-        // Reset geral
-        if(isPlaying) {
-             // Se o botão chama a função com esse arquivo
-             if (btn.getAttribute('onclick').includes(arquivo)) {
+        // Tenta identificar se o botão pertence ao arquivo atual
+        // O onclick tem o nome do arquivo, usamos isso para comparar
+        let btnOnClick = btn.getAttribute('onclick');
+        if (btnOnClick && btnOnClick.includes(arquivo)) {
+             if(isPlaying) {
                  btn.classList.add('playing');
                  btn.innerHTML = "⏸";
              } else {
                  btn.classList.remove('playing');
                  btn.innerHTML = "▶";
              }
-        } else {
-             if (btn.getAttribute('onclick').includes(arquivo)) {
-                 btn.classList.remove('playing');
-                 btn.innerHTML = "▶";
-             }
+        } else if (isPlaying) {
+             // Se começou a tocar outro, reseta este
+             btn.classList.remove('playing');
+             btn.innerHTML = "▶";
         }
     });
 }
 
 function atualizarBarraProgressoMestre() {
     const modal = document.getElementById('modal-soundbar');
-    // Só atualiza se o modal estiver visível (performance)
     if(!modal || modal.style.display === 'none') return;
     if(!soundbarAudio || !soundbarAudio.duration) return;
 
@@ -134,7 +143,6 @@ function atualizarBarraProgressoMestre() {
     const currentSrc = decodeURI(soundbarAudio.src);
     
     document.querySelectorAll('.sound-progress-bar').forEach(bar => {
-        // Verifica se a barra pertence ao arquivo tocando
         if(currentSrc.endsWith(bar.dataset.file)) {
             bar.style.width = `${pct}%`;
         } else {
@@ -143,53 +151,51 @@ function atualizarBarraProgressoMestre() {
     });
 }
 
-// LÓGICA DE MUDO VISUAL (SLIDER DESCE)
+// LÓGICA DE MUDO VISUAL E FUNCIONAL
 window.toggleMute = function() {
     isMuted = !isMuted;
     
     let slider = document.getElementById('player-volume-slider');
     if(!slider) slider = document.getElementById('master-volume-slider');
-    
-    // Pega botões de ícone (Jogador e Mestre)
-    const btnPlayer = document.getElementById('btn-mute-icon');
-    const btnMaster = document.getElementById('btn-mute-master'); // ID corrigido no HTML do Mestre
-    const botoes = [btnPlayer, btnMaster];
 
     if (isMuted) {
-        // MUTADO
+        // MUDO ATIVADO
         soundbarAudio.volume = 0;
-        
         if(slider) {
-            slider.value = 0; // Slider desce visualmente
-            slider.classList.add('muted-slider'); // Opcional: muda cor do thumb
+            slider.value = 0; // Desce a barra visualmente
+            slider.classList.add('muted-slider');
         }
-
-        botoes.forEach(btn => {
-            if(btn) { 
-                btn.innerHTML = '🔇'; // Ícone mudo
-                btn.classList.add('muted'); // Fica transparente via CSS
-            }
-        });
-
     } else {
-        // DESMUTADO (Restaura)
+        // MUDO DESATIVADO
         soundbarAudio.volume = savedVolume;
-        
         if(slider) {
-            slider.value = savedVolume; // Slider volta para onde estava
+            slider.value = savedVolume; // Restaura a barra visualmente
             slider.classList.remove('muted-slider');
         }
-
-        botoes.forEach(btn => {
-            if(btn) { 
-                btn.innerHTML = '🔊'; 
-                btn.classList.remove('muted'); // Volta opacidade normal
-            }
-        });
     }
+    
+    atualizarBotoesMuteVisualmente(isMuted);
 };
 
-// --- FUNÇÕES MESTRE ---
+function atualizarBotoesMuteVisualmente(muted) {
+    const btnPlayer = document.getElementById('btn-mute-icon');
+    const btnMaster = document.getElementById('btn-mute-master');
+    const botoes = [btnPlayer, btnMaster];
+
+    botoes.forEach(btn => {
+        if(btn) {
+            if(muted) {
+                btn.innerHTML = '🔇'; 
+                btn.classList.add('muted'); // Classe CSS que dá transparência
+            } else {
+                btn.innerHTML = '🔊'; 
+                btn.classList.remove('muted');
+            }
+        }
+    });
+}
+
+// --- FUNÇÕES DE GERENCIAMENTO (MESTRE) ---
 
 window.abrirSoundBar = function() {
     document.getElementById('modal-soundbar').style.display = 'flex';
@@ -204,7 +210,7 @@ window.cadastrarMusica = function() {
     const nomeDisplay = document.getElementById('input-nome-musica').value;
     const nomeArquivo = document.getElementById('input-arquivo-musica').value.trim();
 
-    if (!nomeDisplay || !nomeArquivo) return alert("Preencha tudo.");
+    if (!nomeDisplay || !nomeArquivo) return alert("Preencha nome e arquivo.");
 
     const novoRef = window.push(window.ref(window.db, 'mesa_rpg/soundbar/library'));
     window.set(novoRef, {
@@ -214,7 +220,8 @@ window.cadastrarMusica = function() {
     }).then(() => {
         document.getElementById('input-nome-musica').value = "";
         document.getElementById('input-arquivo-musica').value = "";
-        alert("Cadastrado!");
+        // alert("Cadastrado!"); // Feedback sutil é melhor, removi o alert
+        carregarListaAudios(); // Recarrega lista
     });
 };
 
@@ -223,7 +230,7 @@ function carregarListaAudios() {
     window.onValue(window.ref(window.db, 'mesa_rpg/soundbar/library'), (snap) => {
         listaDiv.innerHTML = "";
         if (!snap.exists()) {
-            listaDiv.innerHTML = "<p style='color:#666; text-align:center'>Vazio.</p>";
+            listaDiv.innerHTML = "<p style='color:#666; text-align:center'>Nenhuma música.</p>";
             return;
         }
 
@@ -257,20 +264,13 @@ function carregarListaAudios() {
 }
 
 window.tocarParaTodos = function(arquivo, btnElement) {
-    // Se clicar no botão que já está tocando -> PAUSA
     if (btnElement.classList.contains('playing')) {
-        btnElement.classList.remove('playing');
-        btnElement.innerHTML = "▶";
+        // Pausar
         window.set(window.ref(window.db, 'mesa_rpg/soundbar/status'), {
             file: arquivo, action: 'pause', token: Date.now()
         });
     } else {
-        // Se clicar em outro -> TOCA
-        document.querySelectorAll('.btn-play-sound').forEach(b => {
-            b.classList.remove('playing'); b.innerHTML = "▶";
-        });
-        btnElement.classList.add('playing');
-        btnElement.innerHTML = "⏸";
+        // Tocar
         window.set(window.ref(window.db, 'mesa_rpg/soundbar/status'), {
             file: arquivo, action: 'play', token: Date.now()
         });
@@ -279,12 +279,12 @@ window.tocarParaTodos = function(arquivo, btnElement) {
 
 window.pararSomTodos = function() {
     window.set(window.ref(window.db, 'mesa_rpg/soundbar/status'), { action: 'stop', token: Date.now() });
-    document.querySelectorAll('.btn-play-sound').forEach(b => { b.classList.remove('playing'); b.innerHTML = "▶"; });
-    document.querySelectorAll('.sound-progress-bar').forEach(b => b.style.width = '0%');
 };
 
 window.excluirMusica = function(id) {
-    if(confirm("Remover?")) window.remove(window.ref(window.db, `mesa_rpg/soundbar/library/${id}`));
+    if(confirm("Remover da lista?")) window.remove(window.ref(window.db, `mesa_rpg/soundbar/library/${id}`));
 };
 
-window.addEventListener('load', () => { setTimeout(window.initSoundSystemPlayer, 1500); });
+// --- INICIALIZAÇÃO CORRIGIDA ---
+// Tenta iniciar imediatamente. Se o DB não estiver pronto, a função tenta de novo sozinha.
+window.initSoundSystemPlayer();

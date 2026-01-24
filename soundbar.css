@@ -1,5 +1,5 @@
 /* =========================================================
-   SOUND BAR & CONTROLE DE VOLUME (FINAL V4)
+   SOUND BAR & CONTROLE DE VOLUME (FINAL)
    ========================================================= */
 
 /* --- PLAYER: CONTROLE DE VOLUME FLUTUANTE (VERTICAL) --- */
@@ -40,7 +40,7 @@
 /* SLIDER DO MESTRE (HORIZONTAL) */
 #master-volume-slider {
     -webkit-appearance: none;
-    width: 100px; /* Largura fixa para não esticar demais */
+    width: 100px;
     height: 6px;
     background: #333;
     border-radius: 3px;
@@ -56,14 +56,15 @@
 .btn-mute {
     background: none; border: none; color: var(--gold);
     font-size: 1.4rem; cursor: pointer; transition: all 0.2s; z-index: 2;
-    opacity: 1; /* Opacidade normal */
+    opacity: 1; 
 }
 .btn-mute:hover { transform: scale(1.1); text-shadow: 0 0 5px var(--gold); }
 
-/* ESTADO MUDO: Transparente e Slider Zerado */
+/* ESTADO MUDO: Transparente e Cinza */
 .btn-mute.muted { 
-    opacity: 0.4; /* Fica transparente */
+    opacity: 0.3 !important; /* Bem transparente */
     filter: grayscale(1);
+    transform: scale(0.9);
 }
 
 /* Thumb dos Sliders */
@@ -73,9 +74,11 @@ input[type=range]::-webkit-slider-thumb {
     border: 2px solid #fff; transition: 0.2s;
 }
 
-/* Quando mutado, o thumb fica cinza */
-input[type=range].muted-slider::-webkit-slider-thumb {
-    background: #555; border-color: #777;
+/* Quando mutado, o thumb fica escuro e menor */
+.muted-slider::-webkit-slider-thumb {
+    background: #444 !important; 
+    border-color: #666 !important;
+    transform: scale(0.8);
 }
 
 /* LISTA */
