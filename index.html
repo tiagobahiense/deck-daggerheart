@@ -54,7 +54,7 @@
         <source src="audio/wellcome.mp3" type="audio/mpeg">
     </audio>
 
-    <div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:20000; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#d4af37; font-family:'MedievalSharp';">
+    <div id="loading-overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:20000; flex-direction:column; align-items:center; justify-content:center; color:#d4af37; font-family:'MedievalSharp';">
         <div style="font-size: 2rem; margin-bottom: 20px;">Carregando Grimório...</div>
         <div class="spin-anim" style="font-size: 3rem;">⚔️</div>
     </div>
@@ -358,6 +358,7 @@
         function entrarNoJogo() {
             const tela = document.getElementById('tela-inicial-monolito');
             const audio = document.getElementById('audio-login');
+            const loading = document.getElementById('loading-overlay'); // Referência ao loading
     
             // 1. Toca o áudio
             if (audio) {
@@ -365,12 +366,15 @@
                 audio.play().catch(e => console.log("Erro áudio:", e));
             }
     
-            // 2. Ativa o efeito de "Virar Página"
-            tela.classList.add('pagina-virada');
+            // 2. Animação de saída da capa
+            if(tela) tela.classList.add('pagina-virada');
             
-            // 3. Remove a capa do HTML depois que a animação acabar (1.5s)
+            // 3. Remove a capa e PREPARA o sistema
             setTimeout(() => {
-                tela.style.display = 'none';
+                if(tela) tela.style.display = 'none';
+                
+                // Opcional: Se o login ainda não estiver pronto, mostra o loading agora
+                // Mas geralmente deixamos o onAuthStateChanged do script.js controlar
             }, 1500); 
         }
     </script>
