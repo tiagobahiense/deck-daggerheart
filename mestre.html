@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="medo.css?v=1.1">
     <link rel="stylesheet" href="npcs.css">
     <link rel="stylesheet" href="tabletop.css">
+    <link rel="stylesheet" href="cenario.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; margin: 0; overflow: hidden; }
@@ -121,6 +122,7 @@
         <div style="display:flex; gap:10px;">
             <button class="btn-rest curto" onclick="realizarDescanso('curto')">🌙 Curto</button>
             <button class="btn-rest longo" onclick="realizarDescanso('longo')">🌕 Longo</button>
+            <button class="btn-rest" style="background: #5D4037; border: 1px solid #8D6E63;" onclick="window.abrirGerenciadorCenarios()">🖼️ Cenários</button>
         </div>
 
         <div style="display:flex; gap:10px;">
@@ -606,7 +608,8 @@
             loadScript("inimigos.js");
             loadScript("medo.js");
             loadScript("npcs.js");
-            loadScript("tabletop.js"); // <--- ESTE É O NOVO QUE FALTAVA
+            loadScript("tabletop.js");
+            loadScript("cenario.js");
 
             // INICIALIZA AS FUNÇÕES DEPOIS DE 1 SEGUNDO
             setTimeout(() => {
@@ -660,5 +663,29 @@
         </div>
     </div>
     <button id="btn-exit-fullscreen" onclick="window.toggleGMFulscreen()">❌ Fechar Mapa</button>
+    <div id="modal-gerenciar-cenarios" class="modal" style="z-index: 9500;">
+        <div class="modal-criar-content" style="width: 500px; background: #111;">
+            <h2 style="color:var(--gold); text-align:center; margin:0 0 15px 0;">Gerenciar Cenários</h2>
+            
+            <div style="background: #222; padding: 15px; border-radius: 8px; border: 1px dashed #444;">
+                <div style="display:flex; gap:10px; margin-bottom:10px;">
+                    <input type="text" id="input-nome-cenario" placeholder="Nome do Cenário (Ex: Taverna)" style="flex:1;">
+                </div>
+                <div style="display:flex; gap:10px;">
+                    <label id="label-upload-cenario" for="input-file-cenario" style="flex:1; background:#333; border:1px solid #555; padding:8px; cursor:pointer; color:white; text-align:center; border-radius:4px;">
+                        Escolher Imagem 📂
+                    </label>
+                    <input type="file" id="input-file-cenario" accept="image/*" style="display:none;" onchange="window.processarUploadCenario(this)">
+                    <button onclick="window.salvarCenario()" style="background:var(--gold); border:none; border-radius:4px; font-weight:bold; cursor:pointer; padding:0 20px;">Salvar</button>
+                </div>
+            </div>
+
+            <h3 style="color:#aaa; border-bottom:1px solid #333; margin-top:20px;">Salvos</h3>
+            <div id="lista-cenarios-content" class="lista-cenarios-scroll">
+                </div>
+
+            <button onclick="window.fecharGerenciadorCenarios()" style="margin-top:20px; width:100%; padding:10px; background:#333; color:#fff; border:none; cursor:pointer;">Fechar</button>
+        </div>
+    </div>
 </body>
 </html>

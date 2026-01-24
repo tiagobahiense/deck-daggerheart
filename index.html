@@ -31,6 +31,7 @@
     <link rel="stylesheet" href="medo.css?v=1.0">
     <link rel="stylesheet" href="npcs.css">
     <link rel="stylesheet" href="tabletop.css">
+    <link rel="stylesheet" href="cenario.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         .btn-refresh-player { position: absolute; top: 15px; right: 15px; background: rgba(0, 0, 0, 0.7); border: 2px solid #555; color: #aaa; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; z-index: 9999; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; transition: all 0.3s ease; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
@@ -228,6 +229,14 @@
     <div id="player-npc-overlay"></div>
     <div id="app-container" style="display: none; opacity: 0;">
 
+        <div id="cenario-overlay-player">
+            <div class="cenario-frame">
+                <div id="cenario-imagem-bg"></div>
+                <button class="btn-min-cenario" onclick="window.minimizarCenario()" title="Minimizar">_</button>
+            </div>
+        </div>
+        <div id="btn-restaurar-cenario" onclick="window.restaurarCenario()">🖼️ Ver Cenário</div>
+
         <button id="btn-vtt-toggle" onclick="window.toggleVTTMinimizado()">⬇️ Minimizar</button>
 
         <div id="player-portrait-container" style="display:none;">
@@ -316,11 +325,13 @@
                 loadScript("medo.js");
                 loadScript("npcs.js"); // <--- ADICIONE ESTA LINHA
                 loadScript("tabletop.js");
+                loadScript("cenario.js");
 
                 // Iniciar monitoramento
                 setTimeout(() => {
                     if(window.monitorarNPCAtivo) window.monitorarNPCAtivo();
                     if(window.iniciarTabletop) window.iniciarTabletop();
+                    if(window.iniciarMonitoramentoCenarios) window.iniciarMonitoramentoCenarios();
                 }, 1000);
             }, 500);
         });
