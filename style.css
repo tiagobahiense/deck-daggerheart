@@ -1541,3 +1541,76 @@ body:has(.carta:hover) #hover-preview {
         filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
     }
 }
+
+/* =========================================================
+   HUD DO JOGADOR (VITRAL NA TELA)
+   ========================================================= */
+
+   #hud-vitral-jogador {
+    position: fixed;
+    bottom: 30px;  /* Altura alinhada com a mão */
+    left: 30px;    /* Canto esquerdo */
+    z-index: 2100; /* Acima da mão (2000) mas abaixo de modais */
+    width: 130px;
+    height: 130px;
+    pointer-events: none; /* Deixa clicar através da área transparente */
+    transition: transform 0.3s ease;
+}
+
+/* Efeito ao passar o mouse (Opcional: cresce um pouco) */
+#hud-vitral-jogador:hover {
+    transform: scale(1.05);
+}
+
+.vitral-moldura-main {
+    width: 100%;
+    height: 100%;
+    background-color: #000;
+    border: 3px solid var(--gold);
+    border-radius: 50% 50% 10px 10px; /* Formato de arco/janela */
+    box-shadow: 
+        0 0 20px rgba(0,0,0,0.9),
+        inset 0 0 15px rgba(0,0,0,0.8),
+        0 0 10px var(--gold);
+    overflow: hidden;
+    position: relative;
+    pointer-events: auto; /* Permite clicar no retrato se quiser */
+}
+
+#hud-portrait-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    filter: contrast(1.1) sepia(0.1); /* Toque artístico */
+}
+
+.vitral-nome-borda {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(to top, rgba(0,0,0,1) 30%, rgba(212, 175, 55, 0.9) 100%);
+    border-top: 2px solid var(--gold);
+    color: var(--gold);
+    text-align: center;
+    font-family: 'MedievalSharp', cursive;
+    font-size: 0.85rem;
+    padding: 2px 0;
+    text-shadow: 0 2px 2px #000;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Responsividade Mobile: Sobe um pouco ou diminui */
+@media (max-width: 768px) {
+    #hud-vitral-jogador {
+        bottom: auto; /* Solta do fundo */
+        top: 10px;    /* Vai para o topo */
+        left: 10px;
+        width: 80px;
+        height: 80px;
+    }
+    .vitral-nome-borda { font-size: 0.6rem; }
+}

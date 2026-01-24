@@ -384,6 +384,19 @@ window.selecionarPersonagem = async function(charName) {
     const temClasse = slotSnap.exists() && slotSnap.val().profissao;
 
     document.getElementById('app-container').style.display = 'flex';
+    const hudImg = document.getElementById('hud-portrait-img');
+    const hudNome = document.getElementById('hud-nome-personagem');
+    
+    if(hudNome) hudNome.innerText = nomeJogador;
+    
+    // Busca a imagem salva no Firebase
+    get(child(ref(db), `mesa_rpg/jogadores/${nomeJogador}/retrato`)).then((snapshot) => {
+        if (snapshot.exists()) {
+            if(hudImg) hudImg.src = snapshot.val();
+        } else {
+            if(hudImg) hudImg.src = "img/default_portrait.png";
+        }
+    });
     setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
 
     const audioGame = document.getElementById('bg-music');
@@ -843,3 +856,23 @@ window.pararAudioLogin = function() {
         }, 100);
     }
 };
+
+// ... (dentro do reader.onload do upload) ...
+reader.onload = function(event) {
+    const base64String = event.target.result;
+    
+    // 1. Salva no Firebase
+    if (window.nomeJogador && window.db && window.ref && window.update) {
+        const playerRef = window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}`);
+        window.update(playerRef, { "retrato": base64String })
+            .then(() => {
+                // ATUALIZA O NOVO VITRAL DA HUD
+                const hudImg = document.getElementById('hud-portrait-img');
+                if(hudImg) hudImg.src = base64String;
+                
+                alert("Retrato atualizado!");
+            })
+            .catch(err => console.error(err));
+    }
+};
+// ...
