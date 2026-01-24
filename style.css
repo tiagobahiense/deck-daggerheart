@@ -42,7 +42,7 @@ body {
     background-color: #000;
     
     /* CORREÇÃO 2: Caminho da imagem explícito */
-    background-image: url('img/wallpaper.jpeg'); 
+    background-image: url('img/wallpaper.jpg'); 
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
