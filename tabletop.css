@@ -1,5 +1,5 @@
 /* =========================================================
-   TABLETOP VIRTUAL (V10.0 - FINAL FIT & UI)
+   TABLETOP VIRTUAL (V11.0 - RASTRO & UI FIX)
    ========================================================= */
 
 /* --- ÁREA GERAL --- */
@@ -8,12 +8,11 @@
     overflow: hidden; background-color: #050505; z-index: 0; display: none;
 }
 
-/* O WRAPPER DE ESCALA (Centraliza e dá Zoom) */
+/* CONTAINER DE ESCALA */
 #map-scaler {
     position: absolute;
     top: 50%; left: 50%;
     transform-origin: center center;
-    /* Transform será definido via JS */
     display: flex; justify-content: center; align-items: center;
 }
 
@@ -24,16 +23,34 @@
 
 .map-bg-img { 
     display: block; pointer-events: none; 
-    /* Importante: Tamanho natural para o cálculo de escala funcionar */
     max-width: none !important; width: auto !important; height: auto !important;
 }
 
+/* GRID (Reforçado) */
 .grid-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
     background-size: 50px 50px;
-    background-image: linear-gradient(to right, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                      linear-gradient(to bottom, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-image: 
+        linear-gradient(to right, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
     z-index: 10;
+}
+
+/* --- RASTRO DE MOVIMENTO (TRAIL) --- */
+.trail-segment {
+    position: absolute;
+    width: 50px; height: 50px;
+    background: radial-gradient(circle, rgba(255, 50, 50, 0.6) 20%, transparent 70%);
+    pointer-events: none;
+    z-index: 15; /* Abaixo do token, acima do grid */
+    border-radius: 50%;
+    animation: fadeOutTrail 10s forwards ease-out;
+}
+
+@keyframes fadeOutTrail {
+    0% { opacity: 1; transform: scale(1); }
+    10% { opacity: 0.8; transform: scale(1.1); }
+    100% { opacity: 0; transform: scale(1.5); }
 }
 
 /* --- MODO FULLSCREEN (JOGADOR & MESTRE EXPANDIDO) --- */
@@ -44,67 +61,81 @@ body.gm-mode-fullscreen #tabletop-area {
     display: block !important;
 }
 
-/* Esconde UI desnecessária no Fullscreen */
+/* Esconde UI do Mestre no Fullscreen */
 body.gm-mode-fullscreen #area-jogadores,
 body.gm-mode-fullscreen #sidebar-escudo,
 body.gm-mode-fullscreen #titulo-batalha,
 body.gm-mode-fullscreen #tt-controls,
 body.gm-mode-fullscreen #gm-bottom-toolbar { display: none !important; }
 
-body.vtt-ativo #mao-area,
+/* --- CORREÇÃO UI JOGADOR (Z-INDEX SUPERIOR AO MAPA) --- */
+/* Eleva a mão e os botões para ficarem ACIMA do mapa (6000) */
+body #mao-area { z-index: 7000 !important; }
+body .action-buttons-container { z-index: 8000 !important; }
+body #btn-abrir-dados { z-index: 8001 !important; }
+
+/* Esconde coisas que não devem aparecer com mapa aberto */
 body.vtt-ativo #deck-container-wrapper,
 body.vtt-ativo #reserva-area,
 body.vtt-ativo #mesa-area,
 body.vtt-ativo #player-portrait-container { display: none !important; }
 
-/* --- CONTROLES FLUTUANTES (ELEVADOS) --- */
-
-/* Botão Fechar (Mestre) */
+/* --- CONTROLES MESTRE --- */
 #btn-exit-fullscreen {
     display: none;
-    position: fixed; top: 15px; right: 80px; z-index: 20001; /* Acima do mapa */
+    position: fixed; top: 15px; right: 80px; z-index: 20001;
     background: rgba(0,0,0,0.8); color: var(--gold); border: 2px solid var(--gold);
     padding: 8px 15px; font-weight: bold; cursor: pointer; border-radius: 5px;
-    font-family: 'MedievalSharp', cursive;
 }
 body.gm-mode-fullscreen #btn-exit-fullscreen { display: block !important; }
 
-/* Botão Minimizar (Jogador) */
+/* Botão Minimizar Jogador */
 #btn-vtt-toggle {
-    position: fixed; top: 15px; right: 20px; z-index: 20001; /* Acima de tudo */
+    position: fixed; top: 15px; right: 20px; z-index: 20001;
     background: rgba(0,0,0,0.9); color: var(--gold); border: 2px solid var(--gold);
     padding: 8px 15px; cursor: pointer; border-radius: 5px; 
     font-family: 'MedievalSharp', cursive; display: none;
-    white-space: nowrap;
-}
-
-/* Botão Dados (Elevado) */
-#btn-abrir-dados {
-    z-index: 20001 !important; /* Garante visibilidade sobre o VTT */
-    position: relative; /* Contexto de pilha */
 }
 
 /* --- TOKENS --- */
 .token {
     position: absolute; width: 50px; height: 50px; border-radius: 50%;
     background-size: cover; background-position: center top; background-repeat: no-repeat;
-    background-color: #000; box-shadow: 0 0 5px #000; cursor: pointer; z-index: 20;
+    background-color: #000; box-shadow: 0 0 5px #000; cursor: grab; z-index: 20;
     border: 2px solid transparent; transition: transform 0.1s;
 }
-.token:hover { transform: scale(1.2); z-index: 100; border-color: #fff; }
+.token:active { cursor: grabbing; }
+.token:hover { z-index: 100; border-color: #fff; transform: scale(1.15); }
 .token.token-jogador { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
 .token.token-monstro { border-color: #ff0000; }
 .token.oculto { opacity: 0.5; filter: grayscale(1); border-style: dashed; }
 
+/* Barras */
 .token-bars-container {
     position: absolute; bottom: -12px; left: -10%; width: 120%;
     display: flex; flex-direction: column; gap: 2px; pointer-events: none;
     background: rgba(0,0,0,0.6); padding: 1px; border-radius: 2px; z-index: 101;
 }
-.fill-hp { height: 4px; background: #0f0; width: 100%; }
-.fill-pf { height: 4px; background: #08f; width: 100%; }
+.fill-hp { height: 4px; background: #0f0; width: 100%; border: 1px solid #000; }
+.fill-pf { height: 4px; background: #08f; width: 100%; border: 1px solid #000; }
 
-/* --- MODAL DETALHES --- */
+/* Toolbar Mestre */
+.token-toolbar {
+    position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
+    display: none; gap: 5px; background: rgba(0,0,0,0.9);
+    padding: 3px; border-radius: 5px; border: 1px solid var(--gold);
+    z-index: 200; white-space: nowrap;
+}
+.modo-mestre .token:hover .token-toolbar { display: flex; }
+.btn-mini-tool {
+    width: 24px; height: 24px; border: 1px solid #555; background: #222;
+    color: #fff; border-radius: 3px; cursor: pointer; font-size: 0.8rem;
+    display: flex; align-items: center; justify-content: center;
+}
+.btn-mini-tool:hover { background: var(--gold); color: #000; }
+.btn-mini-tool.delete:hover { background: #f00; }
+
+/* Modal Detalhes */
 .token-info-modal {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: rgba(15, 10, 5, 0.98); border: 2px solid var(--gold);
@@ -114,16 +145,13 @@ body.gm-mode-fullscreen #btn-exit-fullscreen { display: block !important; }
 .info-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px dashed #444; align-items: center; }
 .eye-btn { cursor: pointer; margin-left: 10px; opacity: 0.3; font-size: 1.2rem; }
 .eye-btn.visible { opacity: 1; text-shadow: 0 0 5px #0f0; }
-
 .hp-control-group { display: flex; gap: 5px; margin-top: 15px; }
 .btn-ctrl { flex: 1; padding: 8px; cursor: pointer; font-weight: bold; background: #333; color: #fff; border: 1px solid #555; }
-.btn-ctrl-red { border-color: #f00; } .btn-ctrl-green { border-color: #0f0; } .btn-ctrl-blue { border-color: #00f; }
-.btn-delete-token { width: 100%; margin-top: 15px; background: #300; border: 1px solid #f00; color: #fff; padding: 10px; cursor: pointer; font-weight: bold; border-radius: 5px; }
-.btn-delete-token:hover { background: #500; }
+.btn-delete-token { width: 100%; margin-top: 15px; background: #300; border: 1px solid #f00; color: #fff; padding: 10px; cursor: pointer; border-radius: 5px; }
 
-/* Listas Flutuantes */
+/* Listas */
 .floating-list-container {
-    position: absolute; top: 60px; width: 250px; max-height: 70vh;
+    position: absolute; top: 70px; width: 260px; max-height: 60vh;
     background: rgba(10, 5, 5, 0.98); border: 2px solid var(--gold);
     border-radius: 8px; display: none !important; flex-direction: column; z-index: 2000;
 }
