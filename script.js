@@ -78,6 +78,7 @@ window.fazerLoginNarrador = function() {
     if(!email || !pass) { msg.innerText = "Preencha email e senha."; return; }
     signInWithEmailAndPassword(auth, email, pass).then((uc) => {
         if(uc.user.email.toLowerCase().trim() === EMAIL_MESTRE.toLowerCase().trim()) {
+            if(window.pararAudioLogin) window.pararAudioLogin();
             msg.innerText = "✅ Acesso concedido!"; setTimeout(() => window.location.href = 'admin.html', 500);
         } else { msg.innerText = `❌ ${email} não é narrador.`; signOut(auth); }
     }).catch((e) => msg.innerText = "❌ Erro: " + e.message);
@@ -344,6 +345,7 @@ async function carregarListaPersonagens() {
 
 // Selecionar Personagem
 window.selecionarPersonagem = async function(charName) {
+    if(window.pararAudioLogin) window.pararAudioLogin();
     localStorage.setItem('ultimoPersonagem', charName); // <--- ADICIONE ESTA LINHA
     nomeJogador = charName.toUpperCase();
     if(typeof window !== 'undefined') window.nomeJogador = nomeJogador;
@@ -750,7 +752,7 @@ function aplicarZoomPDF() {
     }
 }
 
-// --- FUNÇÃO PARA PARAR MÚSICA DE LOGIN (Fade Out) ---
+// Função para parar a música de entrada (Wellcome)
 window.pararAudioLogin = function() {
     const audio = document.getElementById('audio-login');
     if (audio && !audio.paused) {
@@ -762,8 +764,7 @@ window.pararAudioLogin = function() {
             } else {
                 clearInterval(fade);
                 audio.pause();
-                audio.currentTime = 0;
             }
-        }, 100); // Abaixa o volume suavemente a cada 100ms
+        }, 100);
     }
 };

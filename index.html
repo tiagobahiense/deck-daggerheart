@@ -42,8 +42,21 @@
     </style>
 </head>
 <body>
+
+    <div id="tela-inicial-monolito">
+        <div class="monolito-content">
+            <h1 class="titulo-entrada">CRÔNICAS DE DAGGERHEART</h1>
+            <button class="btn-jogar-entrada" onclick="entrarNoJogo()">JOGAR</button>
+        </div>
+    </div>
     
     <audio id="audio-login" loop>
+        <source src="audio/wellcome.mp3" type="audio/mpeg">
+    </audio>
+    
+    <div id="loading-overlay">...</div>
+    
+    <audio id="audio-login" loop preload="auto">
         <source src="audio/wellcome.mp3" type="audio/mpeg">
     </audio>
 
@@ -343,26 +356,25 @@
         });
     </script>
     <script>
-        // --- TOCAR MÚSICA DE LOGIN AO INTERAGIR ---
-        window.addEventListener('load', () => {
-            const audioLogin = document.getElementById('audio-login');
-            if(audioLogin) {
-                audioLogin.volume = 0.4; // Volume Médio
+        // --- LÓGICA DE ENTRADA E ÁUDIO ---
+        function entrarNoJogo() {
+            const tela = document.getElementById('tela-inicial-monolito');
+            const audio = document.getElementById('audio-login');
     
-                // Função que tenta tocar
-                const tentarTocar = () => {
-                    audioLogin.play().then(() => {
-                        // Se conseguiu, remove os ouvintes para não tentar de novo
-                        document.body.removeEventListener('click', tentarTocar);
-                        document.body.removeEventListener('keydown', tentarTocar);
-                    }).catch(e => console.log("Aguardando interação para áudio..."));
-                };
-    
-                // Adiciona gatilhos na página toda
-                document.body.addEventListener('click', tentarTocar);
-                document.body.addEventListener('keydown', tentarTocar);
+            // 1. Toca o áudio (O navegador permite porque foi um clique)
+            if (audio) {
+                audio.volume = 0.5;
+                audio.play().catch(e => console.log("Erro áudio:", e));
             }
-        });
+    
+            // 2. Animação de saída da capa
+            tela.style.opacity = '0';
+            
+            // 3. Remove a capa da frente depois que a animação acabar
+            setTimeout(() => {
+                tela.style.display = 'none';
+            }, 1000); // 1 segundo (mesmo tempo da transição CSS)
+        }
     </script>
 </body>
 </html>

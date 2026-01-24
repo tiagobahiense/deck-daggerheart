@@ -27,6 +27,69 @@ body {
     overflow: hidden;
 }
 
+/* =========================================================
+   TELA INICIAL (MONÓLITO / CAPA)
+   ========================================================= */
+
+   #tela-inicial-monolito {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Sua imagem de wallpaper aqui */
+    background: url('img/wallpaper.jpeg') no-repeat center center;
+    background-size: cover;
+    z-index: 10000; /* Acima de TUDO */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: opacity 1s ease-in-out; /* Fade out suave */
+}
+
+.monolito-content {
+    background: rgba(0, 0, 0, 0.85);
+    padding: 60px 80px;
+    border-radius: 15px;
+    border: 4px solid var(--gold);
+    text-align: center;
+    box-shadow: 0 0 60px rgba(0,0,0,1);
+    backdrop-filter: blur(5px);
+    animation: slideUp 1s ease-out;
+}
+
+.titulo-entrada {
+    font-family: 'MedievalSharp', cursive;
+    font-size: 3.5rem;
+    color: var(--gold);
+    margin: 0 0 40px 0;
+    text-shadow: 0 0 20px var(--gold);
+    letter-spacing: 2px;
+}
+
+.btn-jogar-entrada {
+    background: linear-gradient(45deg, #8B0000, #B22222);
+    border: 2px solid var(--gold);
+    color: var(--gold);
+    font-family: 'MedievalSharp', cursive;
+    font-size: 2rem;
+    padding: 15px 60px;
+    border-radius: 8px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.btn-jogar-entrada:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 30px var(--gold);
+    background: linear-gradient(45deg, #B22222, #ff0000);
+}
+
+@keyframes slideUp {
+    from { transform: translateY(50px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
 /* --- TELAS DE LOGIN E BACKGROUND --- */
 #login-screen, #start-screen, #login-screen-mestre, #loading-overlay, #login-screen-admin, #access-denied-screen {
     position: fixed;
