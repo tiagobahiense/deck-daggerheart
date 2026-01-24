@@ -58,32 +58,36 @@ window.rolarDadosConfirmados = function() {
     const quem = window.nomeJogador || "Mestre";
 
     // --- NOVO: GERA O TEXTO PARA O LOG ---
+    // Substitua o trecho de LOG dentro de rolarDadosConfirmados por este:
+
+    // ... (cálculos dos dados) ...
+
     let textoLog = "Rolou: ";
+    // Destaca os valores dos dados em negrito
     let detalhes = dadosCalculados.map(d => `${d.label} (<b>${d.valorFinal}</b>)`).join(', ');
     textoLog += detalhes;
 
-    // Verifica Dualidade para o Log
     const dadoEsp = dadosCalculados.find(d => d.classe === 'dado-esperanca');
     const dadoMedo = dadosCalculados.find(d => d.classe === 'dado-medo');
 
     if (dadoEsp && dadoMedo) {
         const vEsp = dadoEsp.valorFinal;
         const vMedo = dadoMedo.valorFinal;
-        const total = vEsp + vMedo; // Daggerheart soma os dois d12 para o score
+        const total = vEsp + vMedo;
         
-        textoLog += `<br>Resultado Dualidade: <b>${total}</b>`;
+        // COR BRANCA/BRILHANTE NO RESULTADO TOTAL
+        textoLog += `<br>Resultado Dualidade: <b style="color:#fff; font-size:1.1rem;">${total}</b>`;
         
         if (vEsp > vMedo) {
-            textoLog += ` <span style="color:#00cc44; font-weight:bold;">[COM ESPERANÇA]</span>`;
+            textoLog += ` <span class="texto-esperanca">[COM ESPERANÇA]</span>`;
         } else if (vMedo > vEsp) {
-            textoLog += ` <span style="color:#ff4444; font-weight:bold;">[COM MEDO]</span>`;
+            textoLog += ` <span class="texto-medo">[COM MEDO]</span>`;
         } else {
-            textoLog += ` <span style="color:#ffaa00; font-weight:bold;">[CRÍTICO]</span>`;
+            textoLog += ` <span class="texto-critico">[CRÍTICO]</span>`;
         }
     }
-    // Envia para o chat
+
     if(window.registrarLog) window.registrarLog('dado', textoLog);
-    // -------------------------------------
 
     if (window.push && window.ref && window.db) {
         const rolagensRef = window.ref(window.db, 'mesa_rpg/rolagens');

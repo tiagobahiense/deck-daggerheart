@@ -13,8 +13,10 @@ window.adicionarMedo = function() {
                 qtd: atual + 1,
                 aviso: { tipo: 'add', timestamp: Date.now() }
             });
-            // LOG PARA TODOS
-            if(window.registrarLog) window.registrarLog('medo', 'O Mestre <b>adicionou</b> um token de Medo.');
+            
+            // FRASE DRAMÁTICA COM COR
+            if(window.registrarLog) window.registrarLog('medo', 
+                `👁️ O Mestre recolheu <span class="texto-medo-mestre">MEDO</span>...`);
         }
     });
 };
@@ -27,12 +29,13 @@ window.usarMedo = function() {
                 qtd: atual - 1,
                 aviso: { tipo: 'use', timestamp: Date.now() }
             });
-            // LOG PARA TODOS
-            if(window.registrarLog) window.registrarLog('medo', 'O Mestre <b>gastou</b> um token de Medo!');
+            
+            // FRASE DRAMÁTICA COM COR
+            if(window.registrarLog) window.registrarLog('medo', 
+                `🌑 A sombra cresce: o <span class="texto-medo-mestre">MEDO</span> foi imposto.`);
         }
     });
 };
-
 window.removerMedoSilencioso = function() {
     window.get(window.ref(window.db, REF_MEDO)).then(snap => {
         const atual = (snap.exists() && snap.val().qtd) ? snap.val().qtd : 0;

@@ -1775,3 +1775,38 @@ body:has(.carta:hover) #hover-preview {
 #chat-log-content::-webkit-scrollbar-track { background: #111; }
 #chat-log-content::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; border: 1px solid #000; }
 #chat-log-content::-webkit-scrollbar-thumb:hover { background: var(--gold); }
+
+/* =========================================================
+   CORES E FORMATAÇÃO DO CHAT (NOVO)
+   ========================================================= */
+
+/* Palavras-Chave */
+.texto-esperanca { color: #00e676; font-weight: bold; text-shadow: 0 0 5px rgba(0, 230, 118, 0.4); }
+.texto-medo { color: #ff1744; font-weight: bold; text-shadow: 0 0 5px rgba(255, 23, 68, 0.4); }
+.texto-critico { color: #ffd700; font-weight: bold; text-transform: uppercase; animation: glow 1s infinite alternate; }
+.texto-carta { color: #ffd700; font-weight: bold; font-style: italic; }
+.texto-medo-mestre { color: #d500f9; font-weight: bold; } /* Roxo para medo do mestre */
+
+/* Autor: Mestre */
+.autor-mestre {
+    color: #ff3333 !important;
+    text-shadow: 0 0 5px #ff0000;
+    font-size: 0.95rem;
+}
+
+/* Autores: Classes (Cores Daggerheart) */
+.classe-Bardo { color: #e040fb; }       /* Roxo */
+.classe-Guerreiro { color: #d32f2f; }   /* Vermelho */
+.classe-Mago { color: #40c4ff; }        /* Azul Claro */
+.classe-Ladino { color: #9e9e9e; }      /* Cinza */
+.classe-Guardiao { color: #ffab00; }    /* Dourado/Laranja */
+.classe-Serafim { color: #fff; text-shadow: 0 0 5px #fff; } /* Branco Brilhante */
+.classe-Druida { color: #66bb6a; }      /* Verde Claro */
+.classe-Ranger { color: #2e7d32; }      /* Verde Escuro */
+.classe-Feiticeiro { color: #ff5722; }  /* Laranja Avermelhado */
+.classe-Padrao { color: #ddd; }         /* Caso não tenha classe */
+
+@keyframes glow {
+    from { text-shadow: 0 0 5px gold; }
+    to { text-shadow: 0 0 15px gold, 0 0 5px white; }
+}

@@ -1060,61 +1060,128 @@ function rolarLogParaOFinal() {
 }
 
 // 2. Função Global para Registrar Ação (Envia p/ Firebase)
+// =========================================================
+// ATUALIZAÇÃO NO SISTEMA DE LOG (script.js)
+// =========================================================
+
+// 1. Função registrarLog INTELIGENTE (Detecta Classe e Formata)
 window.registrarLog = function(tipo, mensagem) {
     if (!window.db || !window.push || !window.ref) return;
     
     // Identifica quem está agindo
-    const autor = window.nomeJogador || "Mestre/Observador";
+    let autor = window.nomeJogador || "Espectador";
+    let classeAutor = "Padrao";
+
+    // Se for o Mestre
+    if (autor === "Mestre") {
+        classeAutor = "Mestre";
+    } else {
+        // Tenta pegar a classe salva no LocalStorage
+        const classeSalva = localStorage.getItem('profissaoSelecionada');
+        if (classeSalva) classeAutor = classeSalva.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // Remove acentos p/ CSS
+    }
+    
     const timestamp = Date.now();
     
-    // Salva em: mesa_rpg/chat_log
+    // Salva com a info da classe para colorir na hora de ler
     const logRef = window.ref(window.db, 'mesa_rpg/chat_log');
     window.push(logRef, {
         autor: autor,
-        tipo: tipo, // 'dado', 'carta-uso', 'carta-compra', 'carta-reserva', 'medo', 'descanso'
+        classe: classeAutor, // Salva a classe junto
+        tipo: tipo,
         mensagem: mensagem,
         timestamp: timestamp
     });
 };
 
-// 3. Listener: Escuta novos logs chegando (Executa ao carregar e em tempo real)
+// 2. Listener ATUALIZADO (Para aplicar as cores ao receber)
 window.iniciarMonitoramentoLog = function() {
     const content = document.getElementById('chat-log-content');
-    const logRef = window.query(window.ref(window.db, 'mesa_rpg/chat_log'), window.limitToLast(50)); // Pega os últimos 50
+    const logRef = window.query(window.ref(window.db, 'mesa_rpg/chat_log'), window.limitToLast(50));
 
     window.onChildAdded(logRef, (snapshot) => {
         const data = snapshot.val();
         if (!data) return;
 
-        // Remove msg de "vazio" se existir
         const empty = content.querySelector('.log-empty');
         if(empty) empty.remove();
 
-        // Cria o elemento HTML
         const div = document.createElement('div');
         div.className = `log-entry tipo-${data.tipo}`;
         
         const hora = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
+        // Define a classe CSS baseada na profissão ou se é Mestre
+        let classeCSS = "classe-Padrao";
+        if(data.classe === "Mestre") classeCSS = "autor-mestre";
+        else if(data.classe) classeCSS = `classe-${data.classe}`;
+
         div.innerHTML = `
             <span class="log-timestamp">${hora}</span>
-            <span class="log-author">${data.autor}</span>
+            <span class="log-author ${classeCSS}">${data.autor}</span>
             <div class="log-text">${data.mensagem}</div>
         `;
 
         content.appendChild(div);
         
-        // Auto-scroll se estiver aberto
         const painel = document.getElementById('chat-log-container');
         if (painel.classList.contains('open')) {
             content.scrollTop = content.scrollHeight;
         } else {
-            // Mostra bolinha vermelha se fechado
             const dot = document.getElementById('notification-dot');
             if(dot) dot.style.display = 'block';
         }
     });
 };
+
+// =========================================================
+// CORREÇÃO: LOG DE RESERVA (script.js)
+// =========================================================
+
+// Função 1: Quando move manualmente pelo menu da carta
+window.moverParaReserva = function() {
+    if(origemTransito==='mao') {
+        const carta = maoDoJogador[cartaEmTransitoIndex]; // Pega a carta ANTES de remover
+        const nomeCarta = carta.nome; // Salva o nome
+        
+        reservaDoJogador.push(maoDoJogador.splice(cartaEmTransitoIndex,1)[0]);
+        
+        window.fecharDecisao(); 
+        renderizar(); 
+        window.salvarNaNuvem();
+        
+        // O LOG ESTÁ AQUI
+        window.registrarLog('carta-reserva', `Moveu <span class="texto-carta">${nomeCarta}</span> para a Reserva.`);
+    }
+};
+
+// Função 2: Quando compra e a mão está cheia (O Popup de confirmação)
+function selecionarCarta(carta) {
+    if(slotDestinoAtual) { 
+        slotsFixos[slotDestinoAtual] = carta; 
+        salvarNaNuvem(); 
+        renderizar(); 
+    } else {
+        if(maoDoJogador.length < LIMITE_MAO) { 
+            carta.tokens=0; carta.estado='ativo'; 
+            maoDoJogador.push(carta); 
+            salvarNaNuvem(); renderizar(); 
+            window.registrarLog('carta-compra', `Adicionou <span class="texto-carta">${carta.nome}</span> à mão.`);
+        } 
+        else {
+            // AQUI ESTAVA O PROBLEMA DO LOG NÃO APARECER AS VEZES
+            if(confirm("Mão cheia. Enviar para Reserva?")) { 
+                carta.tokens=0; carta.estado='ativo'; 
+                reservaDoJogador.push(carta); 
+                salvarNaNuvem(); renderizar(); 
+                
+                // AGORA O LOG APARECE CERTO
+                window.registrarLog('carta-reserva', `Enviou <span class="texto-carta">${carta.nome}</span> direto para a Reserva.`);
+            }
+        }
+    }
+    window.fecharGrimorio(); slotDestinoAtual = null;
+}
 
 // Inicia o monitoramento assim que o script carregar
 window.addEventListener('load', () => {
