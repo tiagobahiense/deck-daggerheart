@@ -1,5 +1,5 @@
 // =========================================================
-// TABLETOP SYSTEM V13.0 (SIZE CONTROLS & PLAYER MOVE FIX)
+// TABLETOP SYSTEM V13.1 (PLAYER MOVE FIX & SYNC)
 // =========================================================
 
 const REF_TABLETOP = 'mesa_rpg/tabuleiro';
@@ -119,7 +119,7 @@ function renderizarTokens(tokensData) {
 
         if(isMestre && t.visivel===false) el.classList.add('oculto'); else el.classList.remove('oculto');
 
-        // Sincronia de Rastro Remoto
+        // Sincronia de Rastro
         if (posicoesAnteriores[id] && currentTokenId !== id) {
             const old = posicoesAnteriores[id];
             if (Math.abs(old.x - t.x) > 1 || Math.abs(old.y - t.y) > 1) {
@@ -128,6 +128,7 @@ function renderizarTokens(tokensData) {
             }
         }
         
+        // Atualiza posição se não estiver arrastando
         if (currentTokenId !== id) {
             el.style.left = t.x + 'px';
             el.style.top = t.y + 'px';
@@ -177,13 +178,17 @@ function criarRastroSeguro(x1, y1, x2, y2) {
 function startDragToken(e, id, t) {
     const isMestre = window.nomeJogador === "Mestre";
     
-    // --- CORREÇÃO: Comparação de nome Case Insensitive para Jogador ---
-    const nomeToken = (t.nome || "").toUpperCase();
-    const nomeJogador = (window.nomeJogador || "").toUpperCase();
+    // --- CORREÇÃO DE PERMISSÃO (IGNORA MAIÚSCULAS/MINÚSCULAS) ---
+    // Se não for mestre, verifica se é PC e se o nome bate
+    if (!isMestre) {
+        const nomeToken = (t.nome || "").trim().toUpperCase();
+        const nomeJogador = (window.nomeJogador || "").trim().toUpperCase();
+        
+        if (t.tipo !== 'pc' || nomeToken !== nomeJogador) return; 
+    }
     
-    if(!isMestre && (t.tipo !== 'pc' || nomeToken !== nomeJogador)) return; 
-    
-    isDraggingToken=true; currentTokenId=id;
+    isDraggingToken = true; 
+    currentTokenId = id;
     const el = document.getElementById(id);
     const rect = el.getBoundingClientRect();
     
@@ -192,8 +197,10 @@ function startDragToken(e, id, t) {
 
     dragStartPos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
     
-    window.addEventListener('mousemove', moveDragToken); window.addEventListener('mouseup', endDragToken);
-    window.addEventListener('touchmove', moveDragToken, {passive:false}); window.addEventListener('touchend', endDragToken);
+    window.addEventListener('mousemove', moveDragToken); 
+    window.addEventListener('mouseup', endDragToken);
+    window.addEventListener('touchmove', moveDragToken, {passive:false}); 
+    window.addEventListener('touchend', endDragToken);
 }
 
 function moveDragToken(e) {
@@ -218,8 +225,13 @@ function endDragToken() {
     const el = document.getElementById(currentTokenId);
     let x = Math.round(parseFloat(el.style.left)/GRID_SIZE)*GRID_SIZE;
     let y = Math.round(parseFloat(el.style.top)/GRID_SIZE)*GRID_SIZE;
+    
+    // Atualiza localmente antes de enviar (feedback instantâneo)
+    el.style.left = x + 'px'; el.style.top = y + 'px';
+    
     criarRastroSeguro(localDragStart.x, localDragStart.y, x, y);
     window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${currentTokenId}`), {x:x, y:y});
+    
     isDraggingToken=false;
     window.removeEventListener('mousemove', moveDragToken); window.removeEventListener('mouseup', endDragToken);
     window.removeEventListener('touchmove', moveDragToken); window.removeEventListener('touchend', endDragToken);
@@ -254,7 +266,7 @@ window.abrirInfoToken = function(id, editavel) {
         if(editavel) {
             html += `<div class="hp-control-group"><button class="btn-ctrl" style="border-color:red" onclick="mudarStat('${id}','pv_atual',-1)">-1 PV</button><button class="btn-ctrl" style="border-color:green" onclick="mudarStat('${id}','pv_atual',1)">+1 PV</button></div>`;
             
-            // --- CORREÇÃO: Botões de Tamanho Restaurados ---
+            // Botões de Tamanho (Mantidos)
             html += `<div style="margin-top:10px; display:flex; gap:10px; align-items:center; justify-content:center;">
                 <span style="color:#aaa;">Tam:</span>
                 <button class="btn-ctrl" onclick="mudarTam('${id}',-0.5)" style="width:30px;">-</button>
