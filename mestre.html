@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="npcs.css">
     <link rel="stylesheet" href="tabletop.css">
     <link rel="stylesheet" href="cenario.css">
+    <link rel="stylesheet" href="soundbar.css">
     <link href="https://fonts.googleapis.com/css2?family=MedievalSharp&display=swap" rel="stylesheet">
     <style>
         body { display: flex; height: 100vh; flex-direction: column; background-color: #050505; margin: 0; overflow: hidden; }
@@ -123,6 +124,7 @@
             <button class="btn-rest curto" onclick="realizarDescanso('curto')">🌙 Curto</button>
             <button class="btn-rest longo" onclick="realizarDescanso('longo')">🌕 Longo</button>
             <button class="btn-rest" style="background: #5D4037; border: 1px solid #8D6E63;" onclick="window.abrirGerenciadorCenarios()">🖼️ Cenários</button>
+            <button class="btn-rest" style="background: #2E7D32; border: 1px solid #4CAF50;" onclick="window.abrirSoundBar()">🎵 Sound Bar</button>
         </div>
 
         <div style="display:flex; gap:10px;">
@@ -685,6 +687,38 @@
                 </div>
 
             <button onclick="window.fecharGerenciadorCenarios()" style="margin-top:20px; width:100%; padding:10px; background:#333; color:#fff; border:none; cursor:pointer;">Fechar</button>
+        </div>
+    </div>
+    <div id="modal-soundbar" class="modal" style="z-index: 9600;">
+        <div class="modal-criar-content" style="width: 500px; background: #111; max-height: 80vh;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+                <h2 style="color:var(--gold); margin:0;">Sound Bar 🎵</h2>
+                <button onclick="window.pararSomTodos()" style="background:#8b0000; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">⏹ Parar Tudo</button>
+            </div>
+
+            <div class="master-volume-box">
+                <span style="color:#aaa; font-size:0.9rem;">Seu Volume:</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <button id="btn-mute-icon" class="btn-mute" onclick="window.toggleMute()" style="font-size:1.2rem;">🔊</button>
+                    <input type="range" id="player-volume-slider" class="volume-slider" min="0" max="1" step="0.01" value="0.5">
+                </div>
+            </div>
+            
+            <div style="background: #222; padding: 15px; border-radius: 8px; border: 1px dashed #444; margin-bottom: 20px;">
+                <h4 style="color:#ddd; margin:0 0 10px 0; border-bottom:1px solid #444; padding-bottom:5px;">Adicionar Faixa</h4>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:10px;">
+                    <input type="text" id="input-nome-musica" placeholder="Nome (Ex: Tema Épico)" style="width:100%; padding:8px; background:#111; border:1px solid #555; color:white;">
+                    <input type="text" id="input-arquivo-musica" placeholder="Arquivo (Ex: musica.mp3)" style="width:100%; padding:8px; background:#111; border:1px solid #555; color:white;">
+                </div>
+                <div style="font-size:0.7rem; color:#888; margin-bottom:10px;">*O arquivo deve estar na pasta <b>audio/sound-bar/</b></div>
+                <button onclick="window.cadastrarMusica()" style="background:var(--gold); border:none; border-radius:4px; font-weight:bold; cursor:pointer; padding:8px 20px; width:100%;">Cadastrar</button>
+            </div>
+
+            <h3 style="color:#aaa; border-bottom:1px solid #333; margin-top:0;">Biblioteca</h3>
+            <div id="lista-soundbar-content" class="lista-cenarios-scroll" style="height: 250px;">
+                </div>
+
+            <button onclick="window.fecharSoundBar()" style="margin-top:20px; width:100%; padding:10px; background:#333; color:#fff; border:none; cursor:pointer;">Fechar</button>
         </div>
     </div>
 </body>
