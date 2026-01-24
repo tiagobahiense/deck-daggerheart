@@ -873,6 +873,60 @@ reader.onload = function(event) {
                 alert("Retrato atualizado!");
             })
             .catch(err => console.error(err));
+            const menu = document.getElementById('menu-vitral');
+            if(menu) menu.style.display = 'none'; 
+            
+            // alert("Retrato atualizado!");
+            
     }
 };
-// ...
+// =========================================================
+// LÓGICA DO VITRAL (MENU E REMOÇÃO)
+// =========================================================
+
+// Abre ou fecha o menu ao clicar no vitral
+window.alternarMenuVitral = function() {
+    const menu = document.getElementById('menu-vitral');
+    if (!menu) return;
+    
+    if (menu.style.display === 'none') {
+        menu.style.display = 'flex';
+        
+        // Fecha o menu automaticamente se clicar fora (opcional, mas bom pra UX)
+        setTimeout(() => {
+            document.addEventListener('click', fecharMenuAoClicarFora, { once: true });
+        }, 100);
+    } else {
+        menu.style.display = 'none';
+    }
+};
+
+function fecharMenuAoClicarFora(e) {
+    const menu = document.getElementById('menu-vitral');
+    const vitral = document.querySelector('.vitral-moldura-main');
+    if (menu && !menu.contains(e.target) && !vitral.contains(e.target)) {
+        menu.style.display = 'none';
+    }
+}
+
+// Função para Remover a foto (Resetar para Default)
+window.removerRetrato = function() {
+    if (!confirm("Deseja remover sua foto e voltar para o padrão?")) return;
+
+    const imgPadrao = "img/default_portrait.png";
+
+    // 1. Atualiza no Firebase para a imagem padrão
+    if (window.nomeJogador && window.db && window.ref && window.update) {
+        const playerRef = window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}`);
+        window.update(playerRef, { "retrato": imgPadrao })
+            .then(() => {
+                // 2. Atualiza na tela
+                const hudImg = document.getElementById('hud-portrait-img');
+                if (hudImg) hudImg.src = imgPadrao;
+                
+                // Fecha o menu
+                document.getElementById('menu-vitral').style.display = 'none';
+            })
+            .catch(err => console.error("Erro ao remover:", err));
+    }
+};

@@ -243,9 +243,14 @@
     <div id="app-container" style="display: none; opacity: 0;">
 
         <div id="hud-vitral-jogador">
-            <div class="vitral-moldura-main">
+            <div class="vitral-moldura-main" onclick="window.alternarMenuVitral()">
                 <img id="hud-portrait-img" src="img/default_portrait.png" alt="Retrato">
                 <div id="hud-nome-personagem" class="vitral-nome-borda">Personagem</div>
+            </div>
+
+            <div id="menu-vitral" style="display: none;">
+                <button class="btn-menu-vitral" onclick="window.triggerUploadPortrait()">📷 Trocar</button>
+                <button class="btn-menu-vitral remover" onclick="window.removerRetrato()">❌ Remover</button>
             </div>
         </div>
 

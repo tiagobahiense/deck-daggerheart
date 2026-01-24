@@ -1574,7 +1574,68 @@ body:has(.carta:hover) #hover-preview {
         0 0 10px var(--gold);
     overflow: hidden;
     position: relative;
-    pointer-events: auto; /* Permite clicar no retrato se quiser */
+    pointer-events: auto;
+    cursor: pointer; /* IMPORTANTE: Mostra a mãozinha */
+    transition: all 0.2s ease; /* Permite clicar no retrato se quiser */
+}
+
+.vitral-moldura-main:hover {
+    border-color: #fff; /* Brilho branco ao passar o mouse */
+    box-shadow: 0 0 25px var(--gold);
+}
+
+.vitral-moldura-main:active {
+    transform: scale(0.95);
+}
+
+#menu-vitral {
+    position: absolute;
+    bottom: 140px; /* Aparece logo acima do vitral */
+    left: 10px;
+    background: rgba(0, 0, 0, 0.9);
+    border: 1px solid var(--gold);
+    border-radius: 8px;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    z-index: 2200;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.8);
+    pointer-events: auto; /* Garante que os botões funcionem */
+    min-width: 120px;
+    animation: fadeInMenu 0.2s ease-out;
+}
+
+@keyframes fadeInMenu {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.btn-menu-vitral {
+    background: #333;
+    color: var(--gold);
+    border: 1px solid #555;
+    padding: 8px;
+    cursor: pointer;
+    font-family: 'MedievalSharp', cursive;
+    text-align: left;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    transition: 0.2s;
+}
+
+.btn-menu-vitral:hover {
+    background: var(--gold);
+    color: #000;
+}
+
+.btn-menu-vitral.remover {
+    color: #ff6666;
+    border-color: #500;
+}
+.btn-menu-vitral.remover:hover {
+    background: #8b0000;
+    color: #fff;
 }
 
 #hud-portrait-img {
