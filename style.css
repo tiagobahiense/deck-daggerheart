@@ -567,35 +567,50 @@ button {
     transform: scale(1.1);
 }
 
-/* --- DECK E POTE --- */
+/* --- DECK E POTE (POSICIONADO FIXO NA DIREITA) --- */
 #deck-container-wrapper {
+    /* O wrapper serve apenas de âncora invisível agora */
     width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    padding-right: 5%;
     height: 0;
     pointer-events: none;
 }
+
 #deck-area {
-    position: relative;
-    top: -150px;
-    width: 120px;
+    position: fixed;  /* Fixa na tela, independente do scroll */
+    top: 50%;         /* Meio da tela verticalmente */
+    right: 10px;      /* 10px da borda direita (ajuste se quiser mais grudado) */
+    
+    /* Centraliza exatamente no meio vertical */
+    transform: translateY(-50%); 
+    
+    width: 160px;     /* AUMENTADO: Era 120px */
+    
     cursor: pointer;
     text-align: center;
-    transition: transform 0.2s;
-    z-index: 60;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 4000;    /* Acima das cartas da mesa, abaixo de modais */
     pointer-events: auto;
 }
+
 #deck-area:hover {
-    transform: scale(1.05);
+    /* Mantém a centralização e aumenta o tamanho */
+    transform: translateY(-50%) scale(1.15); 
+    filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.6));
 }
+
 .pote-img {
     width: 100%;
-    drop-shadow: 0 10px 20px rgba(0, 0, 0, 0.8);
+    /* Sombra mais forte para destacar do fundo */
+    drop-shadow: 0 10px 20px rgba(0, 0, 0, 0.9); 
 }
+
 .label-deck {
-    margin-top: -20px;
+    margin-top: -15px; /* Sobe um pouco o texto */
     text-shadow: 0 2px 4px black;
+    font-weight: bold;
+    color: var(--gold);
+    font-size: 1.1rem;
+    pointer-events: none;
 }
 
 /* --- RESERVA (CORREÇÃO DE CLIQUE) --- */
