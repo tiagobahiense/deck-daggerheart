@@ -23,6 +23,7 @@ setPersistence(auth, browserSessionPersistence).catch(console.error);
 // Exportações globais
 window.db = db; window.ref = ref; window.set = set; window.get = get;
 window.remove = remove; window.onValue = onValue; window.onDisconnect = onDisconnect;
+window.update = update;
 window.push = push; window.query = query; window.limitToLast = limitToLast; window.onChildAdded = onChildAdded;
 
 // Configuração global
