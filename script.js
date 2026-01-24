@@ -861,19 +861,30 @@ window.pararAudioLogin = function() {
 // SISTEMA DE UPLOAD DE RETRATO & VITRAL (CORRIGIDO)
 // =========================================================
 
-// 1. Função chamada pelo botão "Trocar"
+// 1. Função chamada pelo botão "Trocar" (Menu do Vitral ou Botão Dourado)
 window.triggerUploadPortrait = function() {
     const fileInput = document.getElementById('portrait-upload-input');
-    if (fileInput) fileInput.click();
+    if (fileInput) {
+        // Reinicia o input para permitir selecionar o mesmo arquivo se quiser
+        fileInput.value = ''; 
+        fileInput.click();
+    } else {
+        console.error("Input de upload não encontrado (portrait-upload-input)");
+    }
 };
 
-// 2. Configura o ouvinte do arquivo (Executa ao carregar a página)
-window.addEventListener('load', () => {
+// 2. Configura o ouvinte do arquivo (Imediatamente)
+(function configurarUpload() {
     const fileInput = document.getElementById('portrait-upload-input');
     
-    // Só adiciona o evento se o input existir na página
     if (fileInput) {
-        fileInput.addEventListener('change', function(e) {
+        // Remove ouvintes antigos clonando o elemento (segurança contra duplicação)
+        const novoInput = fileInput.cloneNode(true);
+        if(fileInput.parentNode) {
+            fileInput.parentNode.replaceChild(novoInput, fileInput);
+        }
+        
+        novoInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
@@ -882,7 +893,6 @@ window.addEventListener('load', () => {
                 return;
             }
 
-            // AQUI CRIAMOS O LEITOR (CORREÇÃO DO ERRO 'reader is not defined')
             const reader = new FileReader();
             
             reader.onload = function(event) {
@@ -893,7 +903,7 @@ window.addEventListener('load', () => {
                     const playerRef = window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}`);
                     window.update(playerRef, { "retrato": base64String })
                         .then(() => {
-                            // Atualiza na tela
+                            // Atualiza na tela imediatamente
                             const hudImg = document.getElementById('hud-portrait-img');
                             if(hudImg) hudImg.src = base64String;
                             
@@ -910,9 +920,9 @@ window.addEventListener('load', () => {
             reader.readAsDataURL(file);
         });
     }
-});
+})();
 
-// 3. Função de Abrir/Fechar Menu do Vitral (CORREÇÃO DO CLIQUE)
+// 3. Função de Abrir/Fechar Menu do Vitral
 window.alternarMenuVitral = function() {
     const menu = document.getElementById('menu-vitral');
     if (!menu) return;
@@ -923,8 +933,10 @@ window.alternarMenuVitral = function() {
         setTimeout(() => {
             document.addEventListener('click', function fechar(e) {
                 const vitral = document.querySelector('.vitral-moldura-main');
-                // Se o clique não foi no menu nem no vitral, fecha
-                if (menu && !menu.contains(e.target) && !vitral.contains(e.target)) {
+                const btnTrocar = document.querySelector('.btn-menu-vitral'); // Botão dentro do menu
+                
+                // Se o clique não foi no menu, nem no vitral, fecha
+                if (menu && !menu.contains(e.target) && (!vitral || !vitral.contains(e.target))) {
                     menu.style.display = 'none';
                     document.removeEventListener('click', fechar);
                 }
@@ -948,7 +960,8 @@ window.removerRetrato = function() {
                 const hudImg = document.getElementById('hud-portrait-img');
                 if (hudImg) hudImg.src = imgPadrao;
                 
-                document.getElementById('menu-vitral').style.display = 'none';
+                const menu = document.getElementById('menu-vitral');
+                if(menu) menu.style.display = 'none';
             })
             .catch(err => console.error("Erro ao remover:", err));
     }
