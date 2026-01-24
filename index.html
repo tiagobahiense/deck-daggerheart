@@ -242,6 +242,21 @@
     <div id="player-npc-overlay"></div>
     <div id="app-container" style="display: none; opacity: 0;">
 
+        <div id="btn-toggle-log" onclick="window.toggleChatLog()" title="Log de Ações">
+            📜
+            <div id="notification-dot"></div>
+        </div>
+    
+        <div id="chat-log-container">
+            <div class="log-header">
+                <h3>Crônicas da Sessão</h3>
+                <button onclick="window.toggleChatLog()">×</button>
+            </div>
+            <div id="chat-log-content">
+                <div class="log-empty">Nenhum registro ainda...</div>
+            </div>
+        </div>
+
         
         <input type="file" id="portrait-upload-input" accept="image/*" style="display: none;">
         <div id="hud-vitral-jogador">

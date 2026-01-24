@@ -15,6 +15,8 @@ window.adicionarMedo = function() {
                 qtd: atual + 1,
                 aviso: { tipo: 'add', timestamp: Date.now() }
             });
+            // NOVO LOG
+            if(window.registrarLog) window.registrarLog('medo', 'O Mestre adicionou um token de Medo.');
         }
     });
 };
@@ -27,6 +29,8 @@ window.usarMedo = function() {
                 qtd: atual - 1,
                 aviso: { tipo: 'use', timestamp: Date.now() }
             });
+            // NOVO LOG
+            if(window.registrarLog) window.registrarLog('medo', 'O Mestre gastou um token de Medo!');
         }
     });
 };

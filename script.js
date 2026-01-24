@@ -487,12 +487,34 @@ window.atualizarSincronia = function() {
 
 // Funções de Cartas
 function selecionarCarta(carta) {
-    if(slotDestinoAtual) { slotsFixos[slotDestinoAtual] = carta; salvarNaNuvem(); renderizar(); } 
-    else {
-        if(maoDoJogador.length < LIMITE_MAO) { carta.tokens=0; carta.estado='ativo'; maoDoJogador.push(carta); salvarNaNuvem(); renderizar(); }
-        else if(confirm("Mão cheia. Enviar para Reserva?")) { carta.tokens=0; carta.estado='ativo'; reservaDoJogador.push(carta); salvarNaNuvem(); renderizar(); }
+    if(slotDestinoAtual) { 
+        slotsFixos[slotDestinoAtual] = carta; 
+        salvarNaNuvem(); 
+        renderizar(); 
+    } else {
+        // Bloco IF principal
+        if(maoDoJogador.length < LIMITE_MAO) { 
+            carta.tokens=0; 
+            carta.estado='ativo'; 
+            maoDoJogador.push(carta); 
+            salvarNaNuvem(); 
+            renderizar(); 
+            // O LOG VEM DENTRO DAS CHAVES DO IF
+            window.registrarLog('carta-compra', `Adicionou <span class="log-destaque">${carta.nome}</span> à mão.`);
+        } 
+        // O ELSE IF VEM GRUDADO NO FECHAMENTO DO IF
+        else if(confirm("Mão cheia. Enviar para Reserva?")) { 
+            carta.tokens=0; 
+            carta.estado='ativo'; 
+            reservaDoJogador.push(carta); 
+            salvarNaNuvem(); 
+            renderizar(); 
+            // O LOG VEM DENTRO DAS CHAVES DO ELSE IF
+            window.registrarLog('carta-reserva', `Enviou <span class="log-destaque">${carta.nome}</span> direto para a Reserva.`);
+        }
     }
-    window.fecharGrimorio(); slotDestinoAtual = null;
+    window.fecharGrimorio(); 
+    slotDestinoAtual = null;
 }
 
 window.limparSlot = function(id, evt) { if(evt) evt.stopPropagation(); slotsFixos[id] = null; salvarNaNuvem(); renderizar(); };
@@ -546,6 +568,9 @@ window.alterarToken = function(d) {
         list[cartaEmTransitoIndex].tokens = Math.max(0, Math.min(5, (list[cartaEmTransitoIndex].tokens||0)+d));
         document.getElementById('label-token-qtd').innerText = list[cartaEmTransitoIndex].tokens;
         window.salvarNaNuvem();
+        const carta = list[cartaEmTransitoIndex];
+    const acao = d > 0 ? "Adicionou" : "Removeu";
+    window.registrarLog('token', `${acao} token em <span class="log-destaque">${carta.nome}</span> (Total: ${carta.tokens}).`);
     }
 };
 
@@ -562,6 +587,7 @@ window.confirmarEdicao = function() { window.fecharDecisao(); renderizar(); };
 window.usarCarta = function() {
     if(origemTransito!=='mao') return;
     const c = maoDoJogador[cartaEmTransitoIndex];
+    window.registrarLog('carta-uso', `Usou a carta <span class="log-destaque">${c.nome}</span>.`);
     window.fecharDecisao();
     const anim = document.getElementById('carta-tabuleiro-animada');
     anim.style.backgroundImage=`url('${encodeURI(c.caminho)}')`; anim.style.display='block';
@@ -583,6 +609,8 @@ window.moverParaReserva = function() {
     if(origemTransito==='mao') {
         reservaDoJogador.push(maoDoJogador.splice(cartaEmTransitoIndex,1)[0]);
         window.fecharDecisao(); renderizar(); window.salvarNaNuvem();
+        const c = maoDoJogador[cartaEmTransitoIndex];
+    window.registrarLog('carta-reserva', `Moveu <span class="log-destaque">${c.nome}</span> para a Reserva.`);
     }
 };
 
@@ -602,6 +630,8 @@ window.devolverParaMao = function() {
 
 window.devolverAoDeck = function() {
     if(origemTransito==='mao') { maoDoJogador.splice(cartaEmTransitoIndex,1)[0]; window.fecharDecisao(); renderizar(); window.salvarNaNuvem(); }
+    const c = maoDoJogador[cartaEmTransitoIndex]; // Pegue o nome ANTES do splice
+    window.registrarLog('carta-reserva', `Devolveu <span class="log-destaque">${c.nome}</span> ao Grimório.`);
 };
 
 window.mostrarModalTroca = function() {
@@ -983,3 +1013,90 @@ window.removerRetrato = function() {
             });
     }
 };
+
+// =========================================================
+// SISTEMA DE LOG DE AÇÕES (CHAT)
+// =========================================================
+
+// 1. Alternar Visibilidade do Painel
+window.toggleChatLog = function() {
+    const painel = document.getElementById('chat-log-container');
+    const dot = document.getElementById('notification-dot');
+    
+    if (painel.classList.contains('open')) {
+        painel.classList.remove('open');
+    } else {
+        painel.classList.add('open');
+        dot.style.display = 'none'; // Remove notificação ao abrir
+        rolarLogParaOFinal();
+    }
+};
+
+function rolarLogParaOFinal() {
+    const content = document.getElementById('chat-log-content');
+    setTimeout(() => {
+        content.scrollTop = content.scrollHeight;
+    }, 100);
+}
+
+// 2. Função Global para Registrar Ação (Envia p/ Firebase)
+window.registrarLog = function(tipo, mensagem) {
+    if (!window.db || !window.push || !window.ref) return;
+    
+    // Identifica quem está agindo
+    const autor = window.nomeJogador || "Mestre/Observador";
+    const timestamp = Date.now();
+    
+    // Salva em: mesa_rpg/chat_log
+    const logRef = window.ref(window.db, 'mesa_rpg/chat_log');
+    window.push(logRef, {
+        autor: autor,
+        tipo: tipo, // 'dado', 'carta-uso', 'carta-compra', 'carta-reserva', 'medo', 'descanso'
+        mensagem: mensagem,
+        timestamp: timestamp
+    });
+};
+
+// 3. Listener: Escuta novos logs chegando (Executa ao carregar e em tempo real)
+window.iniciarMonitoramentoLog = function() {
+    const content = document.getElementById('chat-log-content');
+    const logRef = window.query(window.ref(window.db, 'mesa_rpg/chat_log'), window.limitToLast(50)); // Pega os últimos 50
+
+    window.onChildAdded(logRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
+
+        // Remove msg de "vazio" se existir
+        const empty = content.querySelector('.log-empty');
+        if(empty) empty.remove();
+
+        // Cria o elemento HTML
+        const div = document.createElement('div');
+        div.className = `log-entry tipo-${data.tipo}`;
+        
+        const hora = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        div.innerHTML = `
+            <span class="log-timestamp">${hora}</span>
+            <span class="log-author">${data.autor}</span>
+            <div class="log-text">${data.mensagem}</div>
+        `;
+
+        content.appendChild(div);
+        
+        // Auto-scroll se estiver aberto
+        const painel = document.getElementById('chat-log-container');
+        if (painel.classList.contains('open')) {
+            content.scrollTop = content.scrollHeight;
+        } else {
+            // Mostra bolinha vermelha se fechado
+            const dot = document.getElementById('notification-dot');
+            if(dot) dot.style.display = 'block';
+        }
+    });
+};
+
+// Inicia o monitoramento assim que o script carregar
+window.addEventListener('load', () => {
+    setTimeout(window.iniciarMonitoramentoLog, 1500); // Pequeno delay pra garantir conexão
+});

@@ -39,6 +39,7 @@ window.rolarDadosConfirmados = function() {
     
     let dadosCalculados = [];
     
+    // Calcula valores
     ['d4','d6','d8','d10','d12','d20'].forEach(tipo => {
         const faces = parseInt(tipo.substring(1));
         for(let i=0; i < selecaoDados[tipo]; i++) {
@@ -56,7 +57,34 @@ window.rolarDadosConfirmados = function() {
 
     const quem = window.nomeJogador || "Mestre";
 
-    // AGORA VAI FUNCIONAR POIS EXPORTAMOS NO SCRIPT.JS
+    // --- NOVO: GERA O TEXTO PARA O LOG ---
+    let textoLog = "Rolou: ";
+    let detalhes = dadosCalculados.map(d => `${d.label} (<b>${d.valorFinal}</b>)`).join(', ');
+    textoLog += detalhes;
+
+    // Verifica Dualidade para o Log
+    const dadoEsp = dadosCalculados.find(d => d.classe === 'dado-esperanca');
+    const dadoMedo = dadosCalculados.find(d => d.classe === 'dado-medo');
+
+    if (dadoEsp && dadoMedo) {
+        const vEsp = dadoEsp.valorFinal;
+        const vMedo = dadoMedo.valorFinal;
+        const total = vEsp + vMedo; // Daggerheart soma os dois d12 para o score
+        
+        textoLog += `<br>Resultado Dualidade: <b>${total}</b>`;
+        
+        if (vEsp > vMedo) {
+            textoLog += ` <span style="color:#00cc44; font-weight:bold;">[COM ESPERANÇA]</span>`;
+        } else if (vMedo > vEsp) {
+            textoLog += ` <span style="color:#ff4444; font-weight:bold;">[COM MEDO]</span>`;
+        } else {
+            textoLog += ` <span style="color:#ffaa00; font-weight:bold;">[CRÍTICO]</span>`;
+        }
+    }
+    // Envia para o chat
+    if(window.registrarLog) window.registrarLog('dado', textoLog);
+    // -------------------------------------
+
     if (window.push && window.ref && window.db) {
         const rolagensRef = window.ref(window.db, 'mesa_rpg/rolagens');
         window.push(rolagensRef, { quem: quem, dados: dadosCalculados, timestamp: Date.now() });
