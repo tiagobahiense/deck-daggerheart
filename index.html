@@ -45,7 +45,7 @@
 
     <div id="tela-inicial-monolito">
         <div class="monolito-content">
-            <h1 class="titulo-entrada">CRÔNICAS DE DAGGERHEART</h1>
+            <h1 class="titulo-entrada">BEM VINDOS, AVENTUREIROS!</h1>
             <button class="btn-jogar-entrada" onclick="entrarNoJogo()">JOGAR</button>
         </div>
     </div>
@@ -354,24 +354,24 @@
         });
     </script>
     <script>
-        // --- LÓGICA DE ENTRADA E ÁUDIO ---
+        // --- LÓGICA DE ENTRADA (EFEITO DE PÁGINA) ---
         function entrarNoJogo() {
             const tela = document.getElementById('tela-inicial-monolito');
             const audio = document.getElementById('audio-login');
     
-            // 1. Toca o áudio (O navegador permite porque foi um clique)
+            // 1. Toca o áudio
             if (audio) {
                 audio.volume = 0.5;
                 audio.play().catch(e => console.log("Erro áudio:", e));
             }
     
-            // 2. Animação de saída da capa
-            tela.style.opacity = '0';
+            // 2. Ativa o efeito de "Virar Página"
+            tela.classList.add('pagina-virada');
             
-            // 3. Remove a capa da frente depois que a animação acabar
+            // 3. Remove a capa do HTML depois que a animação acabar (1.5s)
             setTimeout(() => {
                 tela.style.display = 'none';
-            }, 1000); // 1 segundo (mesmo tempo da transição CSS)
+            }, 1500); 
         }
     </script>
 </body>

@@ -28,7 +28,7 @@ body {
 }
 
 /* =========================================================
-   TELA INICIAL (MONÓLITO / CAPA)
+   TELA INICIAL (CAPA DO LIVRO / MONÓLITO)
    ========================================================= */
 
    #tela-inicial-monolito {
@@ -37,14 +37,33 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    /* Sua imagem de wallpaper aqui */
-    background: url('img/wallpaper.jpeg') no-repeat center center;
+    
+    /* CORREÇÃO: Fundo preto de segurança + Imagem */
+    background-color: #000;
+    background-image: url('img/wallpaper.jpeg');
+    background-repeat: no-repeat;
+    background-position: center center;
     background-size: cover;
-    z-index: 10000; /* Acima de TUDO */
+    
+    /* Garante que cubra o loading (que é 20000) */
+    z-index: 25000; 
+    
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: opacity 1s ease-in-out; /* Fade out suave */
+
+    /* CONFIGURAÇÃO DA ANIMAÇÃO DE PÁGINA */
+    transform-origin: center left; /* O eixo de rotação é a esquerda (lombada do livro) */
+    transition: transform 1.5s cubic-bezier(0.645, 0.045, 0.355, 1); /* Movimento suave */
+    box-shadow: inset -50px 0 100px rgba(0,0,0,0.8); /* Sombra interna para dar profundidade */
+}
+
+/* CLASSE QUE SERÁ ADICIONADA PELO JS AO CLICAR */
+#tela-inicial-monolito.pagina-virada {
+    /* Gira a tela -90 graus como abrindo uma porta/livro */
+    transform: perspective(2000px) rotateY(-100deg); 
+    /* Opcional: Escurece um pouco enquanto sai */
+    filter: brightness(0.5); 
 }
 
 .monolito-content {
@@ -55,8 +74,11 @@ body {
     text-align: center;
     box-shadow: 0 0 60px rgba(0,0,0,1);
     backdrop-filter: blur(5px);
-    animation: slideUp 1s ease-out;
+    /* Removemos a animation de entrada para não conflitar com a saída */
+    /* animation: slideUp 1s ease-out; */ 
 }
+
+/* (Mantenha o CSS dos botões e títulos igual estava antes) */
 
 .titulo-entrada {
     font-family: 'MedievalSharp', cursive;
