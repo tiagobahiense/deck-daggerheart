@@ -1,18 +1,20 @@
 // =========================================================
-// SOUND BAR & SYNC SYSTEM (V3.0 - FIX MUTE & LIST)
+// SOUND BAR & SYNC SYSTEM (V4.0 - VISUAL MUTE & LOCAL VOL)
 // =========================================================
 
 let soundbarAudio = null;
-let playerVolume = 0.5;
+let savedVolume = 0.5; // Guarda o volume anterior ao mutar
 let isMuted = false;
 
 window.initSoundSystemPlayer = function() {
+    // 1. Cria o elemento de áudio se não existir
     if (!document.getElementById('soundbar-player-element')) {
         soundbarAudio = new Audio();
         soundbarAudio.id = 'soundbar-player-element';
         soundbarAudio.loop = false;
         document.body.appendChild(soundbarAudio);
         
+        // Listeners
         soundbarAudio.addEventListener('timeupdate', atualizarBarraProgressoMestre);
         soundbarAudio.addEventListener('ended', () => {
              document.querySelectorAll('.btn-play-sound').forEach(b => {
@@ -21,62 +23,119 @@ window.initSoundSystemPlayer = function() {
             });
              document.querySelectorAll('.sound-progress-bar').forEach(b => b.style.width = '0%');
         });
+        soundbarAudio.addEventListener('error', (e) => {
+            console.error("Erro ao carregar áudio:", soundbarAudio.src, e);
+            // alert("Erro ao tocar. Verifique se o arquivo está na pasta audio/sound-bar/");
+        });
     } else {
         soundbarAudio = document.getElementById('soundbar-player-element');
     }
 
-    // Tenta pegar o slider do Jogador OU do Mestre
+    // 2. Recupera volume salvo do LocalStorage (Individual para cada navegador)
+    const storedVol = localStorage.getItem('daggerheart_bgm_volume');
+    if (storedVol !== null) {
+        savedVolume = parseFloat(storedVol);
+    }
+
+    // 3. Configura o Slider (Tenta pegar Jogador ou Mestre)
     let slider = document.getElementById('player-volume-slider');
     if(!slider) slider = document.getElementById('master-volume-slider');
 
     if (slider) {
-        slider.value = playerVolume;
+        // Inicializa o slider com o volume salvo
+        slider.value = savedVolume;
+        soundbarAudio.volume = savedVolume;
+        
         slider.addEventListener('input', (e) => {
-            playerVolume = parseFloat(e.target.value);
-            atualizarVolumeReal();
+            // Se mexer no slider, sai do mudo automaticamente
+            if (isMuted) window.toggleMute(); 
+            
+            const vol = parseFloat(e.target.value);
+            soundbarAudio.volume = vol;
+            savedVolume = vol;
+            localStorage.setItem('daggerheart_bgm_volume', vol);
         });
     }
 
+    // 4. Monitora Firebase (Apenas Play/Pause - Volume é local)
     window.onValue(window.ref(window.db, 'mesa_rpg/soundbar/status'), (snap) => {
         if (!snap.exists()) return;
         const data = snap.val();
         
         if (data.action === 'play') {
-            // CORREÇÃO: Garante que espaços no nome do arquivo não quebrem o link
-            let safeFile = encodeURI(data.file).replace(/%20/g, " "); // Alguns browsers preferem espaço cru em local, outros %20.
-            // Mas o ideal para src é encode. Vamos tentar direto primeiro.
+            // Constrói o caminho. EncodeURI ajuda com espaços
+            // IMPORTANTE: O arquivo DEVE estar em 'audio/sound-bar/'
+            let nomeArquivo = data.file.trim();
+            let src = `audio/sound-bar/${nomeArquivo}`;
             
-            let src = `audio/sound-bar/${data.file}`;
+            // Verifica se precisa trocar a música
+            // Decodificamos o src atual para comparar com o nome simples
+            let currentSrcDecoded = decodeURI(soundbarAudio.src);
             
-            // Só troca se for musica nova
-            if (!soundbarAudio.src.includes(encodeURI(data.file)) || soundbarAudio.paused) {
+            if (!currentSrcDecoded.endsWith(nomeArquivo) || soundbarAudio.paused) {
                 soundbarAudio.src = src;
-                soundbarAudio.volume = isMuted ? 0 : playerVolume;
-                soundbarAudio.play().catch(e => console.error("Erro ao tocar (verifique o nome do arquivo):", e));
+                // Aplica o volume local (se estiver mutado, mantém 0)
+                soundbarAudio.volume = isMuted ? 0 : savedVolume;
+                
+                soundbarAudio.play().catch(e => {
+                    console.warn("Autoplay bloqueado ou arquivo não encontrado:", e);
+                });
             }
             
+            // Atualiza botões visuais (caso tenha entrado no meio da sessão)
+            atualizarBotoesPlay(nomeArquivo, true);
+
         } else if (data.action === 'pause') {
             if (!soundbarAudio.paused) soundbarAudio.pause();
+            atualizarBotoesPlay(data.file, false);
             
         } else if (data.action === 'stop') {
             soundbarAudio.pause();
             soundbarAudio.currentTime = 0;
+            document.querySelectorAll('.btn-play-sound').forEach(b => { b.classList.remove('playing'); b.innerHTML = "▶"; });
+            document.querySelectorAll('.sound-progress-bar').forEach(b => b.style.width = '0%');
         }
     });
 };
 
+function atualizarBotoesPlay(arquivo, isPlaying) {
+    document.querySelectorAll('.btn-play-sound').forEach(btn => {
+        // O botão tem um onclick que passa o nome do arquivo. 
+        // Vamos tentar identificar pelo contexto ou refazer a lista.
+        // Como simplificação, resetamos todos e ativamos o que clicou se formos o mestre.
+        // Se formos jogador, essa função é apenas visual.
+        
+        // Reset geral
+        if(isPlaying) {
+             // Se o botão chama a função com esse arquivo
+             if (btn.getAttribute('onclick').includes(arquivo)) {
+                 btn.classList.add('playing');
+                 btn.innerHTML = "⏸";
+             } else {
+                 btn.classList.remove('playing');
+                 btn.innerHTML = "▶";
+             }
+        } else {
+             if (btn.getAttribute('onclick').includes(arquivo)) {
+                 btn.classList.remove('playing');
+                 btn.innerHTML = "▶";
+             }
+        }
+    });
+}
+
 function atualizarBarraProgressoMestre() {
     const modal = document.getElementById('modal-soundbar');
+    // Só atualiza se o modal estiver visível (performance)
     if(!modal || modal.style.display === 'none') return;
     if(!soundbarAudio || !soundbarAudio.duration) return;
 
     const pct = (soundbarAudio.currentTime / soundbarAudio.duration) * 100;
-    
-    // Tenta encontrar a barra baseada no src atual
     const currentSrc = decodeURI(soundbarAudio.src);
-    // Procura em todas as barras qual corresponde ao arquivo tocando
+    
     document.querySelectorAll('.sound-progress-bar').forEach(bar => {
-        if(currentSrc.includes(bar.dataset.file)) {
+        // Verifica se a barra pertence ao arquivo tocando
+        if(currentSrc.endsWith(bar.dataset.file)) {
             bar.style.width = `${pct}%`;
         } else {
             bar.style.width = '0%';
@@ -84,32 +143,51 @@ function atualizarBarraProgressoMestre() {
     });
 }
 
-// CORREÇÃO DO MUTE (FUNCIONA PRA JOGADOR E MESTRE)
+// LÓGICA DE MUDO VISUAL (SLIDER DESCE)
 window.toggleMute = function() {
     isMuted = !isMuted;
     
-    // Tenta pegar os dois tipos de botão (index e mestre usam IDs diferentes agora)
+    let slider = document.getElementById('player-volume-slider');
+    if(!slider) slider = document.getElementById('master-volume-slider');
+    
+    // Pega botões de ícone (Jogador e Mestre)
     const btnPlayer = document.getElementById('btn-mute-icon');
-    const btnMaster = document.getElementById('btn-mute-master');
+    const btnMaster = document.getElementById('btn-mute-master'); // ID corrigido no HTML do Mestre
     const botoes = [btnPlayer, btnMaster];
 
     if (isMuted) {
+        // MUTADO
         soundbarAudio.volume = 0;
+        
+        if(slider) {
+            slider.value = 0; // Slider desce visualmente
+            slider.classList.add('muted-slider'); // Opcional: muda cor do thumb
+        }
+
         botoes.forEach(btn => {
-            if(btn) { btn.innerText = '🔇'; btn.classList.add('muted'); }
+            if(btn) { 
+                btn.innerHTML = '🔇'; // Ícone mudo
+                btn.classList.add('muted'); // Fica transparente via CSS
+            }
         });
+
     } else {
-        atualizarVolumeReal();
+        // DESMUTADO (Restaura)
+        soundbarAudio.volume = savedVolume;
+        
+        if(slider) {
+            slider.value = savedVolume; // Slider volta para onde estava
+            slider.classList.remove('muted-slider');
+        }
+
         botoes.forEach(btn => {
-            if(btn) { btn.innerText = '🔊'; btn.classList.remove('muted'); }
+            if(btn) { 
+                btn.innerHTML = '🔊'; 
+                btn.classList.remove('muted'); // Volta opacidade normal
+            }
         });
     }
 };
-
-function atualizarVolumeReal() {
-    if (isMuted) return;
-    if (soundbarAudio) soundbarAudio.volume = playerVolume;
-}
 
 // --- FUNÇÕES MESTRE ---
 
@@ -124,7 +202,7 @@ window.fecharSoundBar = function() {
 
 window.cadastrarMusica = function() {
     const nomeDisplay = document.getElementById('input-nome-musica').value;
-    const nomeArquivo = document.getElementById('input-arquivo-musica').value.trim(); // Trim para evitar espaços acidentais
+    const nomeArquivo = document.getElementById('input-arquivo-musica').value.trim();
 
     if (!nomeDisplay || !nomeArquivo) return alert("Preencha tudo.");
 
@@ -179,6 +257,7 @@ function carregarListaAudios() {
 }
 
 window.tocarParaTodos = function(arquivo, btnElement) {
+    // Se clicar no botão que já está tocando -> PAUSA
     if (btnElement.classList.contains('playing')) {
         btnElement.classList.remove('playing');
         btnElement.innerHTML = "▶";
@@ -186,6 +265,7 @@ window.tocarParaTodos = function(arquivo, btnElement) {
             file: arquivo, action: 'pause', token: Date.now()
         });
     } else {
+        // Se clicar em outro -> TOCA
         document.querySelectorAll('.btn-play-sound').forEach(b => {
             b.classList.remove('playing'); b.innerHTML = "▶";
         });

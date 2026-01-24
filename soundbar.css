@@ -1,5 +1,5 @@
 /* =========================================================
-   SOUND BAR & CONTROLE DE VOLUME (FINAL)
+   SOUND BAR & CONTROLE DE VOLUME (FINAL V4)
    ========================================================= */
 
 /* --- PLAYER: CONTROLE DE VOLUME FLUTUANTE (VERTICAL) --- */
@@ -34,35 +34,48 @@
     margin-top: 50px; 
     margin-bottom: 20px;
     cursor: pointer;
+    transition: 0.2s;
 }
 
-/* SLIDER DO MESTRE (HORIZONTAL - CORREÇÃO) */
+/* SLIDER DO MESTRE (HORIZONTAL) */
 #master-volume-slider {
     -webkit-appearance: none;
-    width: 100%; /* Ocupa o espaço disponível */
+    width: 100px; /* Largura fixa para não esticar demais */
     height: 6px;
     background: #333;
     border-radius: 3px;
     outline: none;
     border: 1px solid #555;
     cursor: pointer;
-    transform: none !important; /* Força horizontal */
+    transform: none !important;
     margin: 0;
+    transition: 0.2s;
 }
 
 /* Botões Mute */
 .btn-mute {
     background: none; border: none; color: var(--gold);
-    font-size: 1.4rem; cursor: pointer; transition: transform 0.2s; z-index: 2;
+    font-size: 1.4rem; cursor: pointer; transition: all 0.2s; z-index: 2;
+    opacity: 1; /* Opacidade normal */
 }
 .btn-mute:hover { transform: scale(1.1); text-shadow: 0 0 5px var(--gold); }
-.btn-mute.muted { color: #ff4444; opacity: 1; } 
+
+/* ESTADO MUDO: Transparente e Slider Zerado */
+.btn-mute.muted { 
+    opacity: 0.4; /* Fica transparente */
+    filter: grayscale(1);
+}
 
 /* Thumb dos Sliders */
 input[type=range]::-webkit-slider-thumb {
     -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
     background: var(--gold); cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,1);
-    border: 2px solid #fff;
+    border: 2px solid #fff; transition: 0.2s;
+}
+
+/* Quando mutado, o thumb fica cinza */
+input[type=range].muted-slider::-webkit-slider-thumb {
+    background: #555; border-color: #777;
 }
 
 /* LISTA */
@@ -70,8 +83,8 @@ input[type=range]::-webkit-slider-thumb {
     display: flex; flex-direction: column;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid #444; padding: 8px 10px;
-    border-radius: 5px; margin-bottom: 8px; /* Espaçamento entre itens */
-    flex-shrink: 0; /* Impede que esmaguem */
+    border-radius: 5px; margin-bottom: 8px;
+    flex-shrink: 0;
 }
 .item-soundbar:hover { background: rgba(255, 255, 255, 0.1); border-color: #666; }
 
