@@ -274,16 +274,18 @@
             <div id="deck-container-wrapper"><div id="deck-area" onclick="abrirGrimorio('Geral')"><div class="pote-glow"></div><img src="img/pote_deck.png" class="pote-img"><div class="label-deck">Grimório</div></div></div>
             <section id="reserva-area"><div class="titulo-reserva">Reserva (Inativas)</div><div id="cartas-reserva"></div></section>
         </div> 
-        <footer id="mao-area"><div id="cartas-mao"></div><button onclick="window.abrirFichaPersonagem()" style="position: absolute; bottom: 20px; right: 20px; z-index: 2000; pointer-events: auto; padding: 10px 20px; background: var(--gold); border: 2px solid #fff; border-radius: 5px; cursor: pointer; font-weight: bold; font-family: 'MedievalSharp', cursive; font-size: 1rem; box-shadow: 0 0 10px rgba(0,0,0,0.8); color: #000;">📝 Ficha</button></footer>
+        <footer id="mao-area">
+            <div id="cartas-mao"></div>
+        </footer>
+
         <div class="action-buttons-container">
-        
             <div class="action-row">
                 <button class="btn-action-rect" onclick="window.abrirFichaPersonagem()">📝 Ficha</button>
-                
             </div>
-    
+            
             <div id="btn-abrir-dados" onclick="abrirSeletorDados()" title="Rolar Dados">🎲</div>
         </div>
+
         <div id="carta-tabuleiro-animada" class="carta-tabuleiro-animada"></div>
     </div>
 
