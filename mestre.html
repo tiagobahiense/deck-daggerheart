@@ -676,54 +676,59 @@
         }
 
         // 2. Registrar Ação (Compatibilidade com dados.js e medo.js)
-        window.registrarLog = function(tipo, mensagem) {
-            if (!db || !push || !ref) return;
-            
-            const autor = "Mestre"; // Força o nome Mestre
-            const timestamp = Date.now();
-            
-            push(ref(db, 'mesa_rpg/chat_log'), {
-                autor: autor,
-                tipo: tipo,
-                mensagem: mensagem,
-                timestamp: timestamp
-            });
-        };
+        // 2. Registrar Ação (No Mestre)
+window.registrarLog = function(tipo, mensagem) {
+    if (!db || !push || !ref) return;
+    
+    // Mestre sempre envia classe="Mestre" para ficar Vermelho/Destaque
+    push(ref(db, 'mesa_rpg/chat_log'), {
+        autor: "Mestre",
+        classe: "Mestre", 
+        tipo: tipo,
+        mensagem: mensagem,
+        timestamp: Date.now()
+    });
+};
 
-        // 3. Monitorar Logs (Ouvir o que acontece)
-        window.iniciarMonitoramentoLog = function() {
-            const content = document.getElementById('chat-log-content');
-            const logRef = query(ref(db, 'mesa_rpg/chat_log'), limitToLast(50));
+// 3. Monitorar Logs (Atualizar renderização para ler cores)
+window.iniciarMonitoramentoLog = function() {
+    const content = document.getElementById('chat-log-content');
+    const logRef = query(ref(db, 'mesa_rpg/chat_log'), limitToLast(50));
 
-            onChildAdded(logRef, (snapshot) => {
-                const data = snapshot.val();
-                if (!data) return;
+    onChildAdded(logRef, (snapshot) => {
+        const data = snapshot.val();
+        if (!data) return;
 
-                const empty = content.querySelector('.log-empty');
-                if(empty) empty.remove();
+        const empty = content.querySelector('.log-empty');
+        if(empty) empty.remove();
 
-                const div = document.createElement('div');
-                div.className = `log-entry tipo-${data.tipo}`;
-                
-                const hora = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                
-                div.innerHTML = `
-                    <span class="log-timestamp">${hora}</span>
-                    <span class="log-author">${data.autor}</span>
-                    <div class="log-text">${data.mensagem}</div>
-                `;
+        const div = document.createElement('div');
+        div.className = `log-entry tipo-${data.tipo}`;
+        
+        const hora = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        
+        // APLICA AS CORES
+        let classeCSS = "classe-Padrao";
+        if(data.classe === "Mestre") classeCSS = "autor-mestre";
+        else if(data.classe) classeCSS = `classe-${data.classe}`;
 
-                content.appendChild(div);
-                
-                const painel = document.getElementById('chat-log-container');
-                if (painel.classList.contains('open')) {
-                    content.scrollTop = content.scrollHeight;
-                } else {
-                    const dot = document.getElementById('notification-dot');
-                    if(dot) dot.style.display = 'block';
-                }
-            });
-        };
+        div.innerHTML = `
+            <span class="log-timestamp">${hora}</span>
+            <span class="log-author ${classeCSS}">${data.autor}</span>
+            <div class="log-text">${data.mensagem}</div>
+        `;
+
+        content.appendChild(div);
+        
+        const painel = document.getElementById('chat-log-container');
+        if (painel.classList.contains('open')) {
+            content.scrollTop = content.scrollHeight;
+        } else {
+            const dot = document.getElementById('notification-dot');
+            if(dot) dot.style.display = 'block';
+        }
+    });
+};
 
         // INICIALIZA O MONITORAMENTO ASSIM QUE CARREGAR
         // Adicione esta chamada no final do seu window.onload ou aqui mesmo:
