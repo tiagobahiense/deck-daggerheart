@@ -759,6 +759,33 @@ function aplicarZoomPDF() {
     }
 }
 
+// --- FUNÇÃO RECUPERADA: ABRIR LEITOR DE PDF ---
+window.abrirLeitorPDF = function(tipo) {
+    tipoAtualPDF = tipo;
+    paginaAtualPDF = 1;
+    zoomLevelPDF = 1.0;
+    
+    // Define o total de páginas baseado no tipo
+    if (tipo === 'Ancestralidade') {
+        totalPaginasPDF = 20; 
+    } else {
+        totalPaginasPDF = 14; 
+    }
+
+    // Atualiza o título e a imagem
+    const titulo = document.getElementById('titulo-leitor-pdf');
+    if(titulo) titulo.innerText = tipo;
+    
+    atualizarImagemLeitor();
+    
+    // Mostra o modal
+    const modal = document.getElementById('modal-leitor-pdf');
+    if(modal) {
+        modal.style.display = 'flex';
+        setTimeout(aplicarZoomPDF, 50); // Garante o zoom inicial
+    }
+};
+
 // Função para parar a música de entrada (Wellcome)
 window.pararAudioLogin = function() {
     const audio = document.getElementById('audio-login');

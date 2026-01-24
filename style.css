@@ -392,6 +392,11 @@ button {
     flex-direction: column;
     gap: 15px;
     padding-top: 15px;
+    
+    /* ADICIONE ISTO PARA GARANTIR O CLIQUE SEMPRE: */
+    position: relative;
+    z-index: 500; 
+    pointer-events: auto;
 }
 
 .btn-lateral {
