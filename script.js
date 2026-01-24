@@ -485,37 +485,6 @@ window.atualizarSincronia = function() {
     }, 1500);
 };
 
-// Funções de Cartas
-function selecionarCarta(carta) {
-    if(slotDestinoAtual) { 
-        slotsFixos[slotDestinoAtual] = carta; 
-        salvarNaNuvem(); 
-        renderizar(); 
-    } else {
-        // Bloco IF principal
-        if(maoDoJogador.length < LIMITE_MAO) { 
-            carta.tokens=0; 
-            carta.estado='ativo'; 
-            maoDoJogador.push(carta); 
-            salvarNaNuvem(); 
-            renderizar(); 
-            // O LOG VEM DENTRO DAS CHAVES DO IF
-            window.registrarLog('carta-compra', `Adicionou <span class="log-destaque">${carta.nome}</span> à mão.`);
-        } 
-        // O ELSE IF VEM GRUDADO NO FECHAMENTO DO IF
-        else if(confirm("Mão cheia. Enviar para Reserva?")) { 
-            carta.tokens=0; 
-            carta.estado='ativo'; 
-            reservaDoJogador.push(carta); 
-            salvarNaNuvem(); 
-            renderizar(); 
-            // O LOG VEM DENTRO DAS CHAVES DO ELSE IF
-            window.registrarLog('carta-reserva', `Enviou <span class="log-destaque">${carta.nome}</span> direto para a Reserva.`);
-        }
-    }
-    window.fecharGrimorio(); 
-    slotDestinoAtual = null;
-}
 
 window.limparSlot = function(id, evt) { if(evt) evt.stopPropagation(); slotsFixos[id] = null; salvarNaNuvem(); renderizar(); };
 
@@ -611,14 +580,6 @@ window.usarCarta = function() {
     setTimeout(() => { anim.style.display='none'; anim.classList.remove('ativa'); }, 2500);
 };
 
-window.moverParaReserva = function() {
-    if(origemTransito==='mao') {
-        reservaDoJogador.push(maoDoJogador.splice(cartaEmTransitoIndex,1)[0]);
-        window.fecharDecisao(); renderizar(); window.salvarNaNuvem();
-        const c = maoDoJogador[cartaEmTransitoIndex];
-    window.registrarLog('carta-reserva', `Moveu <span class="log-destaque">${c.nome}</span> para a Reserva.`);
-    }
-};
 
 window.devolverParaMao = function() {
     if(origemTransito==='reserva') {
