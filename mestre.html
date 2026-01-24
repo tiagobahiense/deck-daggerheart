@@ -125,6 +125,9 @@
             <button class="btn-rest longo" onclick="realizarDescanso('longo')">🌕 Longo</button>
             <button class="btn-rest" style="background: #5D4037; border: 1px solid #8D6E63;" onclick="window.abrirGerenciadorCenarios()">🖼️ Cenários</button>
             <button class="btn-rest" style="background: #2E7D32; border: 1px solid #4CAF50;" onclick="window.abrirSoundBar()">🎵 Sound Bar</button>
+            <button class="btn-rest" style="background: #D4AF37; color: #000; border: 1px solid #FFF; font-weight:bold;" onclick="window.toggleChatLog()">
+                📜 Log <span id="notification-badge-gm" style="display:none; background:red; color:white; border-radius:50%; padding:2px 5px; font-size:0.7rem; margin-left:5px;">!</span>
+            </button>
         </div>
 
         <div style="display:flex; gap:10px;">
@@ -657,13 +660,15 @@
         // 1. Alternar Visibilidade
         window.toggleChatLog = function() {
             const painel = document.getElementById('chat-log-container');
-            const dot = document.getElementById('notification-dot');
+            const badge = document.getElementById('notification-badge-gm'); // Badge novo
+            const dot = document.getElementById('notification-dot'); // Dot antigo
             
             if (painel.classList.contains('open')) {
                 painel.classList.remove('open');
             } else {
                 painel.classList.add('open');
-                dot.style.display = 'none';
+                if(badge) badge.style.display = 'none'; // Apaga badge
+                if(dot) dot.style.display = 'none';     // Apaga dot
                 rolarLogParaOFinal();
             }
         };
@@ -724,11 +729,16 @@ window.iniciarMonitoramentoLog = function() {
         if (painel.classList.contains('open')) {
             content.scrollTop = content.scrollHeight;
         } else {
+            // ATUALIZADO: Acende o alerta no botão da barra superior
+            const badge = document.getElementById('notification-badge-gm');
+            if(badge) badge.style.display = 'inline-block';
+            
+            // Mantém compatibilidade caso use o botão antigo em algum lugar
             const dot = document.getElementById('notification-dot');
             if(dot) dot.style.display = 'block';
         }
     });
-};
+};;
 
         // INICIALIZA O MONITORAMENTO ASSIM QUE CARREGAR
         // Adicione esta chamada no final do seu window.onload ou aqui mesmo:

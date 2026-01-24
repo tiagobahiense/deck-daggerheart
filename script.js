@@ -604,9 +604,22 @@ window.devolverParaMao = function() {
 };
 
 window.devolverAoDeck = function() {
-    if(origemTransito==='mao') { maoDoJogador.splice(cartaEmTransitoIndex,1)[0]; window.fecharDecisao(); renderizar(); window.salvarNaNuvem(); }
-    const c = maoDoJogador[cartaEmTransitoIndex]; // Pegue o nome ANTES do splice
-    window.registrarLog('carta-reserva', `Devolveu <span class="log-destaque">${c.nome}</span> ao Grimório.`);
+    if(origemTransito === 'mao') { 
+        // 1. Salva o nome ANTES de apagar a carta
+        const carta = maoDoJogador[cartaEmTransitoIndex];
+        const nomeCarta = carta.nome;
+
+        // 2. Remove a carta
+        maoDoJogador.splice(cartaEmTransitoIndex, 1)[0]; 
+        
+        // 3. Atualiza a tela e nuvem
+        window.fecharDecisao(); 
+        renderizar(); 
+        window.salvarNaNuvem(); 
+        
+        // 4. Registra o Log com o nome salvo
+        window.registrarLog('carta-reserva', `Devolveu <span class="texto-carta">${nomeCarta}</span> ao Grimório.`);
+    }
 };
 
 window.mostrarModalTroca = function() {
