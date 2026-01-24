@@ -1154,3 +1154,41 @@ function selecionarCarta(carta) {
 window.addEventListener('load', () => {
     setTimeout(window.iniciarMonitoramentoLog, 1500); // Pequeno delay pra garantir conexão
 });
+
+// =========================================================
+// MONITOR DE CONEXÃO (EVITA F5)
+// =========================================================
+window.iniciarMonitorConexao = function() {
+    const connectedRef = window.ref(window.db, ".info/connected");
+    
+    window.onValue(connectedRef, (snap) => {
+        const loading = document.getElementById('loading-overlay');
+        const msg = loading ? loading.querySelector('div') : null;
+
+        if (snap.val() === true) {
+            // CONECTADO
+            console.log("🟢 Conectado ao Firebase.");
+            if(loading && msg && msg.innerText.includes("Reconectando")) {
+                loading.style.display = 'none';
+                // Força uma atualização leve ao voltar
+                if(window.renderizar) window.renderizar(); 
+            }
+        } else {
+            // DESCONECTADO
+            console.warn("🔴 Perda de conexão com Firebase.");
+            // Opcional: Mostrar aviso discreto em vez de tela cheia
+            if(loading) {
+                // Não bloqueia a tela inteira, apenas avisa no console ou num toast
+                // Se quiser bloquear, descomente abaixo:
+                // loading.style.display = 'flex';
+                // if(msg) msg.innerText = "Reconectando...";
+            }
+        }
+    });
+};
+
+// Adicione na inicialização do window.load
+window.addEventListener('load', () => {
+    setTimeout(window.iniciarMonitorConexao, 2000); // Inicia monitor
+    setTimeout(window.iniciarMonitoramentoLog, 1500);
+});

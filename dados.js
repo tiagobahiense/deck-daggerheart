@@ -39,7 +39,7 @@ window.rolarDadosConfirmados = function() {
     
     let dadosCalculados = [];
     
-    // Calcula valores
+    // 1. Calcula os valores LOCALMENTE
     ['d4','d6','d8','d10','d12','d20'].forEach(tipo => {
         const faces = parseInt(tipo.substring(1));
         for(let i=0; i < selecaoDados[tipo]; i++) {
@@ -57,13 +57,14 @@ window.rolarDadosConfirmados = function() {
 
     const quem = window.nomeJogador || "Mestre";
 
-    // --- NOVO: GERA O TEXTO PARA O LOG ---
-    // Substitua o trecho de LOG dentro de rolarDadosConfirmados por este:
+    // 2. GERA LOG E ANIMAÇÃO IMEDIATAMENTE (Sem esperar o Firebase)
+    // -------------------------------------------------------------
+    
+    // Animação na tela do jogador AGORA
+    iniciarAnimacaoRolagem(quem, dadosCalculados);
 
-    // ... (cálculos dos dados) ...
-
+    // Lógica do Log
     let textoLog = "Rolou: ";
-    // Destaca os valores dos dados em negrito
     let detalhes = dadosCalculados.map(d => `${d.label} (<b>${d.valorFinal}</b>)`).join(', ');
     textoLog += detalhes;
 
@@ -74,27 +75,28 @@ window.rolarDadosConfirmados = function() {
         const vEsp = dadoEsp.valorFinal;
         const vMedo = dadoMedo.valorFinal;
         const total = vEsp + vMedo;
-        
-        // COR BRANCA/BRILHANTE NO RESULTADO TOTAL
         textoLog += `<br>Resultado Dualidade: <b style="color:#fff; font-size:1.1rem;">${total}</b>`;
         
-        if (vEsp > vMedo) {
-            textoLog += ` <span class="texto-esperanca">[COM ESPERANÇA]</span>`;
-        } else if (vMedo > vEsp) {
-            textoLog += ` <span class="texto-medo">[COM MEDO]</span>`;
-        } else {
-            textoLog += ` <span class="texto-critico">[CRÍTICO]</span>`;
-        }
+        if (vEsp > vMedo) textoLog += ` <span class="texto-esperanca">[COM ESPERANÇA]</span>`;
+        else if (vMedo > vEsp) textoLog += ` <span class="texto-medo">[COM MEDO]</span>`;
+        else textoLog += ` <span class="texto-critico">[CRÍTICO]</span>`;
     }
 
     if(window.registrarLog) window.registrarLog('dado', textoLog);
+    // -------------------------------------------------------------
 
+    // 3. ENVIA PARA O FIREBASE (Para o Mestre e os outros verem)
     if (window.push && window.ref && window.db) {
         const rolagensRef = window.ref(window.db, 'mesa_rpg/rolagens');
-        window.push(rolagensRef, { quem: quem, dados: dadosCalculados, timestamp: Date.now() });
+        // Adicionamos um ID único local para evitar duplicidade se a net oscilar
+        window.push(rolagensRef, { 
+            quem: quem, 
+            dados: dadosCalculados, 
+            timestamp: Date.now(),
+            idLocal: quem + Date.now() // Marca única dessa rolagem
+        });
     } else {
-        console.error("Erro: Firebase functions não encontradas no window.");
-        iniciarAnimacaoRolagem(quem, dadosCalculados);
+        console.error("Erro: Firebase functions não encontradas.");
     }
 };
 
@@ -104,18 +106,30 @@ window.escutarRolagens = function() {
         return;
     }
 
+    // Evita criar múltiplos ouvintes se a função for chamada várias vezes
+    if(window.rolagemListenerAtivo) return; 
+    window.rolagemListenerAtivo = true;
+
     const rolagensRef = window.ref(window.db, 'mesa_rpg/rolagens');
     
-    // Ouve apenas a última rolagem adicionada
     window.onChildAdded(window.query(rolagensRef, window.limitToLast(1)), (snapshot) => {
         const rolagem = snapshot.val();
         if (!rolagem) return;
+        
+        // Verifica se a rolagem é velha (>10s)
         const agora = Date.now();
-        if (agora - rolagem.timestamp < 10000) {
-            iniciarAnimacaoRolagem(rolagem.quem, rolagem.dados);
-        }
+        if (agora - rolagem.timestamp > 10000) return;
+
+        
+        // Se fui EU que rolei, eu IGNORO o aviso do servidor,
+        // porque eu já rodei a animação localmente na função acima.
+        if (rolagem.quem === window.nomeJogador) return; 
+
+        // Se foi OUTRA pessoa, aí sim eu rodo a animação na minha tela
+        iniciarAnimacaoRolagem(rolagem.quem, rolagem.dados);
     });
-    console.log("🎲 Dados conectados.");
+    
+    console.log("🎲 Dados conectados (Modo Otimista).");
 };
 
 function iniciarAnimacaoRolagem(nomeQuemRolou, dados) {
