@@ -858,84 +858,105 @@ window.pararAudioLogin = function() {
 };
 
 // =========================================================
-// SISTEMA DE UPLOAD DE RETRATO & VITRAL (CORRIGIDO)
+// SISTEMA DE UPLOAD DE RETRATO & VITRAL (CORRIGIDO V2)
 // =========================================================
 
-// 1. Função chamada pelo botão "Trocar" (Menu do Vitral ou Botão Dourado)
+// 1. Função chamada pelo botão "Trocar"
 window.triggerUploadPortrait = function() {
     const fileInput = document.getElementById('portrait-upload-input');
-    if (fileInput) {
-        // Reinicia o input para permitir selecionar o mesmo arquivo se quiser
-        fileInput.value = ''; 
-        fileInput.click();
-    } else {
-        console.error("Input de upload não encontrado (portrait-upload-input)");
+    
+    if (!fileInput) {
+        alert("ERRO: O input de arquivo não foi encontrado no HTML.");
+        console.error("Input 'portrait-upload-input' não existe.");
+        return;
     }
+
+    // Garante que o evento de mudança está ativado
+    fileInput.onchange = function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validação de tipo
+        if (!file.type.startsWith('image/')) {
+            alert("Por favor, selecione apenas arquivos de imagem (JPG, PNG).");
+            return;
+        }
+
+        // Validação de tamanho (Opcional: Limite de 2MB para não travar o Firebase)
+        if (file.size > 2 * 1024 * 1024) {
+            if(!confirm("Essa imagem é muito grande (>2MB) e pode demorar para salvar. Deseja continuar?")) return;
+        }
+
+        console.log("Lendo arquivo...", file.name);
+        
+        // Feedback visual
+        const hudImg = document.getElementById('hud-portrait-img');
+        const oldSrc = hudImg ? hudImg.src : '';
+        if(hudImg) hudImg.style.opacity = '0.5'; // Indica carregamento
+
+        const reader = new FileReader();
+        
+        reader.onload = function(event) {
+            const base64String = event.target.result;
+            console.log("Arquivo lido. Salvando no Firebase...");
+
+            if (window.nomeJogador && window.db && window.ref && window.update) {
+                const playerRef = window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}`);
+                
+                window.update(playerRef, { "retrato": base64String })
+                    .then(() => {
+                        console.log("Salvo com sucesso!");
+                        // Atualiza a imagem na hora
+                        if(hudImg) {
+                            hudImg.src = base64String;
+                            hudImg.style.opacity = '1';
+                        }
+                        
+                        // Fecha o menu
+                        const menu = document.getElementById('menu-vitral');
+                        if(menu) menu.style.display = 'none';
+
+                        alert("Imagem atualizada!");
+                    })
+                    .catch(err => {
+                        console.error("Erro ao salvar no Firebase:", err);
+                        alert("Erro ao salvar a imagem. Tente uma menor.");
+                        if(hudImg) {
+                            hudImg.src = oldSrc;
+                            hudImg.style.opacity = '1';
+                        }
+                    });
+            } else {
+                alert("Erro de conexão ou jogador não identificado.");
+                if(hudImg) hudImg.style.opacity = '1';
+            }
+        };
+
+        reader.onerror = function(e) {
+            console.error("Erro na leitura do arquivo", e);
+            alert("Não foi possível ler este arquivo.");
+        };
+
+        reader.readAsDataURL(file);
+    };
+
+    // Abre a janela de seleção
+    fileInput.value = ''; // Limpa para permitir selecionar a mesma foto se quiser
+    fileInput.click();
 };
 
-// 2. Configura o ouvinte do arquivo (Imediatamente)
-(function configurarUpload() {
-    const fileInput = document.getElementById('portrait-upload-input');
-    
-    if (fileInput) {
-        // Remove ouvintes antigos clonando o elemento (segurança contra duplicação)
-        const novoInput = fileInput.cloneNode(true);
-        if(fileInput.parentNode) {
-            fileInput.parentNode.replaceChild(novoInput, fileInput);
-        }
-        
-        novoInput.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            if (!file.type.startsWith('image/')) {
-                alert("Apenas imagens são permitidas.");
-                return;
-            }
-
-            const reader = new FileReader();
-            
-            reader.onload = function(event) {
-                const base64String = event.target.result;
-                
-                // Salva no Firebase
-                if (window.nomeJogador && window.db && window.ref && window.update) {
-                    const playerRef = window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}`);
-                    window.update(playerRef, { "retrato": base64String })
-                        .then(() => {
-                            // Atualiza na tela imediatamente
-                            const hudImg = document.getElementById('hud-portrait-img');
-                            if(hudImg) hudImg.src = base64String;
-                            
-                            // Fecha o menu do vitral se estiver aberto
-                            const menu = document.getElementById('menu-vitral');
-                            if(menu) menu.style.display = 'none';
-                            
-                            alert("Retrato atualizado!");
-                        })
-                        .catch(err => console.error("Erro no upload:", err));
-                }
-            };
-            // Lê o arquivo
-            reader.readAsDataURL(file);
-        });
-    }
-})();
-
-// 3. Função de Abrir/Fechar Menu do Vitral
+// 2. Função do Menu Vitral
 window.alternarMenuVitral = function() {
     const menu = document.getElementById('menu-vitral');
     if (!menu) return;
     
     if (menu.style.display === 'none') {
         menu.style.display = 'flex';
-        // Cria um ouvinte temporário para fechar ao clicar fora
+        // Delay pequeno para não fechar imediatamente ao clicar
         setTimeout(() => {
             document.addEventListener('click', function fechar(e) {
                 const vitral = document.querySelector('.vitral-moldura-main');
-                const btnTrocar = document.querySelector('.btn-menu-vitral'); // Botão dentro do menu
-                
-                // Se o clique não foi no menu, nem no vitral, fecha
+                // Se o clique não foi no menu e nem no vitral
                 if (menu && !menu.contains(e.target) && (!vitral || !vitral.contains(e.target))) {
                     menu.style.display = 'none';
                     document.removeEventListener('click', fechar);
@@ -947,22 +968,17 @@ window.alternarMenuVitral = function() {
     }
 };
 
-// 4. Função de Remover Retrato
+// 3. Função Remover
 window.removerRetrato = function() {
-    if (!confirm("Deseja remover sua foto e voltar para o padrão?")) return;
-
+    if (!confirm("Remover foto e voltar ao padrão?")) return;
     const imgPadrao = "img/default_portrait.png";
-
     if (window.nomeJogador && window.db && window.ref && window.update) {
         const playerRef = window.ref(window.db, `mesa_rpg/jogadores/${window.nomeJogador}`);
         window.update(playerRef, { "retrato": imgPadrao })
             .then(() => {
                 const hudImg = document.getElementById('hud-portrait-img');
                 if (hudImg) hudImg.src = imgPadrao;
-                
-                const menu = document.getElementById('menu-vitral');
-                if(menu) menu.style.display = 'none';
-            })
-            .catch(err => console.error("Erro ao remover:", err));
+                document.getElementById('menu-vitral').style.display = 'none';
+            });
     }
 };
