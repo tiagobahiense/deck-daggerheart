@@ -42,6 +42,10 @@
     </style>
 </head>
 <body>
+    
+    <audio id="audio-login" loop>
+        <source src="audio/wellcome.mp3" type="audio/mpeg">
+    </audio>
 
     <div id="loading-overlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:20000; display:flex; flex-direction:column; align-items:center; justify-content:center; color:#d4af37; font-family:'MedievalSharp';">
         <div style="font-size: 2rem; margin-bottom: 20px;">Carregando Grimório...</div>
@@ -336,6 +340,28 @@
                     if(window.iniciarMonitoramentoCenarios) window.iniciarMonitoramentoCenarios();
                 }, 1000);
             }, 500);
+        });
+    </script>
+    <script>
+        // --- TOCAR MÚSICA DE LOGIN AO INTERAGIR ---
+        window.addEventListener('load', () => {
+            const audioLogin = document.getElementById('audio-login');
+            if(audioLogin) {
+                audioLogin.volume = 0.4; // Volume Médio
+    
+                // Função que tenta tocar
+                const tentarTocar = () => {
+                    audioLogin.play().then(() => {
+                        // Se conseguiu, remove os ouvintes para não tentar de novo
+                        document.body.removeEventListener('click', tentarTocar);
+                        document.body.removeEventListener('keydown', tentarTocar);
+                    }).catch(e => console.log("Aguardando interação para áudio..."));
+                };
+    
+                // Adiciona gatilhos na página toda
+                document.body.addEventListener('click', tentarTocar);
+                document.body.addEventListener('keydown', tentarTocar);
+            }
         });
     </script>
 </body>

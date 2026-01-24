@@ -96,6 +96,7 @@ window.fazerLoginJogador = function() {
     localStorage.removeItem('ultimoPersonagem'); 
 
     signInWithEmailAndPassword(auth, email, pass).then((uc) => {
+        window.pararAudioLogin();
         currentUser = uc.user;
         get(ref(db, `mesa_rpg/accounts/${currentUser.uid}/status`)).then(snap => {
             if (snap.exists() && snap.val() === 'inactive') { signOut(auth); throw new Error("Conta inativa"); }
@@ -748,3 +749,21 @@ function aplicarZoomPDF() {
         container.style.alignItems = 'flex-start';
     }
 }
+
+// --- FUNÇÃO PARA PARAR MÚSICA DE LOGIN (Fade Out) ---
+window.pararAudioLogin = function() {
+    const audio = document.getElementById('audio-login');
+    if (audio && !audio.paused) {
+        let vol = audio.volume;
+        const fade = setInterval(() => {
+            if (vol > 0.05) {
+                vol -= 0.05;
+                audio.volume = vol;
+            } else {
+                clearInterval(fade);
+                audio.pause();
+                audio.currentTime = 0;
+            }
+        }, 100); // Abaixa o volume suavemente a cada 100ms
+    }
+};
