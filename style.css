@@ -507,16 +507,29 @@ button {
 #reserva-area {
     position: fixed;
     left: 20px;
-    /* CORREÇÃO: Subir de 50px para 220px para sair de trás da mão */
-    bottom: 220px; 
-    width: auto;
+    bottom: 220px; /* Mantendo a altura que corrigimos antes */
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     pointer-events: auto;
-    z-index: 1900; /* Nível similar ao da mão, mas a posição evita sobreposição */
+    z-index: 1900;
 }
 
+#reserva-area img {
+    width: 70px; /* Tamanho fixo para não explodir */
+    height: auto;
+    margin-bottom: 5px; /* Espaço para não grudar no texto */
+    filter: drop-shadow(0 5px 5px rgba(0,0,0,0.8));
+}
+
+/* Corrige a posição da bolinha (badge) de contador */
+#reserva-area .token-badge {
+    top: 5px; /* Ajuste fino para ficar na borda do pote */
+    right: 5px;
+    left: auto; /* Remove a centralização automática */
+    transform: none;
+}
 /* --- MÃO DO JOGADOR (CORRIGIDA) --- */
 /* Substitua as definições de #mao-area (linhas ~485, ~538 e ~548) por isto: */
 #mao-area {
@@ -526,7 +539,7 @@ button {
     width: 100%;
     height: 190px;
     background: url('img/mao_background.png') no-repeat bottom center;
-    background-size: 100% 100%;
+    background-size: 100%;
     display: flex;
     justify-content: center;
     align-items: flex-end;
@@ -565,32 +578,42 @@ button {
 
 /* --- CORREÇÃO DO MODAL DE DECISÃO (TELA PEQUENA) --- */
 .modal-decisao-content {
-    width: 400px;
+    width: 350px; /* Levemente mais estreito */
     max-width: 90%;
-    max-height: 90vh; /* Limite de altura para não cortar */
-    overflow-y: auto; /* Adiciona barra de rolagem se precisar */
     background: var(--modal-bg);
     border: 2px solid var(--gold);
     border-radius: 10px;
-    padding: 20px;
+    
+    /* CORREÇÃO: Menos padding e gap para compactar a altura */
+    padding: 15px; 
+    gap: 10px; 
+    
     box-shadow: 0 0 50px var(--gold);
     display: flex;
     flex-direction: column;
-    gap: 15px;
 }
 
 .carta-preview-decisao {
     width: 100%;
-    height: 220px; /* Levemente menor para caber melhor */
-    flex-shrink: 0;
+    
+    /* CORREÇÃO: Reduzi de 250px para 160px. Isso economiza muito espaço vertical */
+    height: 160px; 
+    
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
     background-color: #000;
     border: 2px solid #333;
-    border-radius: 10px;
+    border-radius: 8px;
 }
 
+.botoes-decisao .btn-confirmar, 
+.botoes-decisao .btn-reserva, 
+.botoes-decisao .btn-deck {
+    padding: 8px; /* Reduzi o padding */
+    font-size: 0.9rem;
+    margin-top: 2px;
+}
 /* Garante que a carta tenha tamanho coerente */
 /* --- BOTÕES DE AÇÃO --- */
 .action-buttons-container {
@@ -908,17 +931,7 @@ body:has(.carta:hover) #hover-preview {
     padding-bottom: 10px;
 }
 
-.carta-preview-decisao {
-    width: 100%;
-    height: 250px;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    background-color: #000;
-    border: 2px solid #333;
-    border-radius: 10px;
-    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
-}
+
 
 .grupo-tokens {
     display: flex;
