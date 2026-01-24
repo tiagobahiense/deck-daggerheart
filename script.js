@@ -1063,7 +1063,15 @@ window.registrarLog = function(tipo, mensagem) {
 
 // 2. Listener ATUALIZADO (Para aplicar as cores ao receber)
 window.iniciarMonitoramentoLog = function() {
+    // 1. TRAVA DE SEGURANÇA: Se já estiver ouvindo, PARA TUDO.
+    if (window.logListenerAtivo) return; 
+    
+    // 2. MARCA COMO ATIVO: Para a próxima vez saber que já ligou.
+    window.logListenerAtivo = true; 
+
     const content = document.getElementById('chat-log-content');
+    
+    // O resto continua igual...
     const logRef = window.query(window.ref(window.db, 'mesa_rpg/chat_log'), window.limitToLast(50));
 
     window.onChildAdded(logRef, (snapshot) => {
@@ -1078,7 +1086,6 @@ window.iniciarMonitoramentoLog = function() {
         
         const hora = new Date(data.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         
-        // Define a classe CSS baseada na profissão ou se é Mestre
         let classeCSS = "classe-Padrao";
         if(data.classe === "Mestre") classeCSS = "autor-mestre";
         else if(data.classe) classeCSS = `classe-${data.classe}`;
@@ -1099,6 +1106,8 @@ window.iniciarMonitoramentoLog = function() {
             if(dot) dot.style.display = 'block';
         }
     });
+    
+    console.log("📜 Log de ações conectado (Único).");
 };
 
 // =========================================================
@@ -1156,39 +1165,86 @@ window.addEventListener('load', () => {
 });
 
 // =========================================================
-// MONITOR DE CONEXÃO (EVITA F5)
+// SISTEMA DE RECONEXÃO ROBUSTA (ATUALIZADO)
 // =========================================================
+
+// 1. Função do Botão "Refresh" (Manual)
+window.atualizarSincronia = function() {
+    // A. Animação do Botão e Loading
+    const btn = document.querySelector('.btn-refresh-player');
+    const loading = document.getElementById('loading-overlay');
+    
+    if(btn) btn.classList.add('spin-anim'); 
+    
+    if(loading) {
+        loading.style.display = 'flex';
+        const msgDiv = loading.querySelector('div');
+        if(msgDiv) msgDiv.innerText = "Ressincronizando Mesa...";
+    }
+
+    // B. Reinicia TODOS os sistemas (O Segredo está aqui)
+    // Limpa áreas visuais para evitar duplicação
+    document.getElementById('area-inimigos').innerHTML = "";
+    
+    // 1. Inimigos e Medo
+    if(window.iniciarSistemaInimigos) window.iniciarSistemaInimigos();
+    if(window.iniciarSistemaMedo) window.iniciarSistemaMedo();
+    
+    // 2. NPCs (Faltava garantir isso)
+    if(window.monitorarNPCAtivo) window.monitorarNPCAtivo();
+
+    // 3. Cenários (Faltava isso)
+    if(window.iniciarMonitoramentoCenarios) window.iniciarMonitoramentoCenarios();
+
+    // 4. VTT / Mapa (Faltava isso)
+    if(window.iniciarTabletop) window.iniciarTabletop();
+    
+    // 5. Dados (Modo Otimista)
+    if(window.escutarRolagens) {
+        window.rolagemListenerAtivo = false; // Reseta trava para forçar novo ouvinte
+        window.escutarRolagens();
+    }
+
+    // C. Renderiza Ficha e Presença
+    renderizar();
+    if(nomeJogador) { 
+        const pRef = ref(db, `mesa_rpg/presenca/${nomeJogador}`); 
+        set(pRef, true); 
+    }
+
+    // D. Finaliza
+    setTimeout(() => { 
+        if(loading) loading.style.display = 'none'; 
+        if(btn) btn.classList.remove('spin-anim');  
+    }, 1500);
+};
+
+// 2. Monitor Automático (Evita F5 quando a net pisca)
 window.iniciarMonitorConexao = function() {
     const connectedRef = window.ref(window.db, ".info/connected");
     
     window.onValue(connectedRef, (snap) => {
-        const loading = document.getElementById('loading-overlay');
-        const msg = loading ? loading.querySelector('div') : null;
-
         if (snap.val() === true) {
-            // CONECTADO
             console.log("🟢 Conectado ao Firebase.");
-            if(loading && msg && msg.innerText.includes("Reconectando")) {
-                loading.style.display = 'none';
-                // Força uma atualização leve ao voltar
-                if(window.renderizar) window.renderizar(); 
+            
+            // Se recuperou a conexão, força uma atualização silenciosa dos módulos críticos
+            if(window.nomeJogador) {
+                // Reaplica ouvintes sem mostrar tela de loading (silencioso)
+                if(window.monitorarNPCAtivo) window.monitorarNPCAtivo();
+                if(window.iniciarMonitoramentoCenarios) window.iniciarMonitoramentoCenarios();
+                if(window.iniciarTabletop) window.iniciarTabletop();
+                renderizar();
             }
+
         } else {
-            // DESCONECTADO
-            console.warn("🔴 Perda de conexão com Firebase.");
-            // Opcional: Mostrar aviso discreto em vez de tela cheia
-            if(loading) {
-                // Não bloqueia a tela inteira, apenas avisa no console ou num toast
-                // Se quiser bloquear, descomente abaixo:
-                // loading.style.display = 'flex';
-                // if(msg) msg.innerText = "Reconectando...";
-            }
+            console.warn("🔴 Conexão instável...");
+            // Opcional: Mostrar ícone de "Sem Sinal" discreto no canto
         }
     });
 };
 
-// Adicione na inicialização do window.load
+// Garante que inicia ao carregar
 window.addEventListener('load', () => {
-    setTimeout(window.iniciarMonitorConexao, 2000); // Inicia monitor
+    setTimeout(window.iniciarMonitorConexao, 2000); 
     setTimeout(window.iniciarMonitoramentoLog, 1500);
 });
