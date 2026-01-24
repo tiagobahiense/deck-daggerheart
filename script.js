@@ -584,17 +584,15 @@ window.usarCarta = function() {
 window.devolverParaMao = function() {
     if(origemTransito==='reserva') {
         const c = reservaDoJogador[cartaEmTransitoIndex];
-        
-        // Armazena nome antes de mover
-        const nomeCarta = c.nome;
+        const nomeCarta = c.nome; // Salva o nome
         
         c.tokens=0; c.estado='ativo';
         if(maoDoJogador.length < LIMITE_MAO) {
             maoDoJogador.push(reservaDoJogador.splice(cartaEmTransitoIndex,1)[0]);
             window.fecharDecisao(); window.fecharReserva(); renderizar(); window.salvarNaNuvem();
             
-            // NOVO LOG AQUI
-            window.registrarLog('carta-reserva', `Resgatou <span class="log-destaque">${nomeCarta}</span> da Reserva para a Mão.`);
+            // CORRIGIDO: Usa 'texto-carta' para ficar dourado
+            window.registrarLog('carta-reserva', `Resgatou <span class="texto-carta">${nomeCarta}</span> da Reserva para a Mão.`);
             
         } else {
             cartaDaReservaParaResgatar = { carta: c, indiceReserva: cartaEmTransitoIndex };
@@ -603,21 +601,16 @@ window.devolverParaMao = function() {
     }
 };
 
+// 2. Devolver da Mão para o Deck (Grimório)
 window.devolverAoDeck = function() {
-    if(origemTransito === 'mao') { 
-        // 1. Salva o nome ANTES de apagar a carta
-        const carta = maoDoJogador[cartaEmTransitoIndex];
-        const nomeCarta = carta.nome;
+    if(origemTransito==='mao') { 
+        const c = maoDoJogador[cartaEmTransitoIndex]; // Salva referência
+        const nomeCarta = c.nome; // Salva nome
 
-        // 2. Remove a carta
-        maoDoJogador.splice(cartaEmTransitoIndex, 1)[0]; 
+        maoDoJogador.splice(cartaEmTransitoIndex,1)[0]; 
+        window.fecharDecisao(); renderizar(); window.salvarNaNuvem(); 
         
-        // 3. Atualiza a tela e nuvem
-        window.fecharDecisao(); 
-        renderizar(); 
-        window.salvarNaNuvem(); 
-        
-        // 4. Registra o Log com o nome salvo
+        // CORRIGIDO: Usa 'texto-carta'
         window.registrarLog('carta-reserva', `Devolveu <span class="texto-carta">${nomeCarta}</span> ao Grimório.`);
     }
 };
@@ -645,8 +638,8 @@ window.confirmarTroca = function(idx) {
     cartaDaReservaParaResgatar = null;
     window.cancelarTroca(); renderizar(); window.salvarNaNuvem();
     
-    // NOVO LOG AQUI
-    window.registrarLog('carta-reserva', `Trocou <span class="log-destaque">${old.nome}</span> (Mão) por <span class="log-destaque">${nova.nome}</span> (Reserva).`);
+    // CORRIGIDO: Usa 'texto-carta' nas duas cartas
+    window.registrarLog('carta-reserva', `Trocou <span class="texto-carta">${old.nome}</span> (Mão) por <span class="texto-carta">${nova.nome}</span> (Reserva).`);
 };
 
 window.cancelarTroca = function() { document.getElementById('troca-modal').style.display='none'; cartaDaReservaParaResgatar=null; };
