@@ -1,11 +1,9 @@
 // =========================================================
-// SISTEMA DE MEDO (FEAR) - ATUALIZADO
+// SISTEMA DE MEDO (FEAR) - COM LOG
 // =========================================================
 
 const MAX_MEDO = 10;
 const REF_MEDO = 'mesa_rpg/medo';
-
-// --- FUNÇÕES DE CONTROLE (MESTRE) ---
 
 window.adicionarMedo = function() {
     window.get(window.ref(window.db, REF_MEDO)).then(snap => {
@@ -15,8 +13,8 @@ window.adicionarMedo = function() {
                 qtd: atual + 1,
                 aviso: { tipo: 'add', timestamp: Date.now() }
             });
-            // NOVO LOG
-            if(window.registrarLog) window.registrarLog('medo', 'O Mestre adicionou um token de Medo.');
+            // LOG PARA TODOS
+            if(window.registrarLog) window.registrarLog('medo', 'O Mestre <b>adicionou</b> um token de Medo.');
         }
     });
 };
@@ -29,8 +27,8 @@ window.usarMedo = function() {
                 qtd: atual - 1,
                 aviso: { tipo: 'use', timestamp: Date.now() }
             });
-            // NOVO LOG
-            if(window.registrarLog) window.registrarLog('medo', 'O Mestre gastou um token de Medo!');
+            // LOG PARA TODOS
+            if(window.registrarLog) window.registrarLog('medo', 'O Mestre <b>gastou</b> um token de Medo!');
         }
     });
 };
@@ -44,18 +42,14 @@ window.removerMedoSilencioso = function() {
     });
 };
 
-// --- OUVINTE REALTIME (TODOS) ---
-
+// A parte de iniciarSistemaMedo continua igual a antes...
 window.iniciarSistemaMedo = function() {
     const elContainer = document.getElementById('medo-container');
-    
     window.onValue(window.ref(window.db, REF_MEDO), (snapshot) => {
         const dados = snapshot.val();
         if (!dados) return;
-
         const qtd = dados.qtd || 0;
 
-        // 1. Atualiza Painel Mestre
         if (elContainer) {
             elContainer.innerHTML = `
                 <div class="medo-header">
@@ -67,7 +61,6 @@ window.iniciarSistemaMedo = function() {
                 </div>
                 <div id="medo-tokens-grid"></div>
             `;
-            
             const container = document.getElementById('medo-tokens-grid');
             for (let i = 0; i < MAX_MEDO; i++) {
                 const slot = document.createElement('div');
@@ -75,21 +68,14 @@ window.iniciarSistemaMedo = function() {
                 if (i < qtd) {
                     const token = document.createElement('div');
                     token.className = 'medo-token';
-                    // Clique silencioso para mestre corrigir
                     if (window.nomeJogador === 'Mestre') {
-                        token.onclick = (e) => {
-                            e.stopPropagation();
-                            window.removerMedoSilencioso();
-                        };
+                        token.onclick = (e) => { e.stopPropagation(); window.removerMedoSilencioso(); };
                     }
                     slot.appendChild(token);
                 }
                 container.appendChild(slot);
             }
         }
-
-        // 2. Dispara Efeitos (Som e Tela)
-        // Verifica se o aviso tem menos de 3 segundos
         if (dados.aviso && (Date.now() - dados.aviso.timestamp < 3000)) {
             mostrarMensagemMedo(dados.aviso.tipo);
         }
@@ -99,32 +85,16 @@ window.iniciarSistemaMedo = function() {
 function mostrarMensagemMedo(tipo) {
     const overlay = document.getElementById('medo-overlay-msg');
     if (!overlay) return;
-
-    // Reset para permitir re-animar
     overlay.classList.remove('ativo');
-    void overlay.offsetWidth; // Força o navegador a recalcular (reflow)
-
-    // Tocar Som
+    void overlay.offsetWidth;
     const idAudio = (tipo === 'add') ? 'sound-medo-add' : 'sound-medo-use';
     const audio = document.getElementById(idAudio);
-    if (audio) {
-        audio.volume = 0.20;
-        audio.currentTime = 0;
-        audio.play().catch(err => console.log("Erro som:", err));
-    }
-
-    // Configurar Texto
+    if (audio) { audio.volume = 0.20; audio.currentTime = 0; audio.play().catch(err => {}); }
     if (tipo === 'add') {
         overlay.innerHTML = `<div class="msg-medo-texto">👁️ O Mestre recolheu <span style="color:#d0a0ff">MEDO</span>...</div>`;
     } else if (tipo === 'use') {
         overlay.innerHTML = `<div class="msg-medo-texto msg-medo-uso">🌑 A sombra cresce: o <span style="color:#bf00ff">MEDO</span> foi imposto.</div>`;
     }
-
-    // Ativar Animação CSS
     overlay.classList.add('ativo');
-
-    // Remover após 4s
-    setTimeout(() => {
-        overlay.classList.remove('ativo');
-    }, 4000);
+    setTimeout(() => { overlay.classList.remove('ativo'); }, 4000);
 }

@@ -576,8 +576,14 @@ window.alterarToken = function(d) {
 
 window.definirEstado = function(st) {
     if(origemTransito==='mao') {
-        maoDoJogador[cartaEmTransitoIndex].estado = st;
+        const carta = maoDoJogador[cartaEmTransitoIndex];
+        carta.estado = st;
         window.salvarNaNuvem();
+        
+        // NOVO LOG AQUI
+        const tipoDescanso = st === 'curto' ? 'Descanso Curto' : 'Descanso Longo';
+        window.registrarLog('descanso', `Ativou <b>${tipoDescanso}</b> na carta <span class="log-destaque">${carta.nome}</span>.`);
+        
         window.abrirDecisao(cartaEmTransitoIndex); 
     }
 };
@@ -617,10 +623,18 @@ window.moverParaReserva = function() {
 window.devolverParaMao = function() {
     if(origemTransito==='reserva') {
         const c = reservaDoJogador[cartaEmTransitoIndex];
+        
+        // Armazena nome antes de mover
+        const nomeCarta = c.nome;
+        
         c.tokens=0; c.estado='ativo';
         if(maoDoJogador.length < LIMITE_MAO) {
             maoDoJogador.push(reservaDoJogador.splice(cartaEmTransitoIndex,1)[0]);
             window.fecharDecisao(); window.fecharReserva(); renderizar(); window.salvarNaNuvem();
+            
+            // NOVO LOG AQUI
+            window.registrarLog('carta-reserva', `Resgatou <span class="log-destaque">${nomeCarta}</span> da Reserva para a Mão.`);
+            
         } else {
             cartaDaReservaParaResgatar = { carta: c, indiceReserva: cartaEmTransitoIndex };
             window.fecharDecisao(); window.mostrarModalTroca();
@@ -649,10 +663,16 @@ window.mostrarModalTroca = function() {
 window.confirmarTroca = function(idx) {
     if(!cartaDaReservaParaResgatar) return;
     const old = maoDoJogador[idx];
-    maoDoJogador[idx] = cartaDaReservaParaResgatar.carta;
+    const nova = cartaDaReservaParaResgatar.carta;
+    
+    maoDoJogador[idx] = nova;
     reservaDoJogador[cartaDaReservaParaResgatar.indiceReserva] = old;
+    
     cartaDaReservaParaResgatar = null;
     window.cancelarTroca(); renderizar(); window.salvarNaNuvem();
+    
+    // NOVO LOG AQUI
+    window.registrarLog('carta-reserva', `Trocou <span class="log-destaque">${old.nome}</span> (Mão) por <span class="log-destaque">${nova.nome}</span> (Reserva).`);
 };
 
 window.cancelarTroca = function() { document.getElementById('troca-modal').style.display='none'; cartaDaReservaParaResgatar=null; };

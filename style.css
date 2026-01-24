@@ -1677,17 +1677,17 @@ body:has(.carta:hover) #hover-preview {
 }
 
 /* =========================================================
-   LOG DE AÇÕES (CHAT)
+   LOG DE AÇÕES (CHAT) - VERSÃO FINAL
    ========================================================= */
 
-/* Botão Discreto */
+/* Botão Flutuante (Agora em baixo, acima dos dados) */
 #btn-toggle-log {
     position: fixed;
-    top: 20px;
-    right: 80px; /* Ao lado do botão de refresh se houver, ou ajuste */
+    bottom: 140px; /* Acima do botão de dados/ficha */
+    right: 25px;   /* Alinhado com os outros botões */
     width: 45px;
     height: 45px;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(0, 0, 0, 0.8);
     border: 2px solid var(--gold);
     border-radius: 50%;
     color: #fff;
@@ -1698,7 +1698,7 @@ body:has(.carta:hover) #hover-preview {
     cursor: pointer;
     z-index: 6000;
     transition: 0.3s;
-    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    box-shadow: 0 0 15px rgba(0,0,0,0.8);
 }
 
 #btn-toggle-log:hover {
@@ -1707,33 +1707,44 @@ body:has(.carta:hover) #hover-preview {
     transform: scale(1.1);
 }
 
-/* Bolinha de Notificação */
 #notification-dot {
     position: absolute;
-    top: 0;
-    right: 0;
-    width: 12px;
-    height: 12px;
+    top: -2px;
+    right: -2px;
+    width: 14px;
+    height: 14px;
     background: #ff4444;
     border-radius: 50%;
-    border: 1px solid #fff;
+    border: 2px solid #fff;
     display: none;
+    animation: pulse-dot 2s infinite;
 }
 
-/* Container do Log (Painel Lateral) */
+@keyframes pulse-dot {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+}
+
+/* Painel Lateral (Limitado para não cobrir o rodapé) */
 #chat-log-container {
     position: fixed;
-    top: 0;
-    right: -350px; /* Escondido inicialmente */
-    width: 320px;
-    height: 100%;
-    background: rgba(15, 10, 5, 0.95); /* Fundo escuro temático */
-    border-left: 3px solid var(--gold);
-    z-index: 20000; /* Acima de tudo */
+    top: 20px;
+    right: -360px; /* Escondido */
+    width: 340px;
+    
+    /* IMPORTANTE: Altura calculada para não bater na mão/dados */
+    height: calc(100vh - 220px); 
+    
+    background: rgba(15, 10, 5, 0.98);
+    border: 2px solid var(--gold);
+    border-right: none; /* Grudado na direita */
+    border-radius: 10px 0 0 10px;
+    z-index: 19000; /* Abaixo de modais, acima do mapa */
     transition: right 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
     display: flex;
     flex-direction: column;
-    box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+    box-shadow: -10px 5px 30px rgba(0,0,0,0.9);
 }
 
 #chat-log-container.open {
@@ -1741,106 +1752,26 @@ body:has(.carta:hover) #hover-preview {
 }
 
 .log-header {
-    padding: 15px;
-    border-bottom: 1px solid #444;
+    padding: 12px 15px;
+    background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(50,40,20,0.8));
+    border-bottom: 1px solid var(--gold);
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0,0,0,0.3);
+    border-radius: 8px 0 0 0;
 }
 
-.log-header h3 {
-    margin: 0;
-    color: var(--gold);
-    font-family: 'MedievalSharp', cursive;
-    font-size: 1.2rem;
-}
-
-.log-header button {
-    background: none;
-    border: none;
-    color: #888;
-    font-size: 1.5rem;
-    cursor: pointer;
-}
-.log-header button:hover { color: #fff; }
-
-/* Área de Conteúdo */
 #chat-log-content {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: auto; /* Barra de rolagem ativada */
     padding: 15px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
 }
 
-/* Scrollbar Bonita */
-#chat-log-content::-webkit-scrollbar { width: 6px; }
-#chat-log-content::-webkit-scrollbar-thumb { background: #444; border-radius: 3px; }
-
-/* --- TIPOS DE MENSAGENS (CORES) --- */
-
-.log-entry {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 5px;
-    padding: 8px 10px;
-    font-family: sans-serif;
-    font-size: 0.85rem;
-    border-left: 4px solid #555;
-    animation: fadeIn 0.3s ease;
-    line-height: 1.4;
-}
-
-.log-timestamp {
-    font-size: 0.7rem;
-    color: #666;
-    float: right;
-    margin-left: 5px;
-}
-
-.log-author {
-    font-weight: bold;
-    color: #ddd;
-    display: block;
-    margin-bottom: 3px;
-    font-family: 'MedievalSharp', cursive;
-    letter-spacing: 0.5px;
-}
-
-/* Cores por Tipo */
-.log-entry.tipo-dado {
-    border-left-color: #00bcd4; /* Azul Ciano */
-    background: rgba(0, 188, 212, 0.1);
-}
-
-.log-entry.tipo-carta-uso {
-    border-left-color: #4caf50; /* Verde */
-    background: rgba(76, 175, 80, 0.1);
-}
-
-.log-entry.tipo-carta-compra {
-    border-left-color: #ff9800; /* Laranja */
-    background: rgba(255, 152, 0, 0.1);
-}
-
-.log-entry.tipo-carta-reserva {
-    border-left-color: #9c27b0; /* Roxo */
-    background: rgba(156, 39, 176, 0.1);
-}
-
-.log-entry.tipo-medo {
-    border-left-color: #f44336; /* Vermelho Sangue */
-    background: rgba(244, 67, 54, 0.15);
-    border: 1px solid rgba(244, 67, 54, 0.3);
-}
-
-.log-entry.tipo-descanso {
-    border-left-color: #2196f3; /* Azul */
-    font-style: italic;
-}
-
-.log-destaque {
-    color: #fff;
-    font-weight: bold;
-}
+/* Scrollbar Personalizada */
+#chat-log-content::-webkit-scrollbar { width: 8px; }
+#chat-log-content::-webkit-scrollbar-track { background: #111; }
+#chat-log-content::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; border: 1px solid #000; }
+#chat-log-content::-webkit-scrollbar-thumb:hover { background: var(--gold); }
