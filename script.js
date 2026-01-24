@@ -346,7 +346,12 @@ async function carregarListaPersonagens() {
 // Selecionar Personagem
 window.selecionarPersonagem = async function(charName) {
     if(window.pararAudioLogin) window.pararAudioLogin();
-    localStorage.setItem('ultimoPersonagem', charName); // <--- ADICIONE ESTA LINHA
+    localStorage.setItem('ultimoPersonagem', charName);
+    // --- ADICIONE ESTE BLOCO DE SEGURANÇA AQUI ---
+    const capa = document.getElementById('tela-inicial-monolito');
+    const loading = document.getElementById('loading-overlay');
+    if(capa) capa.style.display = 'none';       // Remove a capa preta
+    if(loading) loading.style.display = 'none'; // Remove o loading // <--- ADICIONE ESTA LINHA
     nomeJogador = charName.toUpperCase();
     if(typeof window !== 'undefined') window.nomeJogador = nomeJogador;
 
@@ -620,6 +625,7 @@ onAuthStateChanged(auth, (user) => {
     const loadingScreen = document.getElementById('loading-overlay');
     const loginScreen = document.getElementById('login-screen');
     const appContainer = document.getElementById('app-container');
+    const capa = document.getElementById('tela-inicial-monolito');
 
     if (user) {
         currentUser = user;
@@ -628,6 +634,7 @@ onAuthStateChanged(auth, (user) => {
         // Cenario 1: Jogador dando F5 (Tem personagem salvo)
         if (ultimoPersonagem && user.email.toLowerCase().trim() !== "tgbahiense@gmail.com") {
              console.log("Retomando sessão de: " + ultimoPersonagem);
+             if(capa) capa.style.display = 'none';
              
              // Garante que o login fique escondido
              loginScreen.style.display = 'none';

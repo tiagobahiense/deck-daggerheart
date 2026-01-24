@@ -31,23 +31,22 @@ body {
    TELA INICIAL (CAPA DO LIVRO / MONÓLITO)
    ========================================================= */
 
-#tela-inicial-monolito {
+   #tela-inicial-monolito {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     
-    /* CORREÇÃO 1: Fundo preto de segurança caso a imagem demore */
-    background-color: #000;
+    background-color: #000; /* Fundo preto de segurança */
     
-    /* CORREÇÃO 2: Caminho da imagem explícito */
-    background-image: url('img/wallpaper.jpg'); 
+    /* TRUQUE DE CACHE: Adicionei ?v=2 para forçar recarregar a imagem */
+    background-image: url('img/wallpaper.jpg?v=2'); 
+    
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
     
-    /* CORREÇÃO 3: Z-INDEX MAIOR QUE O LOADING (que é 20000) */
     z-index: 30000; 
     
     display: flex;
