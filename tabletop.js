@@ -1,5 +1,5 @@
 // =========================================================
-// TABLETOP SYSTEM V12.0 (NO-CRASH TRAIL & SYNC)
+// TABLETOP SYSTEM V13.0 (SIZE CONTROLS & PLAYER MOVE FIX)
 // =========================================================
 
 const REF_TABLETOP = 'mesa_rpg/tabuleiro';
@@ -12,7 +12,6 @@ let dragStartPos = { x: 0, y: 0 };
 let mapOffset = { x: 0, y: 0 };
 let vttMinimizado = false;
 
-// Armazena posições anteriores para desenhar rastro remoto
 let posicoesAnteriores = {}; 
 let localDragStart = { x: 0, y: 0 };
 
@@ -120,10 +119,9 @@ function renderizarTokens(tokensData) {
 
         if(isMestre && t.visivel===false) el.classList.add('oculto'); else el.classList.remove('oculto');
 
-        // DETECÇÃO DE MOVIMENTO REMOTO E RASTRO
+        // Sincronia de Rastro Remoto
         if (posicoesAnteriores[id] && currentTokenId !== id) {
             const old = posicoesAnteriores[id];
-            // Se moveu mais que 1px
             if (Math.abs(old.x - t.x) > 1 || Math.abs(old.y - t.y) > 1) {
                 limparRastroAntigo(); 
                 criarRastroSeguro(old.x, old.y, t.x, t.y);
@@ -147,7 +145,6 @@ function renderizarTokens(tokensData) {
     });
 }
 
-// --- RASTRO SEGURO (SEM CRASH) ---
 function limparRastroAntigo() {
     const rastros = document.querySelectorAll('.trail-segment');
     rastros.forEach(r => r.remove());
@@ -156,36 +153,22 @@ function limparRastroAntigo() {
 function criarRastroSeguro(x1, y1, x2, y2) {
     const container = document.getElementById('map-container');
     const step = GRID_SIZE;
-    
-    // Calcula quantos passos em cada direção (Arredondar evita decimais quebrados)
     const stepsX = Math.round(Math.abs(x2 - x1) / step);
     const stepsY = Math.round(Math.abs(y2 - y1) / step);
-    
     const dirX = x2 > x1 ? 1 : -1;
     const dirY = y2 > y1 ? 1 : -1;
 
     let currentX = x1;
     let currentY = y1;
 
-    // Loop Finito X
-    for(let i = 0; i < stepsX; i++) {
-        currentX += step * dirX;
-        criarBolinha(currentX, currentY);
-    }
-
-    // Loop Finito Y
-    for(let j = 0; j < stepsY; j++) {
-        currentY += step * dirY;
-        criarBolinha(currentX, currentY);
-    }
+    for(let i = 0; i < stepsX; i++) { currentX += step * dirX; criarBolinha(currentX, currentY); }
+    for(let j = 0; j < stepsY; j++) { currentY += step * dirY; criarBolinha(currentX, currentY); }
 
     function criarBolinha(bx, by) {
-        if(Math.abs(bx - x2) < 5 && Math.abs(by - y2) < 5) return; // Não desenha no fim
-
+        if(Math.abs(bx - x2) < 5 && Math.abs(by - y2) < 5) return;
         const div = document.createElement('div');
         div.className = 'trail-segment';
-        div.style.left = bx + 'px';
-        div.style.top = by + 'px';
+        div.style.left = bx + 'px'; div.style.top = by + 'px';
         container.appendChild(div);
         setTimeout(() => { if(div.parentNode) div.remove(); }, 10000);
     }
@@ -193,7 +176,12 @@ function criarRastroSeguro(x1, y1, x2, y2) {
 
 function startDragToken(e, id, t) {
     const isMestre = window.nomeJogador === "Mestre";
-    if(!isMestre && (t.tipo !== 'pc' || t.nome !== window.nomeJogador)) return; 
+    
+    // --- CORREÇÃO: Comparação de nome Case Insensitive para Jogador ---
+    const nomeToken = (t.nome || "").toUpperCase();
+    const nomeJogador = (window.nomeJogador || "").toUpperCase();
+    
+    if(!isMestre && (t.tipo !== 'pc' || nomeToken !== nomeJogador)) return; 
     
     isDraggingToken=true; currentTokenId=id;
     const el = document.getElementById(id);
@@ -212,36 +200,26 @@ function moveDragToken(e) {
     if(!isDraggingToken) return;
     e.preventDefault();
     const el = document.getElementById(currentTokenId);
-    
     const scaler = document.getElementById('map-scaler');
     const style = window.getComputedStyle(scaler);
     const matrix = new WebKitCSSMatrix(style.transform);
     const scale = matrix.a || 1;
-
     const container = document.getElementById('map-container');
     const bounds = container.getBoundingClientRect();
-    
     const cx = e.touches?e.touches[0].clientX:e.clientX;
     const cy = e.touches?e.touches[0].clientY:e.clientY;
-
     const x = (cx - bounds.left - dragStartPos.x) / scale;
     const y = (cy - bounds.top - dragStartPos.y) / scale;
-
-    el.style.left = x + 'px';
-    el.style.top = y + 'px';
+    el.style.left = x + 'px'; el.style.top = y + 'px';
 }
 
 function endDragToken() {
     if(!isDraggingToken) return;
     const el = document.getElementById(currentTokenId);
-    
     let x = Math.round(parseFloat(el.style.left)/GRID_SIZE)*GRID_SIZE;
     let y = Math.round(parseFloat(el.style.top)/GRID_SIZE)*GRID_SIZE;
-    
     criarRastroSeguro(localDragStart.x, localDragStart.y, x, y);
-
     window.update(window.ref(window.db, `${REF_TABLETOP}/tokens/${currentTokenId}`), {x:x, y:y});
-    
     isDraggingToken=false;
     window.removeEventListener('mousemove', moveDragToken); window.removeEventListener('mouseup', endDragToken);
     window.removeEventListener('touchmove', moveDragToken); window.removeEventListener('touchend', endDragToken);
@@ -275,6 +253,15 @@ window.abrirInfoToken = function(id, editavel) {
         html += row("Defesa", s.dificuldade, 'ac'); html += row("Ataque", s.ataque, 'atk'); html += row("Dano", s.dano, 'dmg');
         if(editavel) {
             html += `<div class="hp-control-group"><button class="btn-ctrl" style="border-color:red" onclick="mudarStat('${id}','pv_atual',-1)">-1 PV</button><button class="btn-ctrl" style="border-color:green" onclick="mudarStat('${id}','pv_atual',1)">+1 PV</button></div>`;
+            
+            // --- CORREÇÃO: Botões de Tamanho Restaurados ---
+            html += `<div style="margin-top:10px; display:flex; gap:10px; align-items:center; justify-content:center;">
+                <span style="color:#aaa;">Tam:</span>
+                <button class="btn-ctrl" onclick="mudarTam('${id}',-0.5)" style="width:30px;">-</button>
+                <span style="color:var(--gold);">${t.tamanho||1}x</span>
+                <button class="btn-ctrl" onclick="mudarTam('${id}',0.5)" style="width:30px;">+</button>
+            </div>`;
+            
             html += `<div style="margin-top:10px;text-align:center;"><span class="eye-btn ${t.visivel!==false?'visible':''}" style="font-size:1.5rem;" onclick="toggleTokenVis('${id}')">👁️</span></div>`;
             html += `<button class="btn-delete-token" onclick="removerTokenDoGrid('${id}')">🗑️ EXCLUIR</button>`;
         }
