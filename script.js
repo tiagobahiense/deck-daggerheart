@@ -345,13 +345,26 @@ async function carregarListaPersonagens() {
 
 // Selecionar Personagem
 window.selecionarPersonagem = async function(charName) {
+    // Para a música de entrada
     if(window.pararAudioLogin) window.pararAudioLogin();
     localStorage.setItem('ultimoPersonagem', charName);
-    // --- ADICIONE ESTE BLOCO DE SEGURANÇA AQUI ---
+    
+    // --- CORREÇÃO: Garante que a capa e login sumam ---
     const capa = document.getElementById('tela-inicial-monolito');
+    const loginScreen = document.getElementById('login-screen');
     const loading = document.getElementById('loading-overlay');
-    if(capa) capa.style.display = 'none';       // Remove a capa preta
-    if(loading) loading.style.display = 'none'; // Remove o loading // <--- ADICIONE ESTA LINHA
+    
+    if(capa) capa.style.display = 'none';
+    if(loginScreen) loginScreen.style.display = 'none';
+    
+    // Mostra o Loading TEMPORARIAMENTE enquanto carrega os dados
+    if(loading) {
+        loading.style.display = 'flex';
+        const msgDiv = loading.querySelector('div');
+        if(msgDiv) msgDiv.innerText = "Invocando Personagem...";
+    }
+    // --------------------------------------------------
+
     nomeJogador = charName.toUpperCase();
     if(typeof window !== 'undefined') window.nomeJogador = nomeJogador;
 
@@ -369,12 +382,11 @@ window.selecionarPersonagem = async function(charName) {
     const slotSnap = await get(ref(db, `mesa_rpg/jogadores/${nomeJogador}/slots/Fundamental`));
     const temClasse = slotSnap.exists() && slotSnap.val().profissao;
 
-    document.getElementById('login-screen').style.display = 'none';
     document.getElementById('app-container').style.display = 'flex';
     setTimeout(() => document.getElementById('app-container').style.opacity = '1', 50);
 
-    const audio = document.getElementById('bg-music');
-    if(audio) { audio.volume = 0.05; audio.play().catch(e => console.warn(e)); }
+    const audioGame = document.getElementById('bg-music');
+    if(audioGame) { audioGame.volume = 0.05; audioGame.play().catch(e => console.warn(e)); }
 
     await carregarDados();
     
@@ -398,6 +410,11 @@ window.selecionarPersonagem = async function(charName) {
     if(window.escutarRolagens) window.escutarRolagens();
     
     renderizar();
+
+    // --- FINAL: Esconde o loading quando tudo estiver pronto ---
+    setTimeout(() => {
+        if(loading) loading.style.display = 'none';
+    }, 500);
 };
 
 window.criarNovoPersonagem = async function() {
@@ -631,57 +648,40 @@ onAuthStateChanged(auth, (user) => {
         currentUser = user;
         const ultimoPersonagem = localStorage.getItem('ultimoPersonagem');
         
-        // Cenario 1: Jogador dando F5 (Tem personagem salvo)
+        // CENÁRIO 1: Jogador Reconectando (F5)
         if (ultimoPersonagem && user.email.toLowerCase().trim() !== "tgbahiense@gmail.com") {
              console.log("Retomando sessão de: " + ultimoPersonagem);
+             
+             // Remove a capa imediatamente para não ficar tudo preto
              if(capa) capa.style.display = 'none';
+             if(loginScreen) loginScreen.style.display = 'none';
              
-             // Garante que o login fique escondido
-             loginScreen.style.display = 'none';
-             
-             // Carrega o personagem
-             window.selecionarPersonagem(ultimoPersonagem).then(() => {
-                 // SÓ AGORA tira a tela de carregamento
-                 setTimeout(() => {
-                     if(loadingScreen) loadingScreen.style.display = 'none';
-                 }, 500);
-             });
+             // Mostra Loading enquanto recupera
+             if(loadingScreen) {
+                 loadingScreen.style.display = 'flex';
+                 const msg = loadingScreen.querySelector('div');
+                 if(msg) msg.innerText = "Retomando Sessão...";
+             }
+
+             // Chama a função que vai carregar e depois tirar o loading
+             window.selecionarPersonagem(ultimoPersonagem);
         } 
-        // Cenario 2: Mestre ou Usuário sem personagem selecionado
+        // CENÁRIO 2: Mestre ou Sem Personagem selecionado
         else {
             if(loadingScreen) loadingScreen.style.display = 'none';
-            // Se for mestre, vai pro admin ou mestre logic (depende da sua pag), aqui assume fluxo normal
+            if(capa) capa.style.display = 'none'; // Se já logou, tira a capa
+            // O código original do mestre ou seleção deve fluir aqui
         }
     } else {
-        // Cenario 3: Ninguém logado (Mostra Login)
-        console.log("Nenhum usuário. Mostrando login.");
+        // CENÁRIO 3: Não Logado (Tela Inicial / Capa)
+        // Aqui NÃO escondemos a capa, pois o usuário tem que clicar em JOGAR
         if(loadingScreen) loadingScreen.style.display = 'none';
-        loginScreen.style.display = 'flex';
-        appContainer.style.display = 'none';
+        
+        // O login fica visível ATRÁS da capa, esperando o clique no botão JOGAR
+        if(loginScreen) loginScreen.style.display = 'flex'; 
+        if(appContainer) appContainer.style.display = 'none';
     }
 });
-// --- FUNÇÕES DE LEITURA DE PDF (ANCESTRALIDADE/COMUNIDADE) ---
-
-// --- FUNÇÕES DE LEITURA DE PDF ATUALIZADAS COM ZOOM ---
-
-window.abrirLeitorPDF = function(tipo) {
-    tipoAtualPDF = tipo;
-    paginaAtualPDF = 1;
-    
-    // Reseta o zoom sempre que abrir
-    zoomLevelPDF = 1.0;
-    setTimeout(aplicarZoomPDF, 50); // Pequeno delay para garantir que o CSS carregou
-
-    if (tipo === 'Ancestralidade') {
-        totalPaginasPDF = 20; 
-    } else {
-        totalPaginasPDF = 14; 
-    }
-
-    document.getElementById('titulo-leitor-pdf').innerText = tipo;
-    atualizarImagemLeitor();
-    document.getElementById('modal-leitor-pdf').style.display = 'flex';
-};
 
 window.fecharLeitorPDF = function() {
     document.getElementById('modal-leitor-pdf').style.display = 'none';
