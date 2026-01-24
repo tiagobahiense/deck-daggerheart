@@ -516,6 +516,14 @@ button {
     z-index: 1900;
 }
 
+#cartas-reserva {
+    width: 90px;
+    height: 130px;
+    margin-top: 10px;
+    position: relative;
+    /* Garante que as cartas empilhadas fiquem dentro dessa área */
+}
+
 #reserva-area img {
     width: 70px; /* Tamanho fixo para não explodir */
     height: auto;
@@ -538,7 +546,7 @@ button {
     left: 0;
     width: 100%;
     height: 190px;
-    background: url('img/mao_background.png') no-repeat bottom center;
+    background: none;
     background-size: 100%;
     display: flex;
     justify-content: center;
@@ -1179,7 +1187,7 @@ body:has(.carta:hover) #hover-preview {
 #grid-reserva {
     flex: 1;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
     gap: 15px;
     padding: 20px;
     overflow-y: auto;
