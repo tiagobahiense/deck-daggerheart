@@ -45,6 +45,7 @@ let paginaAtualPDF = 1;
 let totalPaginasPDF = 1;
 let tipoAtualPDF = "";
 let zoomLevelPDF = 1.0;
+let imagensPDFAtuais = [];
  // Adicionando a variável do zoom
 window.togglePassword = function(id) { const input = document.getElementById(id); if (input) input.type = input.type === "password" ? "text" : "password"; };
 
@@ -702,16 +703,33 @@ window.mudarPaginaLeitor = function(direcao) {
 function atualizarImagemLeitor() {
     const imgElement = document.getElementById('img-leitor-pdf');
     const contador = document.getElementById('leitor-page-counter');
-    const numFormatado = String(paginaAtualPDF).padStart(3, '0');
     
     let caminho = "";
-    if (tipoAtualPDF === 'Ancestralidade') {
-        caminho = `img/ancestralidade-pdf/Ancestralidades_pag_${numFormatado}.jpg`;
-    } else {
-        caminho = `img/comunidade-pdf/Comunidade_pag_${numFormatado}.jpg`;
+
+    // SE FOR CLASSE, PEGA DA ARRAY
+    if (tipoAtualPDF === 'Classe') {
+        // Arrays começam em 0, páginas em 1
+        if (imagensPDFAtuais[paginaAtualPDF - 1]) {
+            caminho = imagensPDFAtuais[paginaAtualPDF - 1];
+        }
+    } 
+    // SE FOR OS OUTROS, USA A LÓGICA DE NÚMERO
+    else {
+        const numFormatado = String(paginaAtualPDF).padStart(3, '0');
+        if (tipoAtualPDF === 'Ancestralidade') {
+            caminho = `img/ancestralidade-pdf/Ancestralidades_pag_${numFormatado}.jpg`;
+        } else {
+            caminho = `img/comunidade-pdf/Comunidade_pag_${numFormatado}.jpg`;
+        }
     }
     
     imgElement.src = caminho;
+    
+    // Tratamento de erro se a imagem não carregar
+    imgElement.onerror = function() {
+        console.warn("Imagem não encontrada:", caminho);
+    };
+
     contador.innerText = `${paginaAtualPDF}/${totalPaginasPDF}`;
 }
 
@@ -760,29 +778,52 @@ function aplicarZoomPDF() {
 }
 
 // --- FUNÇÃO RECUPERADA: ABRIR LEITOR DE PDF ---
+// --- FUNÇÃO ABRIR LEITOR DE PDF (ATUALIZADA) ---
 window.abrirLeitorPDF = function(tipo) {
     tipoAtualPDF = tipo;
     paginaAtualPDF = 1;
     zoomLevelPDF = 1.0;
-    
-    // Define o total de páginas baseado no tipo
-    if (tipo === 'Ancestralidade') {
-        totalPaginasPDF = 20; 
+    imagensPDFAtuais = []; // Limpa lista anterior
+
+    // LÓGICA PARA CLASSE
+    if (tipo === 'Classe') {
+        const nomeClasse = localStorage.getItem('profissaoSelecionada');
+        if (!nomeClasse) return alert("Nenhuma classe selecionada na ficha.");
+
+        // Busca a lista de imagens no arquivo selecao-classe.js
+        if (window.classesDisponiveis) {
+            const dados = window.classesDisponiveis.find(c => c.nome === nomeClasse);
+            if (dados && dados.pdfs) {
+                imagensPDFAtuais = dados.pdfs;
+                totalPaginasPDF = dados.pdfs.length;
+            } else {
+                return alert("Imagens desta classe não encontradas.");
+            }
+        } else {
+            return alert("Erro: Lista de classes não carregada.");
+        }
+        
+        // Atualiza o título do modal
+        const titulo = document.getElementById('titulo-leitor-pdf');
+        if(titulo) titulo.innerText = nomeClasse;
+
     } else {
-        totalPaginasPDF = 14; 
+        // LÓGICA PARA ANCESTRALIDADE E COMUNIDADE
+        if (tipo === 'Ancestralidade') {
+            totalPaginasPDF = 20; 
+        } else {
+            totalPaginasPDF = 14; 
+        }
+        const titulo = document.getElementById('titulo-leitor-pdf');
+        if(titulo) titulo.innerText = tipo;
     }
 
-    // Atualiza o título e a imagem
-    const titulo = document.getElementById('titulo-leitor-pdf');
-    if(titulo) titulo.innerText = tipo;
-    
     atualizarImagemLeitor();
     
-    // Mostra o modal
     const modal = document.getElementById('modal-leitor-pdf');
     if(modal) {
         modal.style.display = 'flex';
-        setTimeout(aplicarZoomPDF, 50); // Garante o zoom inicial
+        setTimeout(aplicarZoomPDF, 50);
     }
 };
 

@@ -58,6 +58,8 @@ const classesDisponiveis = [
     }
 ];
 
+window.classesDisponiveis = classesDisponiveis;
+
 let indiceClasse = 0;
 let paginaPDFAtual = 0;
 
