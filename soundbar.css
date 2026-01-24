@@ -1,5 +1,5 @@
 /* =========================================================
-   SOUND BAR & CONTROLE DE VOLUME (CORRIGIDO)
+   SOUND BAR & CONTROLE DE VOLUME (FINAL)
    ========================================================= */
 
 /* --- PLAYER: CONTROLE DE VOLUME FLUTUANTE (VERTICAL) --- */
@@ -8,63 +8,21 @@
     top: 60px;
     left: 10px;
     display: flex;
-    flex-direction: column; /* Slider em cima, ícone embaixo */
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between; /* Espalha os itens */
+    justify-content: space-between;
     background: rgba(0, 0, 0, 0.9);
-    padding: 15px 5px 10px 5px; /* Espaço para não cortar o slider */
+    padding: 15px 5px 10px 5px;
     border: 1px solid var(--gold);
     border-radius: 20px;
     z-index: 20000;
     box-shadow: 0 0 10px rgba(0,0,0,0.8);
-    transition: opacity 0.3s, transform 0.3s;
     width: 45px; 
-    height: 160px; /* Altura suficiente para o slider girado + ícone */
+    height: 160px;
 }
-
-#audio-control-player:hover {
-    box-shadow: 0 0 15px var(--gold);
-}
-
-.btn-mute {
-    background: none;
-    border: none;
-    color: var(--gold);
-    font-size: 1.4rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 30px;
-    transition: transform 0.2s;
-    z-index: 2;
-    margin-top: auto; /* Força o ícone para o rodapé do container */
-}
-.btn-mute:hover { transform: scale(1.1); text-shadow: 0 0 5px var(--gold); }
-.btn-mute.muted { color: #ff4444; opacity: 1; } /* Vermelho quando mutado */
 
 /* SLIDER DO JOGADOR (VERTICAL) */
 #player-volume-slider {
-    -webkit-appearance: none;
-    width: 100px; /* Comprimento que vira altura */
-    height: 6px;
-    background: #333;
-    border-radius: 3px;
-    outline: none;
-    border: 1px solid #555;
-    
-    /* Rotação */
-    transform: rotate(-90deg);
-    /* Ajuste de margem para compensar a rotação */
-    margin-top: 50px; 
-    margin-bottom: 20px;
-    cursor: pointer;
-}
-
-/* SLIDER DO MESTRE (HORIZONTAL) */
-/* Usamos um seletor específico para garantir que o do mestre não gire */
-.master-volume-box .volume-slider {
     -webkit-appearance: none;
     width: 100px;
     height: 6px;
@@ -72,105 +30,77 @@
     border-radius: 3px;
     outline: none;
     border: 1px solid #555;
+    transform: rotate(-90deg);
+    margin-top: 50px; 
+    margin-bottom: 20px;
     cursor: pointer;
-    transform: none; /* Garante horizontal */
+}
+
+/* SLIDER DO MESTRE (HORIZONTAL - CORREÇÃO) */
+#master-volume-slider {
+    -webkit-appearance: none;
+    width: 100%; /* Ocupa o espaço disponível */
+    height: 6px;
+    background: #333;
+    border-radius: 3px;
+    outline: none;
+    border: 1px solid #555;
+    cursor: pointer;
+    transform: none !important; /* Força horizontal */
     margin: 0;
 }
 
-/* Estilo da bolinha do slider (Comum a ambos) */
-input[type=range]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--gold);
-    cursor: pointer;
-    box-shadow: 0 0 5px rgba(0,0,0,1);
-    border: 2px solid #fff;
+/* Botões Mute */
+.btn-mute {
+    background: none; border: none; color: var(--gold);
+    font-size: 1.4rem; cursor: pointer; transition: transform 0.2s; z-index: 2;
 }
-input[type=range]::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: var(--gold);
-    cursor: pointer;
+.btn-mute:hover { transform: scale(1.1); text-shadow: 0 0 5px var(--gold); }
+.btn-mute.muted { color: #ff4444; opacity: 1; } 
+
+/* Thumb dos Sliders */
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+    background: var(--gold); cursor: pointer; box-shadow: 0 0 5px rgba(0,0,0,1);
     border: 2px solid #fff;
 }
 
-/* --- MESTRE: LISTA DE MÚSICAS --- */
+/* LISTA */
 .item-soundbar {
-    display: flex;
-    flex-direction: column; /* Mudado para coluna para caber a barra de progresso */
+    display: flex; flex-direction: column;
     background: rgba(255, 255, 255, 0.05);
-    border: 1px solid #444;
-    padding: 8px 10px;
-    border-radius: 5px;
-    margin-bottom: 5px;
-    transition: 0.2s;
+    border: 1px solid #444; padding: 8px 10px;
+    border-radius: 5px; margin-bottom: 8px; /* Espaçamento entre itens */
+    flex-shrink: 0; /* Impede que esmaguem */
 }
 .item-soundbar:hover { background: rgba(255, 255, 255, 0.1); border-color: #666; }
 
-.sound-row-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-}
-
+.sound-row-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
 .info-sound { display: flex; align-items: center; gap: 10px; flex: 1; overflow: hidden; }
 .icon-note { color: var(--gold); font-size: 1rem; }
-.nome-musica { color: #ddd; font-weight: bold; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nome-musica { color: #ddd; font-weight: bold; font-size: 0.9rem; }
 
-/* BARRA DE PROGRESSO DA MÚSICA */
 .sound-progress-container {
-    width: 100%;
-    height: 4px;
-    background: #222;
-    margin-top: 8px;
-    border-radius: 2px;
-    overflow: hidden;
-    position: relative;
+    width: 100%; height: 4px; background: #222; margin-top: 8px;
+    border-radius: 2px; overflow: hidden;
 }
-.sound-progress-bar {
-    height: 100%;
-    width: 0%;
-    background: var(--gold);
-    transition: width 0.2s linear; /* Movimento suave */
-    box-shadow: 0 0 5px var(--gold);
-}
+.sound-progress-bar { height: 100%; width: 0%; background: var(--gold); transition: width 0.25s linear; }
 
 .controls-sound { display: flex; gap: 8px; align-items: center; }
-
 .btn-play-sound {
-    background: #4CAF50; color: white; border: none;
-    width: 30px; height: 30px; border-radius: 50%;
-    cursor: pointer; display: flex; align-items: center; justify-content: center;
-    font-size: 0.8rem; box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-    transition: 0.2s;
+    background: #4CAF50; color: white; border: none; width: 30px; height: 30px;
+    border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: 0.2s; font-size: 0.8rem;
 }
 .btn-play-sound:hover { transform: scale(1.1); background: #66bb6a; }
-/* Estado de Pausa (Botão Amarelo) */
-.btn-play-sound.playing { 
-    background: #ff9800; 
-    animation: pulsePlay 2s infinite;
-}
-
+.btn-play-sound.playing { background: #ff9800; animation: pulsePlay 2s infinite; }
 .btn-delete-sound { background: none; border: none; color: #666; cursor: pointer; font-size: 1rem; }
 .btn-delete-sound:hover { color: #ff4444; }
 
-@keyframes pulsePlay {
-    0% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0.7); }
-    70% { box-shadow: 0 0 0 5px rgba(255, 152, 0, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(255, 152, 0, 0); }
-}
+@keyframes pulsePlay { 0% { box-shadow: 0 0 0 0 rgba(255,152,0,0.7); } 70% { box-shadow: 0 0 0 5px rgba(255,152,0,0); } }
 
 .master-volume-box {
-    background: #222;
-    padding: 10px;
-    border-radius: 8px;
-    margin-bottom: 15px;
-    border: 1px dashed #555;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background: #222; padding: 10px; border-radius: 8px;
+    margin-bottom: 15px; border: 1px dashed #555;
+    display: flex; align-items: center; justify-content: space-between;
 }
