@@ -3,7 +3,7 @@
 // =========================================================
 
 const REF_TABLETOP = 'mesa_rpg/tabuleiro';
-const GRID_SIZE = 70; // AUMENTADO de 50 para 70 para tokens maiores
+const GRID_SIZE = 100; // AUMENTADO de 50 para 70 para tokens maiores
 
 let isDraggingToken = false;
 let isPanningMap = false;
