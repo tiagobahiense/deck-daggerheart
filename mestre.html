@@ -166,13 +166,23 @@
                 </div>
             </div>
         
-            <div id="tt-controls" style="position:absolute; top:40px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); padding:5px 15px; border-radius:0 0 10px 10px; border:1px solid var(--gold); z-index:100; display:flex; gap:10px;">
-                <label for="map-upload-input" style="color:white; cursor:pointer;">🗺️ Mapa</label>
+            <div id="tt-controls" style="position:absolute; top:40px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.8); padding:8px 15px; border-radius:0 0 10px 10px; border:1px solid var(--gold); z-index:100; display:flex; gap:10px; align-items:center;">
+                <label for="map-upload-input" style="color:white; cursor:pointer; background:#333; padding:5px 10px; border:1px solid #555; border-radius:4px;">
+                    📤 Upload Mapa
+                </label>
                 <input type="file" id="map-upload-input" style="display:none" accept="image/*" onchange="window.uploadMapa()">
                 
-                <button onclick="window.toggleMapaVisivel()" style="font-size:0.8rem; cursor:pointer;">👁️ Visibilidade</button>
+                <button id="btn-visibilidade-mapa" onclick="window.toggleMapaVisivel()" style="font-size:0.8rem; cursor:pointer; background:#111; border:1px solid #555; color:#aaa; padding:5px 10px; border-radius:4px; font-weight:bold;">
+                    👁️ Visibilidade
+                </button>
                 
-                <button onclick="window.toggleGMFulscreen()" style="font-size:0.8rem; cursor:pointer; background:#222; color:var(--gold); border:1px solid var(--gold);">⛶ Expandir</button>
+                <button onclick="window.toggleGMFulscreen()" style="font-size:0.8rem; cursor:pointer; background:#222; color:var(--gold); border:1px solid var(--gold); padding:5px 10px; border-radius:4px;">
+                    ⛶
+                </button>
+
+                <button onclick="window.removerMapa()" style="font-size:0.8rem; cursor:pointer; background:#400; color:#ffaaaa; border:1px solid #ff0000; padding:5px 10px; border-radius:4px;" title="Remover Mapa">
+                    🗑️
+                </button>
             </div>
         
             <div id="gm-enemy-list-container" class="floating-list-container">

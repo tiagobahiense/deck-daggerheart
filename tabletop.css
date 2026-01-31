@@ -1,5 +1,5 @@
 /* =========================================================
-   TABLETOP VIRTUAL (V12.0 - MÃO OCULTA & NO-CRASH)
+   TABLETOP VIRTUAL (V13.2 - GRID 70PX & CONTROLES)
    ========================================================= */
 
 /* --- ÁREA GERAL --- */
@@ -21,9 +21,11 @@
     max-width: none !important; width: auto !important; height: auto !important;
 }
 
+/* --- GRID (AUMENTADO PARA 70PX) --- */
 .grid-overlay {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;
-    background-size: 50px 50px;
+    /* MUDADO DE 50PX PARA 70PX */
+    background-size: 70px 70px;
     background-image: linear-gradient(to right, rgba(255, 255, 255, 0.2) 1px, transparent 1px),
                       linear-gradient(to bottom, rgba(255, 255, 255, 0.2) 1px, transparent 1px);
     z-index: 10;
@@ -31,7 +33,9 @@
 
 /* --- RASTRO (TRAIL) --- */
 .trail-segment {
-    position: absolute; width: 50px; height: 50px;
+    position: absolute; 
+    /* MUDADO PARA MATCH GRID 70PX */
+    width: 70px; height: 70px;
     background: radial-gradient(circle, rgba(255, 50, 50, 0.6) 20%, transparent 70%);
     pointer-events: none; z-index: 15; border-radius: 50%;
     animation: fadeOutTrail 10s forwards ease-out;
@@ -41,47 +45,10 @@
     100% { opacity: 0; transform: scale(1.5); }
 }
 
-/* --- MODO FULLSCREEN (JOGADOR & MESTRE EXPANDIDO) --- */
-.modo-jogador #tabletop-area,
-body.gm-mode-fullscreen #tabletop-area {
-    position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh;
-    z-index: 6000 !important; background: #000; display: block !important;
-}
-
-/* --- O PULO DO GATO: ESCONDER A MÃO --- */
-body.vtt-ativo #mao-area, /* <--- AQUI: Mão some quando VTT abre */
-body.vtt-ativo #deck-container-wrapper,
-body.vtt-ativo #reserva-area,
-body.vtt-ativo #mesa-area,
-body.vtt-ativo #player-portrait-container,
-body.gm-mode-fullscreen #area-jogadores,
-body.gm-mode-fullscreen #sidebar-escudo,
-body.gm-mode-fullscreen #titulo-batalha,
-body.gm-mode-fullscreen #tt-controls {
-    display: none !important;
-}
-
-/* --- BOTÕES FLUTUANTES (FICHA E DADOS) --- */
-/* Eles precisam ficar VISÍVEIS sobre o mapa */
-body .action-buttons-container {
-    z-index: 20005 !important;
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-}
-
-/* Botão Minimizar/Fechar */
-#btn-exit-fullscreen, #btn-vtt-toggle {
-    z-index: 20005; position: fixed; top: 15px; right: 20px;
-    background: rgba(0,0,0,0.9); color: var(--gold); border: 2px solid var(--gold);
-    padding: 8px 15px; border-radius: 5px; cursor: pointer; font-family: 'MedievalSharp';
-    display: none;
-}
-body.gm-mode-fullscreen #btn-exit-fullscreen { display: block !important; }
-
-/* --- TOKENS --- */
+/* --- TOKENS (BASE 70PX) --- */
 .token {
-    position: absolute; width: 50px; height: 50px; border-radius: 50%;
+    /* MUDADO PARA 70PX BASE */
+    position: absolute; width: 70px; height: 70px; border-radius: 50%;
     background-size: cover; background-position: center top; background-repeat: no-repeat;
     background-color: #000; box-shadow: 0 0 5px #000; cursor: grab; z-index: 20;
     border: 2px solid transparent; transition: transform 0.1s;
@@ -100,6 +67,42 @@ body.gm-mode-fullscreen #btn-exit-fullscreen { display: block !important; }
 .fill-hp { height: 4px; background: #0f0; width: 100%; border: 1px solid #000; }
 .fill-pf { height: 4px; background: #08f; width: 100%; border: 1px solid #000; }
 
+/* ... (RESTO IGUAL, APENAS COPIEI O RESTANTE PARA MANTER COMPATIBILIDADE) ... */
+
+/* --- MODO FULLSCREEN (JOGADOR & MESTRE EXPANDIDO) --- */
+.modo-jogador #tabletop-area,
+body.gm-mode-fullscreen #tabletop-area {
+    position: fixed !important; top: 0; left: 0; width: 100vw; height: 100vh;
+    z-index: 6000 !important; background: #000; display: block !important;
+}
+
+body.vtt-ativo #mao-area,
+body.vtt-ativo #deck-container-wrapper,
+body.vtt-ativo #reserva-area,
+body.vtt-ativo #mesa-area,
+body.vtt-ativo #player-portrait-container,
+body.gm-mode-fullscreen #area-jogadores,
+body.gm-mode-fullscreen #sidebar-escudo,
+body.gm-mode-fullscreen #titulo-batalha,
+body.gm-mode-fullscreen #tt-controls {
+    display: none !important;
+}
+
+body .action-buttons-container {
+    z-index: 20005 !important;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+}
+
+#btn-exit-fullscreen, #btn-vtt-toggle {
+    z-index: 20005; position: fixed; top: 15px; right: 20px;
+    background: rgba(0,0,0,0.9); color: var(--gold); border: 2px solid var(--gold);
+    padding: 8px 15px; border-radius: 5px; cursor: pointer; font-family: 'MedievalSharp';
+    display: none;
+}
+body.gm-mode-fullscreen #btn-exit-fullscreen { display: block !important; }
+
 .token-toolbar {
     position: absolute; top: -35px; left: 50%; transform: translateX(-50%);
     display: none; gap: 5px; background: rgba(0,0,0,0.9);
@@ -111,7 +114,6 @@ body.gm-mode-fullscreen #btn-exit-fullscreen { display: block !important; }
 .btn-mini-tool:hover { background: var(--gold); color: #000; }
 .btn-mini-tool.delete:hover { background: #f00; }
 
-/* Modal e Listas */
 .token-info-modal {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
     background: rgba(15, 10, 5, 0.98); border: 2px solid var(--gold);

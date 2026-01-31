@@ -1,9 +1,9 @@
 // =========================================================
-// TABLETOP SYSTEM V13.1 (PLAYER MOVE FIX & SYNC)
+// TABLETOP SYSTEM V13.2 (GRID MAIOR & REMOVE MAP)
 // =========================================================
 
 const REF_TABLETOP = 'mesa_rpg/tabuleiro';
-const GRID_SIZE = 50;
+const GRID_SIZE = 70; // AUMENTADO de 50 para 70 para tokens maiores
 
 let isDraggingToken = false;
 let isPanningMap = false;
@@ -27,6 +27,7 @@ window.iniciarTabletop = function() {
     window.addEventListener('mouseup', endPanMap);
     window.addEventListener('resize', resizeMapToFit);
 
+    // Listener Principal do Firebase
     window.onValue(window.ref(window.db, REF_TABLETOP), (snap) => {
         const dados = snap.val() || {};
         const config = dados.config || {};
@@ -34,23 +35,61 @@ window.iniciarTabletop = function() {
         const isMestre = window.nomeJogador === "Mestre";
 
         const imgEl = document.getElementById('map-bg-img');
-        if(config.imagem && imgEl.src !== config.imagem) {
-            imgEl.src = config.imagem;
-            imgEl.onload = () => {
-                mapContainer.style.width = imgEl.naturalWidth + 'px';
-                mapContainer.style.height = imgEl.naturalHeight + 'px';
-                resizeMapToFit();
-            };
-        } else if(imgEl.naturalWidth > 0) {
-             mapContainer.style.width = imgEl.naturalWidth + 'px';
-             mapContainer.style.height = imgEl.naturalHeight + 'px';
+        const btnVis = document.getElementById('btn-visibilidade-mapa'); // Novo ID
+
+        // --- LÓGICA DE IMAGEM E CONTROLES ---
+        if (!config.imagem) {
+            // Se NÃO tem imagem
+            imgEl.src = "";
+            mapContainer.style.display = 'none'; // Esconde o grid/container
+            
+            if(isMestre && btnVis) {
+                btnVis.innerHTML = "🚫 Sem Mapa";
+                btnVis.style.borderColor = "#555";
+                btnVis.style.color = "#777";
+                btnVis.disabled = true;
+            }
+        } else {
+            // Se TEM imagem
+            mapContainer.style.display = 'block';
+
+            // Carrega imagem se mudou
+            if (imgEl.src !== config.imagem) {
+                imgEl.src = config.imagem;
+                imgEl.onload = () => {
+                    mapContainer.style.width = imgEl.naturalWidth + 'px';
+                    mapContainer.style.height = imgEl.naturalHeight + 'px';
+                    resizeMapToFit();
+                };
+            } else if (imgEl.naturalWidth > 0) {
+                 mapContainer.style.width = imgEl.naturalWidth + 'px';
+                 mapContainer.style.height = imgEl.naturalHeight + 'px';
+            }
+
+            // Atualiza Botão de Visibilidade (Feedback Visual)
+            if(isMestre && btnVis) {
+                btnVis.disabled = false;
+                if(config.visivel) {
+                    btnVis.innerHTML = "👁️ Visível (Público)";
+                    btnVis.style.borderColor = "#00ff00"; // Verde
+                    btnVis.style.color = "#00ff00";
+                    btnVis.classList.add('btn-pulsante'); // Opcional: efeito visual
+                } else {
+                    btnVis.innerHTML = "🙈 Oculto (Privado)";
+                    btnVis.style.borderColor = "#ff0000"; // Vermelho
+                    btnVis.style.color = "#ff4444";
+                    btnVis.classList.remove('btn-pulsante');
+                }
+            }
         }
 
+        // --- EXIBIÇÃO DA ÁREA (Lógica Jogador vs Mestre) ---
         if (isMestre) {
             area.style.display = 'block'; 
-            requestAnimationFrame(resizeMapToFit);
+            if(config.imagem) requestAnimationFrame(resizeMapToFit);
         } else {
-            if (config.visivel) {
+            // Jogador só vê se tiver imagem E estiver visível
+            if (config.imagem && config.visivel) {
                 if(btnMinimizar) btnMinimizar.style.display = 'block';
                 if (!vttMinimizado) {
                     area.style.display = 'block';
@@ -76,7 +115,9 @@ function resizeMapToFit() {
     const area = document.getElementById('tabletop-area');
     const scaler = document.getElementById('map-scaler');
     const img = document.getElementById('map-bg-img');
-    if (!img.naturalWidth || area.style.display === 'none') return;
+    
+    // Proteção contra imagem vazia
+    if (!img || !img.naturalWidth || area.style.display === 'none') return;
 
     const imgW = img.naturalWidth;
     const imgH = img.naturalHeight;
@@ -136,6 +177,7 @@ function renderizarTokens(tokensData) {
         }
 
         const sizeMult = t.tamanho || 1;
+        // AQUI USA O GRID_SIZE NOVO (70px)
         el.style.width = (sizeMult * GRID_SIZE) + 'px'; el.style.height = (sizeMult * GRID_SIZE) + 'px';
         el.style.backgroundImage = `url('${t.imagem || 'img/monsters/default.png'}')`;
 
@@ -153,7 +195,7 @@ function limparRastroAntigo() {
 
 function criarRastroSeguro(x1, y1, x2, y2) {
     const container = document.getElementById('map-container');
-    const step = GRID_SIZE;
+    const step = GRID_SIZE; // Usa 70px agora
     const stepsX = Math.round(Math.abs(x2 - x1) / step);
     const stepsY = Math.round(Math.abs(y2 - y1) / step);
     const dirX = x2 > x1 ? 1 : -1;
@@ -178,12 +220,9 @@ function criarRastroSeguro(x1, y1, x2, y2) {
 function startDragToken(e, id, t) {
     const isMestre = window.nomeJogador === "Mestre";
     
-    // --- CORREÇÃO DE PERMISSÃO (IGNORA MAIÚSCULAS/MINÚSCULAS) ---
-    // Se não for mestre, verifica se é PC e se o nome bate
     if (!isMestre) {
         const nomeToken = (t.nome || "").trim().toUpperCase();
         const nomeJogador = (window.nomeJogador || "").trim().toUpperCase();
-        
         if (t.tipo !== 'pc' || nomeToken !== nomeJogador) return; 
     }
     
@@ -223,10 +262,10 @@ function moveDragToken(e) {
 function endDragToken() {
     if(!isDraggingToken) return;
     const el = document.getElementById(currentTokenId);
+    // Snap para o novo GRID_SIZE (70)
     let x = Math.round(parseFloat(el.style.left)/GRID_SIZE)*GRID_SIZE;
     let y = Math.round(parseFloat(el.style.top)/GRID_SIZE)*GRID_SIZE;
     
-    // Atualiza localmente antes de enviar (feedback instantâneo)
     el.style.left = x + 'px'; el.style.top = y + 'px';
     
     criarRastroSeguro(localDragStart.x, localDragStart.y, x, y);
@@ -237,18 +276,46 @@ function endDragToken() {
     window.removeEventListener('touchmove', moveDragToken); window.removeEventListener('touchend', endDragToken);
 }
 
-// Utils
+// Utils e Controles
 function startPanMap(e) { if(document.body.classList.contains('gm-mode-fullscreen'))return; if(e.target.id!=='tabletop-area' && !e.target.classList.contains('grid-overlay'))return; isPanningMap=true; dragStartPos={x:e.clientX, y:e.clientY}; const c=document.getElementById('map-scaler'); mapOffset={x:c.offsetLeft, y:c.offsetTop}; }
 function movePanMap(e) { if(!isPanningMap)return; const c=document.getElementById('map-scaler'); c.style.left=(mapOffset.x+(e.clientX-dragStartPos.x))+'px'; c.style.top=(mapOffset.y+(e.clientY-dragStartPos.y))+'px'; }
 function endPanMap() { isPanningMap=false; }
 
 window.toggleGMFulscreen = function() { document.body.classList.toggle('gm-mode-fullscreen'); setTimeout(resizeMapToFit, 100); };
 window.toggleVTTMinimizado = function() { const a=document.getElementById('tabletop-area'); const b=document.getElementById('btn-vtt-toggle'); vttMinimizado=!vttMinimizado; if(vttMinimizado){a.style.display='none';document.body.classList.remove('vtt-ativo');b.innerText="🗺️ Abrir Tabuleiro";}else{a.style.display='block';document.body.classList.add('vtt-ativo');b.innerText="⬇️ Minimizar Tabuleiro";requestAnimationFrame(resizeMapToFit);} };
-window.uploadMapa = function() { const f=document.getElementById('map-upload-input').files[0]; if(f){const r=new FileReader(); r.onload=e=>window.update(window.ref(window.db,`${REF_TABLETOP}/config`),{imagem:e.target.result,visivel:false}); r.readAsDataURL(f);} };
-window.toggleMapaVisivel = function() { window.get(window.ref(window.db,`${REF_TABLETOP}/config/visivel`)).then(s=>window.update(window.ref(window.db,`${REF_TABLETOP}/config`),{visivel:!s.val()})); };
-window.criarTokenMonstro = function(k,d) { const id='mob_'+Date.now(); const t={tipo:'mob',nome:d.nome,imagem:d.imagem||'',tamanho:d.tamanho||1,x:100,y:100,visivel:true,stats:{...d}}; window.update(window.ref(window.db,`${REF_TABLETOP}/tokens/${id}`),t); alert("Criado!"); };
-window.criarTokenPC = function(n,i) { const id='pc_'+Date.now(); const t={tipo:'pc',nome:n,imagem:i,tamanho:1,x:150,y:150,visivel:true,stats:{pv_atual:6,pv_max:6}}; window.update(window.ref(window.db,`${REF_TABLETOP}/tokens/${id}`),t); document.getElementById('modal-criar-token-pc').style.display='none'; };
 
+// --- FUNÇÕES DE MAPA (NOVAS) ---
+window.uploadMapa = function() { 
+    const f=document.getElementById('map-upload-input').files[0]; 
+    if(f){
+        const r=new FileReader(); 
+        r.onload=e=>window.update(window.ref(window.db,`${REF_TABLETOP}/config`),{imagem:e.target.result,visivel:false}); 
+        r.readAsDataURL(f);
+    } 
+};
+
+window.toggleMapaVisivel = function() { 
+    const configRef = window.ref(window.db,`${REF_TABLETOP}/config`);
+    window.get(configRef).then(s => {
+        const atual = s.val() || {};
+        if(!atual.imagem) { alert("Envie um mapa primeiro!"); return; }
+        window.update(configRef, {visivel: !atual.visivel});
+    });
+};
+
+window.removerMapa = function() {
+    if(confirm("Tem certeza? Isso removerá a imagem do tabuleiro para todos. Os tokens permanecerão.")) {
+        window.update(window.ref(window.db, `${REF_TABLETOP}/config`), {
+            imagem: null,
+            visivel: false
+        });
+    }
+};
+
+window.criarTokenMonstro = function(k,d) { const id='mob_'+Date.now(); const t={tipo:'mob',nome:d.nome,imagem:d.imagem||'',tamanho:d.tamanho||1,x:140,y:140,visivel:true,stats:{...d}}; window.update(window.ref(window.db,`${REF_TABLETOP}/tokens/${id}`),t); alert("Criado!"); };
+window.criarTokenPC = function(n,i) { const id='pc_'+Date.now(); const t={tipo:'pc',nome:n,imagem:i,tamanho:1,x:210,y:210,visivel:true,stats:{pv_atual:6,pv_max:6}}; window.update(window.ref(window.db,`${REF_TABLETOP}/tokens/${id}`),t); document.getElementById('modal-criar-token-pc').style.display='none'; };
+
+// Modais e Stats (Mantidos iguais, apenas ajuste de lógica geral se necessário)
 window.abrirInfoToken = function(id, editavel) {
     window.get(window.ref(window.db, `${REF_TABLETOP}/tokens/${id}`)).then(snap => {
         if(!snap.exists()) return;
@@ -265,15 +332,12 @@ window.abrirInfoToken = function(id, editavel) {
         html += row("Defesa", s.dificuldade, 'ac'); html += row("Ataque", s.ataque, 'atk'); html += row("Dano", s.dano, 'dmg');
         if(editavel) {
             html += `<div class="hp-control-group"><button class="btn-ctrl" style="border-color:red" onclick="mudarStat('${id}','pv_atual',-1)">-1 PV</button><button class="btn-ctrl" style="border-color:green" onclick="mudarStat('${id}','pv_atual',1)">+1 PV</button></div>`;
-            
-            // Botões de Tamanho (Mantidos)
             html += `<div style="margin-top:10px; display:flex; gap:10px; align-items:center; justify-content:center;">
                 <span style="color:#aaa;">Tam:</span>
                 <button class="btn-ctrl" onclick="mudarTam('${id}',-0.5)" style="width:30px;">-</button>
                 <span style="color:var(--gold);">${t.tamanho||1}x</span>
                 <button class="btn-ctrl" onclick="mudarTam('${id}',0.5)" style="width:30px;">+</button>
             </div>`;
-            
             html += `<div style="margin-top:10px;text-align:center;"><span class="eye-btn ${t.visivel!==false?'visible':''}" style="font-size:1.5rem;" onclick="toggleTokenVis('${id}')">👁️</span></div>`;
             html += `<button class="btn-delete-token" onclick="removerTokenDoGrid('${id}')">🗑️ EXCLUIR</button>`;
         }
