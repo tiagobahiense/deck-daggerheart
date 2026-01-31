@@ -239,31 +239,27 @@
             <h2 style="color:var(--gold); text-align:center; margin-top:0;">Criar NPC</h2>
             
             <div class="form-grid">
-                <div class="form-group form-full"><label>Nome</label><input type="text" id="new-enemy-name" placeholder="Ex: Lobo Atroz"></div>
+                <div class="form-group form-full"><label>Nome</label><input type="text" id="new-npc-name" placeholder="Ex: Tavernier"></div>
+                
                 <div class="form-group form-full">
                     <label>Imagem</label>
                     <div style="display:flex; gap:5px;">
-                        <input type="text" id="new-enemy-img" placeholder="URL ou Upload..." style="flex:1">
-                        <label for="upload-file-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer; color:white;">📁</label>
-                        <input type="file" id="upload-file-input" accept="image/*" style="display:none" onchange="processarUploadImagem()">
-                        <img id="preview-img-mini" style="width:30px; height:30px; display:none; border:1px solid #555;">
+                        <input type="text" id="new-npc-img-data" placeholder="URL ou Upload..." style="flex:1">
+                        <label for="npc-upload-input" style="background:#333; border:1px solid #555; padding:5px; cursor:pointer; color:white;">📁</label>
+                        <input type="file" id="npc-upload-input" accept="image/*" style="display:none" onchange="window.processarUploadNPC()">
+                        <img id="preview-npc-mini" style="width:30px; height:30px; display:none; border:1px solid #555;">
                     </div>
                 </div>
+
                 <div class="form-group form-full">
-                    <label>Tamanho (Escala)</label>
-                    <select id="new-enemy-size" style="width:100%; background:#222; color:white; border:1px solid #444; padding:5px;">
-                        <option value="1">Médio (1x1)</option>
-                        <option value="2">Grande (2x2)</option>
-                        <option value="3">Enorme (3x3)</option>
-                        <option value="4">Imenso (4x4)</option>
-                    </select>
+                    <label style="color:#00ff00;">Descrição (Jogadores)</label>
+                    <textarea id="new-npc-desc-player" rows="2" class="input-desc-player" placeholder="O que eles veem..."></textarea>
                 </div>
-                <div class="form-group"><label>PV Max</label><input type="number" id="new-enemy-pv" value="4"></div>
-                <div class="form-group"><label>Estresse (PF)</label><input type="number" id="new-enemy-pf" value="0"></div>
-                <div class="form-group"><label>Dificuldade</label><input type="number" id="new-enemy-dif" value="12"></div>
-                <div class="form-group"><label>Ataque</label><input type="text" id="new-enemy-atk" value="+2"></div>
-                <div class="form-group"><label>Dano</label><input type="text" id="new-enemy-dmg" value="1d6+2"></div>
-                <div class="form-group form-full"><label>Habilidades</label><textarea id="new-enemy-desc" rows="3"></textarea></div>
+
+                <div class="form-group form-full">
+                    <label style="color:red;">Descrição (Mestre)</label>
+                    <textarea id="new-npc-desc-gm" rows="2" class="input-desc-gm" placeholder="Segredos..."></textarea>
+                </div>
             </div>
 
             <div style="display:flex; gap:10px; margin-top:15px;">
